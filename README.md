@@ -32,13 +32,18 @@ All blocks can be found under `./blocks` and are shipped well documented.
 
 To add a new block add it under a category in the `./blocks` directory. Then make sure to go to `./src/blocks.ts` and update the `blocks` object.
 
+> [!NOTE]
+> No blocks currently require dependencies.
+
 ```ts
 const blocks: Record<string, Block> = {
 	result: {
 		category: "types",
 	},
+    // ++++++
 	"to-map": {
 		category: "utilities",
 	},
+    // ++++++
 };
 ```
