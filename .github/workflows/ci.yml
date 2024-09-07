@@ -22,7 +22,7 @@ jobs:
               run: pnpm install
 
             - name: Lint
-              run: pnpm check
+              run: pnpm ci
 
             - name: Build
               run: pnpm build
