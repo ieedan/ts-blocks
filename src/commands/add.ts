@@ -45,11 +45,11 @@ const _add = async (blockName: string, options: Options) => {
 	let directory: string;
 
 	if (config.addByCategory) {
-		directory = path.join(config.path, block.category)
-		newPath = path.join(directory, `${blockName}.ts`)
+		directory = path.join(config.path, block.category);
+		newPath = path.join(directory, `${blockName}.ts`);
 	} else {
-		directory = config.path
-		newPath = path.join(directory, `${blockName}.ts`)
+		directory = config.path;
+		newPath = path.join(directory, `${blockName}.ts`);
 	}
 
 	// in case the directory didn't already exist
