@@ -37,10 +37,8 @@ const blocks: Record<string, Block> = {
 	result: {
 		category: "types",
 	},
-    // highlight-start
 	"to-map": {
 		category: "utilities",
 	},
-    // highlight-end
 };
 ```
