@@ -38,4 +38,4 @@ const Ok = <T>(val: T): Result<T, never> => [val, null];
  */
 const Err = <E>(err: E): Result<never, E> => [null, err];
 
-export { Result, Ok, Err };
+export { type Result, Ok, Err };

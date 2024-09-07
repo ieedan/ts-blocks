@@ -6,12 +6,15 @@
  *
  * ## Example
  * ```ts
- * const map = toMap([5,4,3,2,1], (item, i) => [i, item]);
+ * const map = arrayToMap([5,4,3,2,1], (item, i) => [i, item]);
  *
  * console.log(map); // Map(5) { 0 => 5, 1 => 4, 2 => 3, 3 => 2, 4 => 1 }
  * ```
  */
-const toMap = <T, K, V>(arr: T[], fn: (item: T, index: number) => [key: K, value: V]): Map<K, V> => {
+const arrayToMap = <T, K, V>(
+	arr: T[],
+	fn: (item: T, index: number) => [key: K, value: V],
+): Map<K, V> => {
 	const map = new Map<K, V>();
 
 	for (let i = 0; i < arr.length; i++) {
@@ -23,4 +26,4 @@ const toMap = <T, K, V>(arr: T[], fn: (item: T, index: number) => [key: K, value
 	return map;
 };
 
-export { toMap };
+export { arrayToMap };

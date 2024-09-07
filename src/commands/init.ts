@@ -1,21 +1,42 @@
-import { Command } from "commander";
-import { InferInput, object, optional, parse, string } from "valibot";
 import fs from "node:fs";
 import { cancel, intro, isCancel, outro, text } from "@clack/prompts";
 import color from "chalk";
-import { Config, CONFIG_NAME } from "../config";
+import { Command } from "commander";
+import {
+	type InferInput,
+	boolean,
+	object,
+	optional,
+	parse,
+	string,
+} from "valibot";
+import { CONFIG_NAME, type Config } from "../config";
 
 const schema = object({
 	path: optional(string()),
+	addByCategory: boolean(),
+	includeIndexFile: boolean(),
 });
 
 type Options = InferInput<typeof schema>;
 
-const init = new Command("init").option("--path", "Path to install the blocks").action(async (opts) => {
-	const options = parse(schema, opts);
+const init = new Command("init")
+	.option("--path", "Path to install the blocks")
+	.option(
+		"--add-by-category",
+		"Will create directories to contain each block by category.",
+		false,
+	)
+	.option(
+		"--include-index-file",
+		"Will create an index.ts file at the root of the folder to re-export functions from.",
+		true,
+	)
+	.action(async (opts) => {
+		const options = parse(schema, opts);
 
-	await _init(options);
-});
+		await _init(options);
+	});
 
 const _init = async (options: Options) => {
 	intro(color.white.bgCyanBright("ts-block"));
@@ -25,7 +46,7 @@ const _init = async (options: Options) => {
 			message: "Where should we add the blocks?",
 			placeholder: "src/blocks",
 			validate(value) {
-				if (value.trim() == "") return "Please provide a value";
+				if (value.trim() === "") return "Please provide a value";
 			},
 		});
 
@@ -38,11 +59,14 @@ const _init = async (options: Options) => {
 	}
 
 	const config: Config = {
-		schema: "https://github.com/ieedan/ts-blocks/blob/main/src/config/schema.json",
+		schema:
+			"https://github.com/ieedan/ts-blocks/blob/main/src/config/schema.json",
 		path: options.path,
+		addByCategory: options.addByCategory,
+		includeIndexFile: options.includeIndexFile,
 	};
 
-	fs.writeFileSync(CONFIG_NAME, JSON.stringify(config, null, "\t") + "\n");
+	fs.writeFileSync(CONFIG_NAME, `${JSON.stringify(config, null, "\t")}\n`);
 
 	outro(color.green("All done!"));
 };
