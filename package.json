@@ -1,0 +1,37 @@
+{
+	"name": "ts-blocks",
+	"description": "A CLI to add ts-blocks code to your project.",
+	"version": "0.0.1",
+	"author": "",
+	"main": "bin.mjs",
+	"bin": "./bin.mjs",
+	"type": "module",
+	"files": [
+		"bin.mjs",
+		"package.json",
+		"package-lock.json",
+		"README.md",
+		"templates",
+		"dist"
+	],
+	"scripts": {
+		"start": "unbuild && node bin.mjs",
+		"build": "unbuild",
+		"format": "biome format --write",
+		"lint": "biome lint --write",
+		"ci": "pnpm biome check",
+		"changeset": "changeset"
+	},
+	"keywords": [],
+	"license": "ISC",
+	"devDependencies": {
+		"@biomejs/biome": "1.8.3",
+		"@types/node": "^22.5.4",
+		"typescript": "^5.5.3",
+		"unbuild": "^2.0.0"
+	},
+	"dependencies": {
+		"@changesets/cli": "^2.27.8",
+		"commander": "^12.1.0"
+	}
+}
