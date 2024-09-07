@@ -1,0 +1,4 @@
+{
+	"schema": "https://github.com/ieedan/ts-blocks/blob/main/src/config/schema.json",
+	"path": "test/blocks"
+}

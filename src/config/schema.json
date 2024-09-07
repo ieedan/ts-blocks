@@ -1,0 +1,13 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"$id": "https://example.com/product.schema.json",
+	"title": "ts-blocks",
+	"description": "A schema for ts-blocks.",
+	"type": "object",
+	"properties": {
+		"path": {
+			"description": "The path to place the blocks",
+			"type": "string"
+		}
+	}
+}

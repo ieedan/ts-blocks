@@ -1,13 +1,13 @@
 /** Maps the provided array into a map
- * 
+ *
  * @param arr Array of items to be entered into a map
  * @param fn A mapping function to transform each item into a key value pair
- * @returns 
- * 
+ * @returns
+ *
  * ## Example
  * ```ts
  * const map = toMap([5,4,3,2,1], (item, i) => [i, item]);
- * 
+ *
  * console.log(map); // Map(5) { 0 => 5, 1 => 4, 2 => 3, 3 => 2, 4 => 1 }
  * ```
  */
@@ -22,3 +22,5 @@ const toMap = <T, K, V>(arr: T[], fn: (item: T, index: number) => [key: K, value
 
 	return map;
 };
+
+export { toMap };

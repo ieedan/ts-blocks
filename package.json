@@ -9,10 +9,10 @@
 	"files": [
 		"bin.mjs",
 		"package.json",
-		"package-lock.json",
+		"pnpm-lock.yaml",
 		"README.md",
-		"templates",
-		"dist"
+		"dist/**/*",
+		"blocks/**/*"
 	],
 	"scripts": {
 		"start": "unbuild && node bin.mjs",
@@ -32,6 +32,9 @@
 	},
 	"dependencies": {
 		"@changesets/cli": "^2.27.8",
-		"commander": "^12.1.0"
+		"@clack/prompts": "^0.7.0",
+		"chalk": "^5.3.0",
+		"commander": "^12.1.0",
+		"valibot": "^0.41.0"
 	}
 }
