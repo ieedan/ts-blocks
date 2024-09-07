@@ -36,16 +36,26 @@ const _add = async (blockName: string, options: Options) => {
 		);
 	}
 
-	const p = path.join(
+	const registryPath = path.join(
 		import.meta.dirname,
 		`../../blocks/${block.category}/${blockName}.ts`,
 	);
 
-	const newPath = path.join(config.path, `${block.category}/${blockName}.ts`);
+	let newPath: string;
+	let directory: string;
 
-	fs.mkdirSync(path.join(config.path, block.category), { recursive: true });
+	if (config.addByCategory) {
+		directory = path.join(config.path, block.category)
+		newPath = path.join(directory, `${blockName}.ts`)
+	} else {
+		directory = config.path
+		newPath = path.join(directory, `${blockName}.ts`)
+	}
 
-	fs.copyFileSync(p, newPath);
+	// in case the directory didn't already exist
+	fs.mkdirSync(directory, { recursive: true });
+
+	fs.copyFileSync(registryPath, newPath);
 
 	if (block.dependencies) {
 		if (!options.yes) {

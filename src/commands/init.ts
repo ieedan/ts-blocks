@@ -2,17 +2,30 @@ import fs from "node:fs";
 import { cancel, intro, isCancel, outro, text } from "@clack/prompts";
 import color from "chalk";
 import { Command } from "commander";
-import { type InferInput, object, optional, parse, string } from "valibot";
+import {
+	type InferInput,
+	boolean,
+	object,
+	optional,
+	parse,
+	string,
+} from "valibot";
 import { CONFIG_NAME, type Config } from "../config";
 
 const schema = object({
 	path: optional(string()),
+	addByCategory: boolean(),
 });
 
 type Options = InferInput<typeof schema>;
 
 const init = new Command("init")
 	.option("--path", "Path to install the blocks")
+	.option(
+		"--add-by-category",
+		"Will create directories to contain each block by category.",
+		false,
+	)
 	.action(async (opts) => {
 		const options = parse(schema, opts);
 
@@ -43,6 +56,7 @@ const _init = async (options: Options) => {
 		schema:
 			"https://github.com/ieedan/ts-blocks/blob/main/src/config/schema.json",
 		path: options.path,
+		addByCategory: options.addByCategory,
 	};
 
 	fs.writeFileSync(CONFIG_NAME, `${JSON.stringify(config, null, "\t")}\n`);

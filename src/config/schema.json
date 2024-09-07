@@ -1,13 +1,15 @@
 {
-	"$schema": "https://json-schema.org/draft/2020-12/schema",
-	"$id": "https://example.com/product.schema.json",
-	"title": "ts-blocks",
-	"description": "A schema for ts-blocks.",
+	"$schema": "http://json-schema.org/draft-07/schema#",
 	"type": "object",
 	"properties": {
 		"path": {
 			"description": "The path to place the blocks",
 			"type": "string"
+		},
+		"addByCategory": {
+			"description": "When true will create category directories within the provided path to organize the files.",
+			"type": "boolean"
 		}
-	}
+	},
+	"required": ["path", "addByCategory"]
 }
