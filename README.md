@@ -8,7 +8,7 @@ npx ts-blocks init
 
 ## Setup
 
-Run the `init` command to setup the path where the blocks will be added.
+Run the `init` command to setup the `blocks.json` file.
 
 ```bash
 npx ts-blocks init
@@ -20,6 +20,8 @@ npx ts-blocks init
 npx ts-blocks add result
 
 ┌  ts-block
+│
+◇  Added result
 │
 └  All done!
 ```

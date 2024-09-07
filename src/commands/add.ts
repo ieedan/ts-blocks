@@ -9,7 +9,7 @@ import {
 	spinner,
 } from "@clack/prompts";
 import color from "chalk";
-import { Command, program } from "commander";
+import { Argument, Command, program } from "commander";
 import { Project, type SourceFile } from "ts-morph";
 import { type InferInput, boolean, object, parse } from "valibot";
 import { WARN } from ".";
@@ -23,7 +23,12 @@ const schema = object({
 type Options = InferInput<typeof schema>;
 
 const add = new Command("add")
-	.argument("[blocks...]", "Whichever block you want to add to your project.")
+	.addArgument(
+		new Argument(
+			"[blocks...]",
+			"Whichever block you want to add to your project.",
+		).choices(Object.entries(blocks).map(([key]) => key)),
+	)
 	.option("-y, --yes", "Add and install any required dependencies.", false)
 	.action(async (blockNames, opts) => {
 		const options = parse(schema, opts);

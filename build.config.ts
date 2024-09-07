@@ -3,10 +3,10 @@ import { defineBuildConfig } from "unbuild";
 export default defineBuildConfig({
 	entries: [
 		"src/index",
+		"src/blocks",
 		"src/commands/add",
 		"src/commands/init",
 		"src/commands/index",
-		"src/blocks",
 		"src/config/index",
 	],
 	failOnWarn: false,
