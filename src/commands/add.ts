@@ -1,10 +1,10 @@
-import { Command, program } from "commander";
-import { boolean, InferInput, object, parse } from "valibot";
 import fs from "node:fs";
-import { blocks } from "../blocks";
+import path from "node:path";
 import { cancel, confirm, intro, isCancel, outro } from "@clack/prompts";
 import color from "chalk";
-import path from "node:path";
+import { Command, program } from "commander";
+import { type InferInput, boolean, object, parse } from "valibot";
+import { blocks } from "../blocks";
 import { getConfig } from "../config";
 
 const schema = object({
@@ -31,10 +31,15 @@ const _add = async (blockName: string, options: Options) => {
 	const block = blocks[blockName];
 
 	if (!block) {
-		program.error(color.red(`Invalid block! ${color.bold(blockName)} does not exist!`));
+		program.error(
+			color.red(`Invalid block! ${color.bold(blockName)} does not exist!`),
+		);
 	}
 
-	const p = path.join(import.meta.dirname, `../../blocks/${block.category}/${blockName}.ts`);
+	const p = path.join(
+		import.meta.dirname,
+		`../../blocks/${block.category}/${blockName}.ts`,
+	);
 
 	const newPath = path.join(config.path, `${block.category}/${blockName}.ts`);
 
@@ -44,7 +49,9 @@ const _add = async (blockName: string, options: Options) => {
 
 	if (block.dependencies) {
 		if (!options.yes) {
-			const result = await confirm({ message: "Add and install dependencies?" });
+			const result = await confirm({
+				message: "Add and install dependencies?",
+			});
 
 			if (isCancel(result)) {
 				cancel("Canceled!");

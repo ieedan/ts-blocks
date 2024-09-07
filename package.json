@@ -19,7 +19,7 @@
 		"build": "unbuild",
 		"format": "biome format --write",
 		"lint": "biome lint --write",
-		"ci": "pnpm biome check",
+		"check": "pnpm biome check",
 		"ci:release": "unbuild && changeset publish",
 		"changeset": "changeset"
 	},
