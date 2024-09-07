@@ -1,6 +1,6 @@
 # ts-blocks
 
-Building blocks for TypeScript applications add code through the CLI and maintain full ownership.
+Well documented self owned building blocks for typescript applications.
 
 ```bash
 npx ts-blocks init
@@ -26,7 +26,7 @@ npx ts-blocks add result
 
 # Blocks
 
-All blocks can be found under `./blocks` and are shipped well documented.
+All blocks can be found under `./blocks` and are shipped with documentation.
 
 ## Adding New Blocks
 

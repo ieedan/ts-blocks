@@ -16,6 +16,7 @@ const CONFIG_NAME = "blocks.json";
 const schema = object({
 	schema: string(),
 	addByCategory: boolean(),
+	includeIndexFile: boolean(),
 	path: pipe(string(), minLength(1)),
 });
 
@@ -30,7 +31,9 @@ const getConfig = () => {
 		);
 	}
 
-	return parse(schema, JSON.parse(fs.readFileSync(CONFIG_NAME).toString()));
+	return parse(schema, JSON.parse(fs.readFileSync(CONFIG_NAME).toString()), {
+		message: color.red("Invalid config file!"),
+	});
 };
 
 export { getConfig, type Config, schema, CONFIG_NAME };

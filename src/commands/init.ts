@@ -15,6 +15,7 @@ import { CONFIG_NAME, type Config } from "../config";
 const schema = object({
 	path: optional(string()),
 	addByCategory: boolean(),
+	includeIndexFile: boolean(),
 });
 
 type Options = InferInput<typeof schema>;
@@ -25,6 +26,11 @@ const init = new Command("init")
 		"--add-by-category",
 		"Will create directories to contain each block by category.",
 		false,
+	)
+	.option(
+		"--include-index-file",
+		"Will create an index.ts file at the root of the folder to re-export functions from.",
+		true,
 	)
 	.action(async (opts) => {
 		const options = parse(schema, opts);
@@ -57,6 +63,7 @@ const _init = async (options: Options) => {
 			"https://github.com/ieedan/ts-blocks/blob/main/src/config/schema.json",
 		path: options.path,
 		addByCategory: options.addByCategory,
+		includeIndexFile: options.includeIndexFile,
 	};
 
 	fs.writeFileSync(CONFIG_NAME, `${JSON.stringify(config, null, "\t")}\n`);

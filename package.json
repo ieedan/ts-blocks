@@ -36,6 +36,7 @@
 		"@clack/prompts": "^0.7.0",
 		"chalk": "^5.3.0",
 		"commander": "^12.1.0",
+		"ts-morph": "^23.0.0",
 		"valibot": "^0.41.0"
 	}
 }
