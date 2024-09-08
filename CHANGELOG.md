@@ -1,5 +1,11 @@
 # ts-blocks
 
+## 0.2.1
+
+### Patch Changes
+
+- 72d4398: Fixed docs with jsonc
+
 ## 0.2.0
 
 ### Minor Changes
