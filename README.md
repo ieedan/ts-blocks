@@ -1,6 +1,6 @@
 # ts-blocks
 
-**Well documented**, **tested**, **self owned** building blocks for typescript applications.
+**Well documented**, **tested**, **self owned** building blocks for TypeScript applications.
 
 ```bash
 npx ts-blocks init
