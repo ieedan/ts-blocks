@@ -42,10 +42,10 @@ const blocks: Record<string, Block> = {
 	result: {
 		category: "types",
 	},
-    // ++++++
+	// ++++++
 	"to-map": {
 		category: "utilities",
 	},
-    // ++++++
+	// ++++++
 };
 ```

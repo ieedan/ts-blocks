@@ -13,7 +13,7 @@
  */
 const arrayToMap = <T, K, V>(
 	arr: T[],
-	fn: (item: T, index: number) => [key: K, value: V],
+	fn: (item: T, index: number) => [key: K, value: V]
 ): Map<K, V> => {
 	const map = new Map<K, V>();
 

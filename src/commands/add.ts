@@ -1,20 +1,13 @@
-import fs from "node:fs";
-import path from "node:path";
-import {
-	cancel,
-	confirm,
-	intro,
-	isCancel,
-	outro,
-	spinner,
-} from "@clack/prompts";
-import color from "chalk";
-import { Argument, Command, program } from "commander";
-import { Project, type SourceFile } from "ts-morph";
-import { type InferInput, boolean, object, parse } from "valibot";
-import { WARN } from ".";
-import { blocks } from "../blocks";
-import { getConfig } from "../config";
+import fs from 'node:fs';
+import path from 'node:path';
+import { cancel, confirm, intro, isCancel, outro, spinner } from '@clack/prompts';
+import color from 'chalk';
+import { Argument, Command, program } from 'commander';
+import { Project, type SourceFile } from 'ts-morph';
+import { type InferInput, boolean, object, parse } from 'valibot';
+import { WARN } from '.';
+import { blocks } from '../blocks';
+import { getConfig } from '../config';
 
 const schema = object({
 	yes: boolean(),
@@ -22,14 +15,13 @@ const schema = object({
 
 type Options = InferInput<typeof schema>;
 
-const add = new Command("add")
+const add = new Command('add')
 	.addArgument(
-		new Argument(
-			"[blocks...]",
-			"Whichever block you want to add to your project.",
-		).choices(Object.entries(blocks).map(([key]) => key)),
+		new Argument('[blocks...]', 'Whichever block you want to add to your project.').choices(
+			Object.entries(blocks).map(([key]) => key)
+		)
 	)
-	.option("-y, --yes", "Add and install any required dependencies.", false)
+	.option('-y, --yes', 'Add and install any required dependencies.', false)
 	.action(async (blockNames, opts) => {
 		const options = parse(schema, opts);
 
@@ -37,7 +29,7 @@ const add = new Command("add")
 	});
 
 const _add = async (blockNames: string[], options: Options) => {
-	intro(color.white.bgCyanBright("ts-block"));
+	intro(color.white.bgCyanBright('ts-block'));
 
 	const config = getConfig();
 
@@ -48,16 +40,14 @@ const _add = async (blockNames: string[], options: Options) => {
 		const block = blocks[blockName];
 
 		if (!block) {
-			program.error(
-				color.red(`Invalid block! ${color.bold(blockName)} does not exist!`),
-			);
+			program.error(color.red(`Invalid block! ${color.bold(blockName)} does not exist!`));
 		}
 
 		loading.start(`Adding ${blockName}`);
 
 		const registryPath = path.join(
 			import.meta.dirname,
-			`../../blocks/${block.category}/${blockName}.ts`,
+			`../../blocks/${block.category}/${blockName}.ts`
 		);
 
 		let newPath: string;
@@ -77,7 +67,7 @@ const _add = async (blockNames: string[], options: Options) => {
 		fs.copyFileSync(registryPath, newPath);
 
 		if (config.includeIndexFile) {
-			const indexPath = path.join(directory, "index.ts");
+			const indexPath = path.join(directory, 'index.ts');
 
 			const project = new Project();
 
@@ -104,11 +94,11 @@ const _add = async (blockNames: string[], options: Options) => {
 		if (block.dependencies) {
 			if (!options.yes) {
 				const result = await confirm({
-					message: "Add and install dependencies?",
+					message: 'Add and install dependencies?',
 				});
 
 				if (isCancel(result)) {
-					cancel("Canceled!");
+					cancel('Canceled!');
 					process.exit(0);
 				}
 
@@ -117,14 +107,14 @@ const _add = async (blockNames: string[], options: Options) => {
 
 			if (options.yes) {
 				// currently no functions require dependencies (lets try and keep it that way)
-				throw new Error("NOT IMPLEMENTED");
+				throw new Error('NOT IMPLEMENTED');
 			}
 		}
 
 		loading.stop(`Added ${blockName}`);
 	}
 
-	outro(color.green("All done!"));
+	outro(color.green('All done!'));
 };
 
 export { add };
