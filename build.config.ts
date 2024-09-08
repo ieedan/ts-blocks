@@ -1,13 +1,13 @@
-import { defineBuildConfig } from "unbuild";
+import { defineBuildConfig } from 'unbuild';
 
 export default defineBuildConfig({
 	entries: [
-		"src/index",
-		"src/blocks",
-		"src/commands/add",
-		"src/commands/init",
-		"src/commands/index",
-		"src/config/index",
+		'src/index',
+		'src/blocks',
+		'src/commands/add',
+		'src/commands/init',
+		'src/commands/index',
+		'src/config/index',
 	],
 	failOnWarn: false,
 	declaration: true,

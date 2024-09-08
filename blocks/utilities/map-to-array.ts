@@ -4,10 +4,7 @@
  * @param fn A mapping function to transform each pair into an item
  * @returns
  */
-const mapToArray = <K, V, T>(
-	map: Map<K, V>,
-	fn: (key: K, value: V) => T,
-): T[] => {
+const mapToArray = <K, V, T>(map: Map<K, V>, fn: (key: K, value: V) => T): T[] => {
 	const items: T[] = [];
 
 	for (const [key, value] of map) {
@@ -16,3 +13,5 @@ const mapToArray = <K, V, T>(
 
 	return items;
 };
+
+export { mapToArray };

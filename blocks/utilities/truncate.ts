@@ -15,7 +15,7 @@ type Options = {
 const truncate = (
 	str: string,
 	maxLength: number,
-	{ reverse = false, ending = "" }: Partial<Options>,
+	{ reverse = false, ending = '' }: Partial<Options>
 ) => {
 	if (str.length <= maxLength) return str;
 
