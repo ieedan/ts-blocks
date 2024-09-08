@@ -5,7 +5,7 @@ import { sleep } from './sleep';
 test('Expect time elapsed', async () => {
 	const start = Date.now();
 
-	const duration = 25;
+	const duration = 50;
 
 	await sleep(duration);
 
