@@ -1,5 +1,11 @@
 # ts-blocks
 
+## 0.3.0
+
+### Minor Changes
+
+- 573ea90: Add `match` and `unwrap` methods to `result`.
+
 ## 0.2.1
 
 ### Patch Changes
