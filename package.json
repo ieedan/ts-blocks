@@ -1,12 +1,15 @@
 {
 	"name": "ts-blocks",
 	"description": "A CLI to add ts-blocks code to your project.",
-	"version": "0.0.2",
+	"version": "0.1.0",
 	"repository": {
 		"type": "git",
 		"url": "git+https://github.com/ieedan/ts-blocks"
 	},
-	"keywords": ["changelog", "date"],
+	"keywords": [
+		"changelog",
+		"date"
+	],
 	"author": "Aidan Bleser",
 	"license": "MIT",
 	"bugs": {
