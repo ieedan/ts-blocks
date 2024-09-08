@@ -5,9 +5,11 @@ import { sleep } from './sleep';
 test('Expect time elapsed', async () => {
 	const start = Date.now();
 
-	await sleep(1000);
+	const duration = 25;
+
+	await sleep(duration);
 
 	const end = Date.now();
 
-	expect(end - start).toBeGreaterThanOrEqual(1000);
+	expect(end - start).toBeGreaterThanOrEqual(duration);
 });

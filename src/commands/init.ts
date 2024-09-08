@@ -33,7 +33,7 @@ const init = new Command('init')
 	});
 
 const _init = async (options: Options) => {
-	intro(color.bgBlueBright('ts-block'));
+	intro(color.bgBlueBright('ts-blocks'));
 
 	const { version } = JSON.parse(
 		fs.readFileSync(new URL('../../package.json', import.meta.url), 'utf-8')

@@ -1,6 +1,6 @@
 # ts-blocks
 
-Well documented self owned building blocks for typescript applications.
+**Well documented**, **tested**, **self owned** building blocks for typescript applications.
 
 ```bash
 npx ts-blocks init
@@ -16,19 +16,56 @@ npx ts-blocks init
 
 ## Adding Blocks
 
+### Single
+
 ```bash
 npx ts-blocks add result
 
-┌  ts-block
+┌  ts-blocks
 │
 ◇  Added result
 │
 └  All done!
 ```
 
+### Multiple
+
+```bash
+npx ts-blocks add result array-sum
+
+┌  ts-blocks
+│
+◇  Added result
+│
+◇  Added array-sum
+│
+└  All done!
+```
+
 # Blocks
 
-All blocks can be found under `./blocks` and are shipped with documentation.
+All blocks can be found under `./blocks`.
+
+## Documentation
+
+Each block is well documented including examples of usage.
+
+## Tests
+
+Each block is tested using [vitest](https://vitest.dev/). By default we add these tests to your repository to disable this behavior configure `includeTests` in your `blocks.json` file.
+
+> [!NOTE]
+> If [vitest](https://vitest.dev/) isn't already installed in your project we will attempt to install it for you.
+
+```json
+{
+	"$schema": "https://unpkg.com/ts-blocks@0.1.0/schema.json",
+	// ...
+	"includeTests": false // disable including tests
+}
+```
+
+# Development
 
 ## Adding New Blocks
 

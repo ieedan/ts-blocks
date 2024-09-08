@@ -1,6 +1,6 @@
 {
 	"name": "ts-blocks",
-	"description": "A CLI to add ts-blocks code to your project.",
+	"description": "A CLI to blocks to your project.",
 	"version": "0.1.0",
 	"packageManager": "pnpm@9.8.0",
 	"repository": {

@@ -32,7 +32,7 @@ const add = new Command('add')
 	});
 
 const _add = async (blockNames: string[], options: Options) => {
-	intro(color.bgBlueBright('ts-block'));
+	intro(color.bgBlueBright('ts-blocks'));
 
 	const config = getConfig();
 
