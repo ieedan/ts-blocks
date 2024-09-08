@@ -57,7 +57,7 @@ Each block is tested using [vitest](https://vitest.dev/). By default we add thes
 > [!NOTE]
 > If [vitest](https://vitest.dev/) isn't already installed in your project we will attempt to install it for you.
 
-```json
+```jsonc
 {
 	"$schema": "https://unpkg.com/ts-blocks@0.1.0/schema.json",
 	// ...
