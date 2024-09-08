@@ -1,28 +1,31 @@
-import fs from "node:fs";
-import { cancel, confirm, intro, isCancel, outro, text } from "@clack/prompts";
-import color from "chalk";
-import { Command } from "commander";
-import { type InferInput, boolean, object, optional, parse, string } from "valibot";
-import { CONFIG_NAME, type Config } from "../config";
+import fs from 'node:fs';
+import { cancel, intro, isCancel, outro, text } from '@clack/prompts';
+import color from 'chalk';
+import { Command } from 'commander';
+import { type InferInput, boolean, object, optional, parse, string } from 'valibot';
+import { CONFIG_NAME, type Config } from '../config';
 
 const schema = object({
 	path: optional(string()),
 	addByCategory: boolean(),
-	includeIndexFile: boolean(),
-	includeTests: optional(boolean()),
+	indexFile: boolean(),
+	tests: boolean(),
 });
 
 type Options = InferInput<typeof schema>;
 
-const init = new Command("init")
-	.option("--path", "Path to install the blocks")
-	.option("--add-by-category", "Will create directories to contain each block by category.", false)
+const init = new Command('init')
+	.option('--path <path>', 'Path to install the blocks')
 	.option(
-		"--include-index-file",
-		"Will create an index.ts file at the root of the folder to re-export functions from.",
-		true
+		'--add-by-category',
+		'Will create directories to contain each block by category.',
+		false
 	)
-	.option("--include-tests", "Will include tests along with the functions.")
+	.option(
+		'--no-index-file',
+		'Will create an index.ts file at the root of the folder to re-export functions from.'
+	)
+	.option('--no-tests', 'Will include tests along with the functions.')
 	.action(async (opts) => {
 		const options = parse(schema, opts);
 
@@ -30,49 +33,40 @@ const init = new Command("init")
 	});
 
 const _init = async (options: Options) => {
-	intro(color.white.bgCyanBright("ts-block"));
+	intro(color.bgBlueBright('ts-block'));
 
-	const { version } = JSON.parse(fs.readFileSync(new URL("../../package.json", import.meta.url), "utf-8"));
+	const { version } = JSON.parse(
+		fs.readFileSync(new URL('../../package.json', import.meta.url), 'utf-8')
+	);
 
 	if (!options.path) {
 		const result = await text({
-			message: "Where should we add the blocks?",
-			placeholder: "src/blocks",
+			message: 'Where should we add the blocks?',
+			placeholder: 'src/blocks',
 			validate(value) {
-				if (value.trim() === "") return "Please provide a value";
+				if (value.trim() === '') return 'Please provide a value';
 			},
 		});
 
 		if (isCancel(result)) {
-			cancel("Canceled!");
+			cancel('Canceled!');
 			process.exit(0);
 		}
 
 		options.path = result;
 	}
 
-	if (!options.includeTests) {
-		const result = await confirm({ message: "Would you like to include tests?", initialValue: true });
-
-		if (isCancel(result)) {
-			cancel("Canceled!");
-			process.exit(0);
-		}
-
-		options.includeTests = result;
-	}
-
 	const config: Config = {
 		$schema: `https://unpkg.com/ts-blocks@${version}/schema.json`,
 		path: options.path,
 		addByCategory: options.addByCategory,
-		includeIndexFile: options.includeIndexFile,
-		includeTests: options.includeTests,
+		includeIndexFile: options.indexFile,
+		includeTests: options.tests,
 	};
 
-	fs.writeFileSync(CONFIG_NAME, `${JSON.stringify(config, null, "\t")}\n`);
+	fs.writeFileSync(CONFIG_NAME, `${JSON.stringify(config, null, '\t')}\n`);
 
-	outro(color.green("All done!"));
+	outro(color.green('All done!'));
 };
 
 export { init };

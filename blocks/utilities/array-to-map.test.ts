@@ -1,7 +1,7 @@
-import { expect, test } from "vitest";
-import { arrayToMap } from "./array-to-map";
+import { expect, test } from 'vitest';
+import { arrayToMap } from './array-to-map';
 
-test("Correct returned map", () => {
+test('Correct returned map', () => {
 	const expected = new Map();
 	expected.set(0, 1);
 	expected.set(1, 2);
@@ -12,7 +12,7 @@ test("Correct returned map", () => {
 	expect(map).toStrictEqual(expected);
 });
 
-test("Expect empty map", () => {
+test('Expect empty map', () => {
 	const expected = new Map();
 
 	const map = arrayToMap([], (item, index) => [index, item]);

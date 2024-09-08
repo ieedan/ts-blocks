@@ -1,7 +1,7 @@
-import { expect, test } from "vitest";
-import { mapToArray } from "./map-to-array";
+import { expect, test } from 'vitest';
+import { mapToArray } from './map-to-array';
 
-test("Correct Sum Of All Elements", () => {
+test('Correct Sum Of All Elements', () => {
 	const initialMap = new Map<number, number>();
 	initialMap.set(0, 1);
 	initialMap.set(1, 2);
@@ -12,7 +12,7 @@ test("Correct Sum Of All Elements", () => {
 	expect(arr).toStrictEqual([1, 2, 3]);
 });
 
-test("Returns empty array", () => {
+test('Returns empty array', () => {
 	const initialMap = new Map<number, number>();
 
 	const arr = mapToArray(initialMap, (_, value) => value);
