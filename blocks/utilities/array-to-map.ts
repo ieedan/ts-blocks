@@ -6,7 +6,7 @@
  *
  * ## Example
  * ```ts
- * const map = arrayToMap([5,4,3,2,1], (item, i) => [i, item]);
+ * const map = arrayToMap([5, 4, 3, 2, 1], (item, i) => [i, item]);
  *
  * console.log(map); // Map(5) { 0 => 5, 1 => 4, 2 => 3, 3 => 2, 4 => 1 }
  * ```
