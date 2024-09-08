@@ -9,6 +9,7 @@ const schema = object({
 	$schema: string(),
 	addByCategory: boolean(),
 	includeIndexFile: boolean(),
+	includeTests: boolean(),
 	path: pipe(string(), minLength(1)),
 });
 

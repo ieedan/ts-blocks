@@ -15,7 +15,12 @@
 			"description": "When true creates an `index.ts` at the root of the folder and exports each function from it when added.",
 			"type": "boolean",
 			"default": "true"
+		},
+		"includeTests": {
+			"description": "When true includes the test files for each function in the same directory.",
+			"type": "boolean",
+			"default": "true"
 		}
 	},
-	"required": ["path", "addByCategory", "includeIndexFile"]
+	"required": ["path", "addByCategory", "includeIndexFile", "includeTests"]
 }

@@ -29,7 +29,7 @@ type Options = {
 const truncate = (
 	str: string,
 	maxLength: number,
-	{ reverse, ending }: Partial<Options> = { reverse: false, ending: '' }
+	{ reverse = false, ending = '' }: Partial<Options> = { reverse: false, ending: '' }
 ) => {
 	if (str.length <= maxLength) return str;
 
