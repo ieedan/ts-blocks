@@ -3,6 +3,9 @@ import path from 'node:path';
 import { cancel, confirm, intro, isCancel, outro, spinner } from '@clack/prompts';
 import color from 'chalk';
 import { Argument, Command, program } from 'commander';
+import { execa } from 'execa';
+import { resolveCommand } from 'package-manager-detector/commands';
+import { detect } from 'package-manager-detector/detect';
 import { Project, type SourceFile } from 'ts-morph';
 import { type InferInput, boolean, object, parse } from 'valibot';
 import { WARN } from '.';
@@ -29,7 +32,7 @@ const add = new Command('add')
 	});
 
 const _add = async (blockNames: string[], options: Options) => {
-	intro(color.white.bgCyanBright('ts-block'));
+	intro(color.bgBlueBright('ts-blocks'));
 
 	const config = getConfig();
 
@@ -43,12 +46,9 @@ const _add = async (blockNames: string[], options: Options) => {
 			program.error(color.red(`Invalid block! ${color.bold(blockName)} does not exist!`));
 		}
 
-		loading.start(`Adding ${blockName}`);
+		const registryDir = path.join(import.meta.dirname, '../../blocks');
 
-		const registryPath = path.join(
-			import.meta.dirname,
-			`../../blocks/${block.category}/${blockName}.ts`
-		);
+		const registryFilePath = path.join(registryDir, `${block.category}/${blockName}.ts`);
 
 		let newPath: string;
 		let directory: string;
@@ -64,7 +64,21 @@ const _add = async (blockNames: string[], options: Options) => {
 		// in case the directory didn't already exist
 		fs.mkdirSync(directory, { recursive: true });
 
-		fs.copyFileSync(registryPath, newPath);
+		if (fs.existsSync(newPath)) {
+			const result = await confirm({
+				message: `${color.bold(blockName)} already exists in your project would you like to overwrite it?`,
+				initialValue: false,
+			});
+
+			if (isCancel(result) || !result) {
+				cancel('Canceled!');
+				process.exit(0);
+			}
+		}
+
+		loading.start(`Adding ${blockName}`);
+
+		fs.copyFileSync(registryFilePath, newPath);
 
 		if (config.includeIndexFile) {
 			const indexPath = path.join(directory, 'index.ts');
@@ -88,6 +102,53 @@ const _add = async (blockNames: string[], options: Options) => {
 				index.saveSync();
 			} catch {
 				console.warn(`${WARN} Failed to modify ${indexPath}!`);
+			}
+		}
+
+		if (config.includeTests) {
+			const registryTestPath = path.join(
+				registryDir,
+				`${block.category}/${blockName}.test.ts`
+			);
+
+			if (fs.existsSync(registryTestPath)) {
+				const { devDependencies } = JSON.parse(fs.readFileSync('package.json').toString());
+
+				if (devDependencies.vitest === undefined) {
+					loading.message(`Installing ${color.cyan('vitest')}`);
+
+					const pm = await detect({ cwd: process.cwd() });
+
+					if (pm == null) {
+						program.error(color.red('Could not detect package manager'));
+					}
+
+					const resolved = resolveCommand(pm.agent, 'install', ['vitest', '--save-dev']);
+
+					if (resolved == null) {
+						program.error(
+							color.red(`Could not resolve add command for '${pm.agent}'.`)
+						);
+					}
+
+					const { command, args } = resolved;
+
+					const installCommand = `${command} ${args.join(' ')}`;
+
+					try {
+						await execa({ cwd: process.cwd() })`${installCommand}`;
+					} catch {
+						program.error(
+							color.red(
+								`Failed to install ${color.bold('vitest')}! Failed while running '${color.bold(
+									installCommand
+								)}'`
+							)
+						);
+					}
+				}
+
+				fs.copyFileSync(registryTestPath, path.join(directory, `${blockName}.test.ts`));
 			}
 		}
 

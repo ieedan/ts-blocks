@@ -8,23 +8,24 @@ import { CONFIG_NAME, type Config } from '../config';
 const schema = object({
 	path: optional(string()),
 	addByCategory: boolean(),
-	includeIndexFile: boolean(),
+	indexFile: boolean(),
+	tests: boolean(),
 });
 
 type Options = InferInput<typeof schema>;
 
 const init = new Command('init')
-	.option('--path', 'Path to install the blocks')
+	.option('--path <path>', 'Path to install the blocks')
 	.option(
 		'--add-by-category',
 		'Will create directories to contain each block by category.',
 		false
 	)
 	.option(
-		'--include-index-file',
-		'Will create an index.ts file at the root of the folder to re-export functions from.',
-		true
+		'--no-index-file',
+		'Will create an index.ts file at the root of the folder to re-export functions from.'
 	)
+	.option('--no-tests', 'Will include tests along with the functions.')
 	.action(async (opts) => {
 		const options = parse(schema, opts);
 
@@ -32,7 +33,7 @@ const init = new Command('init')
 	});
 
 const _init = async (options: Options) => {
-	intro(color.white.bgCyanBright('ts-block'));
+	intro(color.bgBlueBright('ts-blocks'));
 
 	const { version } = JSON.parse(
 		fs.readFileSync(new URL('../../package.json', import.meta.url), 'utf-8')
@@ -59,7 +60,8 @@ const _init = async (options: Options) => {
 		$schema: `https://unpkg.com/ts-blocks@${version}/schema.json`,
 		path: options.path,
 		addByCategory: options.addByCategory,
-		includeIndexFile: options.includeIndexFile,
+		includeIndexFile: options.indexFile,
+		includeTests: options.tests,
 	};
 
 	fs.writeFileSync(CONFIG_NAME, `${JSON.stringify(config, null, '\t')}\n`);

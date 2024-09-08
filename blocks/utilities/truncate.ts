@@ -11,11 +11,25 @@ type Options = {
  * @param maxLength Max length of the string
  * @param param2
  * @returns
+ *
+ * ## Examples
+ * ```ts
+ * const str = truncate('Hello World!', 5, { ending: '...' });
+ *
+ * console.log(str); // 'hello...'
+ * ```
+ *
+ * ### Reverse
+ * ```ts
+ * const str = truncate('Hello World!', 6, { ending: '...', reverse: true });
+ *
+ * console.log(str); // '...World!'
+ * ```
  */
 const truncate = (
 	str: string,
 	maxLength: number,
-	{ reverse = false, ending = '' }: Partial<Options>
+	{ reverse = false, ending = '' }: Partial<Options> = { reverse: false, ending: '' }
 ) => {
 	if (str.length <= maxLength) return str;
 
