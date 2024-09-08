@@ -46,8 +46,6 @@ const _add = async (blockNames: string[], options: Options) => {
 			program.error(color.red(`Invalid block! ${color.bold(blockName)} does not exist!`));
 		}
 
-		loading.start(`Adding ${blockName}`);
-
 		const registryDir = path.join(import.meta.dirname, "../../blocks");
 
 		const registryFilePath = path.join(registryDir, `${block.category}/${blockName}.ts`);
@@ -65,6 +63,20 @@ const _add = async (blockNames: string[], options: Options) => {
 
 		// in case the directory didn't already exist
 		fs.mkdirSync(directory, { recursive: true });
+
+		if (fs.existsSync(newPath)) {
+			const result = await confirm({
+				message: `${color.bold(blockName)} already exists in your project would you like to overwrite it?`,
+				initialValue: false,
+			});
+
+			if (isCancel(result) || !result) {
+				cancel("Canceled!");
+				process.exit(0);
+			}
+		}
+
+		loading.start(`Adding ${blockName}`);
 
 		fs.copyFileSync(registryFilePath, newPath);
 
@@ -116,11 +128,14 @@ const _add = async (blockNames: string[], options: Options) => {
 
 					const { command, args } = resolved;
 
+					const installCommand = `${command} ${args.join(" ")}`;
+
 					try {
-						console.log(`Running '${command} ${args.join(" ")}'`);
-						await execa`${command} ${args.join(" ")}`;
-					} catch (err) {
-						console.error(err);
+						await execa({ cwd: process.cwd() })`${installCommand}`;
+					} catch {
+						program.error(
+							color.red(`Failed to install vitest! Failed while running '${color.bold(installCommand)}'`)
+						);
 					}
 				}
 

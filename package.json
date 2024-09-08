@@ -44,7 +44,8 @@
 		"@biomejs/biome": "1.8.3",
 		"@types/node": "^22.5.4",
 		"typescript": "^5.5.3",
-		"unbuild": "^2.0.0"
+		"unbuild": "^2.0.0",
+		"vitest": "^2.0.5"
 	},
 	"dependencies": {
 		"@changesets/cli": "^2.27.8",
