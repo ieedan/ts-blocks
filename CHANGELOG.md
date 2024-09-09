@@ -1,5 +1,11 @@
 # ts-blocks
 
+## 0.3.1
+
+### Patch Changes
+
+- 7e23338: Add `--verbose` flag for debugging.
+
 ## 0.3.0
 
 ### Minor Changes

@@ -1,13 +1,16 @@
 {
 	"name": "ts-blocks",
 	"description": "A CLI to blocks to your project.",
-	"version": "0.3.0",
+	"version": "0.3.1",
 	"packageManager": "pnpm@9.8.0",
 	"repository": {
 		"type": "git",
 		"url": "git+https://github.com/ieedan/ts-blocks"
 	},
-	"keywords": ["changelog", "date"],
+	"keywords": [
+		"changelog",
+		"date"
+	],
 	"author": "Aidan Bleser",
 	"license": "MIT",
 	"bugs": {
