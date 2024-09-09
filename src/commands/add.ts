@@ -8,12 +8,13 @@ import { resolveCommand } from 'package-manager-detector/commands';
 import { detect } from 'package-manager-detector/detect';
 import { Project, type SourceFile } from 'ts-morph';
 import { type InferInput, boolean, object, parse } from 'valibot';
-import { WARN } from '.';
+import { INFO, WARN } from '.';
 import { blocks } from '../blocks';
 import { getConfig } from '../config';
 
 const schema = object({
 	yes: boolean(),
+	verbose: boolean(),
 });
 
 type Options = InferInput<typeof schema>;
@@ -25,6 +26,7 @@ const add = new Command('add')
 		)
 	)
 	.option('-y, --yes', 'Add and install any required dependencies.', false)
+	.option('--verbose', 'Include debug logs.', false)
 	.action(async (blockNames, opts) => {
 		const options = parse(schema, opts);
 
@@ -32,6 +34,14 @@ const add = new Command('add')
 	});
 
 const _add = async (blockNames: string[], options: Options) => {
+	const verbose = (msg: string) => {
+		if (options.verbose) {
+			console.info(`${INFO} ${msg}`);
+		}
+	};
+
+	verbose(`Attempting to add ${JSON.stringify(blockNames)}`);
+
 	intro(color.bgBlueBright('ts-blocks'));
 
 	const config = getConfig();
@@ -39,12 +49,16 @@ const _add = async (blockNames: string[], options: Options) => {
 	const loading = spinner();
 
 	for (const blockName of blockNames) {
+		verbose(`Attempting to add ${blockName}`);
+
 		// in the future maybe we add a registry but for now it can just be fs
 		const block = blocks[blockName];
 
 		if (!block) {
 			program.error(color.red(`Invalid block! ${color.bold(blockName)} does not exist!`));
 		}
+
+		verbose(`Found block ${JSON.stringify(block)}`);
 
 		const registryDir = path.join(import.meta.dirname, '../../blocks');
 
@@ -64,7 +78,7 @@ const _add = async (blockNames: string[], options: Options) => {
 		// in case the directory didn't already exist
 		fs.mkdirSync(directory, { recursive: true });
 
-		if (fs.existsSync(newPath)) {
+		if (fs.existsSync(newPath) && !options.yes) {
 			const result = await confirm({
 				message: `${color.bold(blockName)} already exists in your project would you like to overwrite it?`,
 				initialValue: false,
@@ -76,11 +90,16 @@ const _add = async (blockNames: string[], options: Options) => {
 			}
 		}
 
-		loading.start(`Adding ${blockName}`);
+		// this will clear other logs and we don't want that
+		if (!options.verbose) {
+			loading.start(`Adding ${blockName}`);
+		}
 
 		fs.copyFileSync(registryFilePath, newPath);
 
 		if (config.includeIndexFile) {
+			verbose('Trying to include index file');
+
 			const indexPath = path.join(directory, 'index.ts');
 
 			const project = new Project();
@@ -106,6 +125,8 @@ const _add = async (blockNames: string[], options: Options) => {
 		}
 
 		if (config.includeTests) {
+			verbose('Trying to include tests');
+
 			const registryTestPath = path.join(
 				registryDir,
 				`${block.category}/${blockName}.test.ts`
@@ -153,6 +174,8 @@ const _add = async (blockNames: string[], options: Options) => {
 		}
 
 		if (block.dependencies) {
+			verbose('Trying to include dependencies');
+
 			if (!options.yes) {
 				const result = await confirm({
 					message: 'Add and install dependencies?',
