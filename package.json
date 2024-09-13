@@ -7,10 +7,7 @@
 		"type": "git",
 		"url": "git+https://github.com/ieedan/ts-blocks"
 	},
-	"keywords": [
-		"changelog",
-		"date"
-	],
+	"keywords": ["changelog", "date"],
 	"author": "Aidan Bleser",
 	"license": "MIT",
 	"bugs": {
@@ -43,9 +40,9 @@
 	"devDependencies": {
 		"@biomejs/biome": "1.8.3",
 		"@types/node": "^22.5.4",
-		"typescript": "^5.5.3",
+		"typescript": "^5.6.2",
 		"unbuild": "^2.0.0",
-		"vitest": "^2.0.5"
+		"vitest": "^2.1.0"
 	},
 	"dependencies": {
 		"@changesets/cli": "^2.27.8",

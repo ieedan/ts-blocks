@@ -21,9 +21,9 @@ type Options = InferInput<typeof schema>;
 
 const add = new Command('add')
 	.addArgument(
-		new Argument('[blocks...]', 'Whichever block you want to add to your project.').choices(
-			Object.entries(blocks).map(([key]) => key)
-		)
+		new Argument('[blocks...]', 'Whichever block you want to add to your project.')
+			.choices(Object.entries(blocks).map(([key]) => key))
+			.argRequired()
 	)
 	.option('-y, --yes', 'Add and install any required dependencies.', false)
 	.option('--verbose', 'Include debug logs.', false)
@@ -75,6 +75,8 @@ const _add = async (blockNames: string[], options: Options) => {
 			newPath = path.join(directory, `${blockName}.ts`);
 		}
 
+		verbose(`Creating directory ${color.bold(directory)}`);
+
 		// in case the directory didn't already exist
 		fs.mkdirSync(directory, { recursive: true });
 
@@ -92,8 +94,10 @@ const _add = async (blockNames: string[], options: Options) => {
 
 		// this will clear other logs and we don't want that
 		if (!options.verbose) {
-			loading.start(`Adding ${blockName}`);
+			loading.start(`Adding ${color.bold(blockName)}`);
 		}
+
+		verbose(`Copying files from ${color.bold(registryFilePath)} to ${color.bold(newPath)}`);
 
 		fs.copyFileSync(registryFilePath, newPath);
 
@@ -195,7 +199,11 @@ const _add = async (blockNames: string[], options: Options) => {
 			}
 		}
 
-		loading.stop(`Added ${blockName}`);
+		if (options.verbose) {
+			verbose(`Added ${blockName}`);
+		} else {
+			loading.stop(`Added ${blockName}`);
+		}
 	}
 
 	outro(color.green('All done!'));
