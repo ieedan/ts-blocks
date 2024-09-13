@@ -1,5 +1,12 @@
 # ts-blocks
 
+## 0.3.2
+
+### Patch Changes
+
+- 9f27c3b: Make `blocks` a required argument.
+- 9f27c3b: Better verbose logs
+
 ## 0.3.1
 
 ### Patch Changes
