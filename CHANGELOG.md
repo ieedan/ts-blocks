@@ -1,5 +1,12 @@
 # ts-blocks
 
+## 0.4.0
+
+### Minor Changes
+
+- e9204c1: Add `test` command so you can test blocks in your codebase against the most recent test cases.
+- e9204c1: Update `result` to better match the rust `Result` api.
+
 ## 0.3.2
 
 ### Patch Changes
