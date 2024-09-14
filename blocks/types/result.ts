@@ -147,6 +147,51 @@ class Result<T, E> {
 		);
 	}
 
+	/** In the `Ok` case returns the mapped value using `fn` else returns value of `def`
+	 *
+	 * @param def Mapping function called when `Err`
+	 * @param fn Mapping function called when `Ok`
+	 * @returns
+	 *
+	 * ## Usage
+	 *
+	 * ```ts
+	 * result.mapOrElse(() => 1, (val) => val.length);
+	 * ```
+	 *
+	 * ## Examples
+	 *
+	 * ### When `Ok`
+	 *
+	 * ```ts
+	 * const functionThatMightFail = (): Result<string, string> => Ok("foo");
+	 *
+	 * const result = functionThatMightFail();
+	 *
+	 * const length = result.mapOrElse(() => 1, (val) => val.length);
+	 *
+	 * console.log(length); // 3
+	 * ```
+	 *
+	 * ### When `Err`
+	 *
+	 * ```ts
+	 * const functionThatMightFail = (): Result<string, string> => Err("oops!");
+	 *
+	 * const result = functionThatMightFail();
+	 *
+	 * const length = result.mapOr(() => 1, (val) => val.length);
+	 *
+	 * console.log(length); // 1
+	 * ```
+	 */
+	mapOrElse<A>(def: (err: E) => A, fn: (val: T) => A): A {
+		return this.match(
+			(val) => fn(val),
+			(err) => def(err)
+		);
+	}
+
 	/** Maps `Result<T, E>` to `Result<T, A>` using the passed mapping function
 	 *
 	 * @param fn Mapping function
@@ -222,6 +267,51 @@ class Result<T, E> {
 		);
 	}
 
+	/** In the `Err` case returns the mapped value using the function else returns value of `def`
+	 *
+	 * @param def Mapping function called when `Ok`
+	 * @param fn Mapping function called when `Err`
+	 * @returns
+	 *
+	 * ## Usage
+	 *
+	 * ```ts
+	 * result.mapErrOrElse(() => "Value", (_) => "Error!");
+	 * ```
+	 *
+	 * ## Examples
+	 *
+	 * ### When `Ok`
+	 *
+	 * ```ts
+	 * const functionThatMightFail = (): Result<string, string> => Ok("foo");
+	 *
+	 * const result = functionThatMightFail();
+	 *
+	 * const length = result.mapErrOrElse(() => 1, (val) => val.length);
+	 *
+	 * console.log(length); // 1
+	 * ```
+	 *
+	 * ### When `Err`
+	 *
+	 * ```ts
+	 * const functionThatMightFail = (): Result<string, string> => Err("oops!");
+	 *
+	 * const result = functionThatMightFail();
+	 *
+	 * const length = result.mapOr(() => 1, (val) => val.length);
+	 *
+	 * console.log(length); // 4
+	 * ```
+	 */
+	mapErrOrElse<A>(def: (val: T) => A, fn: (err: E) => A): A {
+		return this.match(
+			(val) => def(val),
+			(err) => fn(err)
+		);
+	}
+
 	/** Returns true if result is `Ok`
 	 *
 	 * @returns
@@ -292,7 +382,7 @@ class Result<T, E> {
 		return this.match(
 			(val) => val,
 			() => {
-				throw new Error("Attempted to call `.unwrap()` on a non `Ok` value.");
+				throw new Error('Attempted to call `.unwrap()` on a non `Ok` value.');
 			}
 		);
 	}
@@ -332,7 +422,7 @@ class Result<T, E> {
 	unwrapErr(): E {
 		return this.match(
 			() => {
-				throw new Error("Attempted to call `.unwrapErr()` on a non `Err` value.");
+				throw new Error('Attempted to call `.unwrapErr()` on a non `Err` value.');
 			},
 			(err) => err
 		);
@@ -418,56 +508,16 @@ class Result<T, E> {
 		);
 	}
 
-	/** Tries to return the error if value is `Ok` calls `fn`
-	 *
-	 * @param fn Function called if `Ok`
-	 * 
-	 * ## Usage
-	 * 
-	 * ```ts
-	 * result.unwrapErrOrElse(() => "Error!");
-	 * ```
-	 * 
-	 * ## Examples
-	 *
-	 * ### When `Ok`
-	 *
-	 * ```ts
-	 * const functionThatMightFail = (): Result<string, string> => Ok("Hello!");
-	 *
-	 * const result = functionThatMightFail();
-	 *
-	 * console.log(result.unwrapErrOrElse(() => "oops!")); // "oops!"
-	 * ```
-	 *
-	 * ### When `Err`
-	 *
-	 * ```ts
-	 * const functionThatMightFail = (): Result<string, string> => Err("oops!");
-	 *
-	 * const result = functionThatMightFail();
-	 *
-	 * console.log(result.unwrapErrOrElse(() => "Hello!")); // "oops!"
-	 * ```
-	 * 
-	 */
-	unwrapErrOrElse(fn: (val: T) => E): E {
-		return this.match(
-			(val) => fn(val),
-			(err) => err
-		);
-	}
-
 	/** Tries to return the value if value is `Err` calls `fn`
 	 *
 	 * @param fn Function called if `Err`
-	 * 
+	 *
 	 * ## Usage
-	 * 
+	 *
 	 * ```ts
 	 * result.unwrapOrElse(() => "Hello!");
 	 * ```
-	 * 
+	 *
 	 * ## Examples
 	 *
 	 * ### When `Ok`
@@ -489,12 +539,52 @@ class Result<T, E> {
 	 *
 	 * console.log(result.unwrapOrElse(() => "Hello!")); // "Hello!"
 	 * ```
-	 * 
+	 *
 	 */
 	unwrapOrElse(fn: (err: E) => T): T {
 		return this.match(
 			(val) => val,
 			(err) => fn(err)
+		);
+	}
+
+	/** Tries to return the error if value is `Ok` calls `fn`
+	 *
+	 * @param fn Function called if `Ok`
+	 *
+	 * ## Usage
+	 *
+	 * ```ts
+	 * result.unwrapErrOrElse(() => "Error!");
+	 * ```
+	 *
+	 * ## Examples
+	 *
+	 * ### When `Ok`
+	 *
+	 * ```ts
+	 * const functionThatMightFail = (): Result<string, string> => Ok("Hello!");
+	 *
+	 * const result = functionThatMightFail();
+	 *
+	 * console.log(result.unwrapErrOrElse(() => "oops!")); // "oops!"
+	 * ```
+	 *
+	 * ### When `Err`
+	 *
+	 * ```ts
+	 * const functionThatMightFail = (): Result<string, string> => Err("oops!");
+	 *
+	 * const result = functionThatMightFail();
+	 *
+	 * console.log(result.unwrapErrOrElse(() => "Hello!")); // "oops!"
+	 * ```
+	 *
+	 */
+	unwrapErrOrElse(fn: (val: T) => E): E {
+		return this.match(
+			(val) => fn(val),
+			(err) => err
 		);
 	}
 
@@ -583,10 +673,56 @@ class Result<T, E> {
 	}
 }
 
+/** Returns a new `Ok` result type with the provided value
+ *
+ * @param val Value of the result
+ * @returns
+ *
+ * ## Usage
+ *
+ * ```ts
+ * Ok(true);
+ * ```
+ *
+ * ## Examples
+ *
+ * ```ts
+ * const functionThatCanFail = (condition) => {
+ * 	if (condition) {
+ * 		Ok("Success")
+ * 	}
+ *
+ * 	return Err("Failure");
+ * }
+ * ```
+ */
 const Ok = <T>(val: T): Result<T, never> => {
 	return new Result<T, never>({ ok: true, val });
 };
 
+/** Returns a new `Err` result type with the provided error
+ *
+ * @param err Error of the result
+ * @returns
+ *
+ * ## Usage
+ *
+ * ```ts
+ * Err("I failed!");
+ * ```
+ *
+ * ## Examples
+ *
+ * ```ts
+ * const functionThatCanFail = (condition) => {
+ * 	if (condition) {
+ * 		Ok("Success")
+ * 	}
+ *
+ * 	return Err("Failure");
+ * }
+ * ```
+ */
 const Err = <E>(err: E): Result<never, E> => {
 	return new Result<never, E>({ ok: false, err });
 };
