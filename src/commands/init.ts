@@ -15,6 +15,7 @@ const schema = object({
 type Options = InferInput<typeof schema>;
 
 const init = new Command('init')
+	.description('Initializes the configuration file')
 	.option('--path <path>', 'Path to install the blocks')
 	.option(
 		'--add-by-category',
