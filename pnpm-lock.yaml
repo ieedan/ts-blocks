@@ -26,6 +26,9 @@ importers:
       package-manager-detector:
         specifier: ^0.2.0
         version: 0.2.0
+      result:
+        specifier: ^2.0.9
+        version: 2.0.9
       ts-morph:
         specifier: ^23.0.0
         version: 23.0.0
@@ -669,6 +672,9 @@ packages:
     engines: {node: '>=18'}
     cpu: [x64]
     os: [win32]
+
+  '@jkroso/type@2.0.0':
+    resolution: {integrity: sha512-aj80+3b+UO1C1blUhsWr4fKcEDLGccT8OpsgP0fiR+ZNmejXpynEwKujWvjob624ng+sgMTfthhv0g2QVM9yjQ==}
 
   '@jridgewell/gen-mapping@0.3.5':
     resolution: {integrity: sha512-IzL8ZoEDIBRWEzlCcRhOaCupYyN5gdIK+Q6fbFdPDg6HqX6jpkItn7DFIpW9LQzXG6Df9sA7+OKnq0qlz/GaQg==}
@@ -1449,6 +1455,10 @@ packages:
     engines: {node: ^10 || ^12 || ^13.7 || ^14 || >=15.0.1}
     hasBin: true
 
+  next-tick@https://codeload.github.com/timoxley/next-tick/tar.gz/2107785526b9526c4ddf87b71ffa4d1d4ba01081:
+    resolution: {tarball: https://codeload.github.com/timoxley/next-tick/tar.gz/2107785526b9526c4ddf87b71ffa4d1d4ba01081}
+    version: 0.0.2
+
   node-releases@2.0.18:
     resolution: {integrity: sha512-d9VeXT4SJ7ZeOqGX6R5EM022wpL+eWPooLI+5UpWn2jCT1aosUQEhQP214x33Wkwx3JQMvIm+tIoVOdodFS40g==}
 
@@ -1755,6 +1765,15 @@ packages:
   resolve@1.22.8:
     resolution: {integrity: sha512-oKWePCxqpd6FlLvGV1VU0x7bkPmmCNolxzjMf4NczoDnQcIWrAF+cPtZn5i6n+RfD2d9i0tzpKnG6Yk168yIyw==}
     hasBin: true
+
+  result-core@2.0.1:
+    resolution: {integrity: sha512-3mgsvkx7YknPFSzoQeWD0g31Xj7dVsTb6pLYUpKwNhxn6yX4DoEGrWuXS2RmaPQT2ke2j6IlzcR3B0oFPZZwMw==}
+
+  result-type@1.0.0:
+    resolution: {integrity: sha512-nY6WJG8wuTdw0rOdrUBtt2sQcPe3x+/HyW5+TEhXBBDomhRSjsOJopvyoU3+OTawBOuHbiebW+oKDpG2D+dwhg==}
+
+  result@2.0.9:
+    resolution: {integrity: sha512-Ysyd6kbJ0X3h1Ohl6DJjeiAsn64SJAnJCHM+c1O32C2afDln7AGcneeiXOPr6dAIueyVSk07Tr7BB0L3IzY/Ww==}
 
   reusify@1.0.4:
     resolution: {integrity: sha512-U9nH88a3fc/ekCF1l0/UP1IosiuIjyTh7hBvXVMHYgVcfGvt897Xguj2UOLDeI5BG2m7/uwyaLVT6fbtCwTyzw==}
@@ -2574,6 +2593,8 @@ snapshots:
   '@esbuild/win32-x64@0.23.1':
     optional: true
 
+  '@jkroso/type@2.0.0': {}
+
   '@jridgewell/gen-mapping@0.3.5':
     dependencies:
       '@jridgewell/set-array': 1.2.1
@@ -3383,6 +3404,8 @@ snapshots:
 
   nanoid@3.3.7: {}
 
+  next-tick@https://codeload.github.com/timoxley/next-tick/tar.gz/2107785526b9526c4ddf87b71ffa4d1d4ba01081: {}
+
   node-releases@2.0.18: {}
 
   normalize-range@0.1.2: {}
@@ -3646,6 +3669,19 @@ snapshots:
       is-core-module: 2.15.1
       path-parse: 1.0.7
       supports-preserve-symlinks-flag: 1.0.0
+
+  result-core@2.0.1:
+    dependencies:
+      next-tick: https://codeload.github.com/timoxley/next-tick/tar.gz/2107785526b9526c4ddf87b71ffa4d1d4ba01081
+      result-type: 1.0.0
+
+  result-type@1.0.0: {}
+
+  result@2.0.9:
+    dependencies:
+      '@jkroso/type': 2.0.0
+      result-core: 2.0.1
+      result-type: 1.0.0
 
   reusify@1.0.4: {}
 

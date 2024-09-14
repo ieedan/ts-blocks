@@ -51,6 +51,7 @@
 		"commander": "^12.1.0",
 		"execa": "^9.3.1",
 		"package-manager-detector": "^0.2.0",
+		"result": "^2.0.9",
 		"ts-morph": "^23.0.0",
 		"valibot": "^0.41.0"
 	}
