@@ -24,7 +24,7 @@ type _Result<T, E> = { ok: true; val: T } | { ok: false; err: E };
  * ```
  */
 class Result<T, E> {
-	private _result: _Result<T, E>;
+	private readonly _result: _Result<T, E>;
 
 	constructor(result: _Result<T, E>) {
 		this._result = result;
