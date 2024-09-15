@@ -1,5 +1,11 @@
 # ts-blocks
 
+## 0.4.1
+
+### Patch Changes
+
+- 2080dec: Changed internal result to be readonly
+
 ## 0.4.0
 
 ### Minor Changes
