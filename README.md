@@ -67,6 +67,10 @@ Each block is tested using [vitest](https://vitest.dev/). By default we add thes
 
 ## Testing CLI Command
 
+```
+npx ts-blocks test 
+```
+
 If you don't want to include the tests in your project source or simply want to keep your code up to date with the latest test cases you can run tests through the CLI.
 
 ### Test single

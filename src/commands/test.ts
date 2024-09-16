@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { intro, outro, spinner, text } from '@clack/prompts';
+import { intro, outro, spinner } from '@clack/prompts';
 import color from 'chalk';
 import { Argument, Command, program } from 'commander';
 import { execa } from 'execa';
@@ -10,9 +10,11 @@ import { Project } from 'ts-morph';
 import { type InferInput, boolean, object, parse } from 'valibot';
 import { blocks } from '../blocks';
 import { getConfig } from '../config';
+import { INFO } from '../utils';
 
 const schema = object({
 	debug: boolean(),
+	verbose: boolean(),
 });
 
 type Options = InferInput<typeof schema>;
@@ -22,8 +24,9 @@ const test = new Command('test')
 	.addArgument(
 		new Argument('[blocks...]', 'Whichever block you want to add to your project.')
 			.choices(Object.entries(blocks).map(([key]) => key))
-			.argRequired()
+			.default([])
 	)
+	.option('--verbose', 'Include debug logs.', false)
 	.option('--debug', 'Leaves the temp test file around for debugging upon failure.', false)
 	.action(async (blockNames, opts) => {
 		const options = parse(schema, opts);
@@ -34,27 +37,59 @@ const test = new Command('test')
 const _test = async (blockNames: string[], options: Options) => {
 	intro(color.bgBlueBright('ts-blocks'));
 
+	const verbose = (msg: string) => {
+		if (options.verbose) {
+			console.info(`${INFO} ${msg}`);
+		}
+	};
+
+	verbose(`Attempting to test ${JSON.stringify(blockNames)}`);
+
 	const config = getConfig();
 
-	const tempTestFileName = `blocks-testing-temp-${Date.now()}.test.ts`;
+	const tempTestDirectory = `blocks-tests-temp-${Date.now()}`;
+
+	verbose(`Trying to create the temp directory ${color.bold(tempTestDirectory)}.`);
+
+	fs.mkdirSync(tempTestDirectory, { recursive: true });
 
 	const cleanUp = () => {
-		if (fs.existsSync(tempTestFileName)) {
-			fs.rmSync(tempTestFileName);
-		}
+		fs.rmSync(tempTestDirectory, { recursive: true, force: true });
 	};
 
 	const registryDir = path.join(import.meta.url, '../../../blocks').replace(/^file:\\/, '');
 
-	type TestInfo = {
-		command: string;
-		blockName: string;
-		testFile: string;
-	};
-
-	let failedTestInfo: TestInfo | undefined = undefined;
-
 	const loading = spinner();
+
+	// in the case that we want to test all files
+	if (blockNames.length === 0) {
+		verbose('Locating blocks');
+
+		if (!options.verbose) {
+			loading.start('Locating blocks');
+		}
+
+		const files = fs
+			.readdirSync(config.path)
+			.filter((file) => file.endsWith('.ts') && !file.endsWith('test.ts'));
+
+		for (const file of files) {
+			if (file === 'index.ts') continue;
+
+			const blockName = file.slice(0, file.length - 3).trim();
+
+			if (blocks[blockName] !== undefined) {
+				blockNames.push(blockName);
+			}
+		}
+
+		loading.stop(blockNames.length > 0 ? 'Located blocks' : "Couldn't locate any blocks");
+	}
+
+	if (blockNames.length === 0) {
+		cleanUp();
+		program.error(color.red('There were no blocks found in your project!'));
+	}
 
 	for (const blockName of blockNames) {
 		const block = blocks[blockName];
@@ -63,14 +98,22 @@ const _test = async (blockNames: string[], options: Options) => {
 			program.error(color.red(`Invalid block! ${color.bold(blockName)} does not exist!`));
 		}
 
-		loading.start(`Setting up test file for ${blockName}`);
+		if (!options.verbose) {
+			loading.start(`Setting up test file for ${blockName}`);
+		}
+
+		const tempTestFileName = `${blockName}.test.ts`;
+
+		const tempTestFilePath = path.join(tempTestDirectory, tempTestFileName);
 
 		const registryTestFilePath = path.join(
 			registryDir,
 			`${block.category}/${blockName}.test.ts`
 		);
 
-		fs.copyFileSync(registryTestFilePath, tempTestFileName);
+		verbose(`Copying test files for ${blockName}`);
+
+		fs.copyFileSync(registryTestFilePath, tempTestFilePath);
 
 		let blockFilePath: string;
 		let directory: string;
@@ -89,9 +132,13 @@ const _test = async (blockNames: string[], options: Options) => {
 
 		blockFilePath = blockFilePath.replaceAll('\\', '/');
 
+		verbose(`${color.bold(blockName)} file path is ${color.bold(blockFilePath)}`);
+
 		const project = new Project();
 
-		const tempFile = project.addSourceFileAtPath(tempTestFileName);
+		verbose(`Opening test file ${tempTestFilePath}`);
+
+		const tempFile = project.addSourceFileAtPath(tempTestFilePath);
 
 		for (const importDeclaration of tempFile.getImportDeclarations()) {
 			const moduleSpecifier = importDeclaration.getModuleSpecifierValue();
@@ -104,59 +151,59 @@ const _test = async (blockNames: string[], options: Options) => {
 
 		project.saveSync();
 
-		const pm = await detect({ cwd: process.cwd() });
+		verbose(`Completed ${color.cyan.bold(blockName)} test file`);
 
-		if (pm == null) {
-			program.error(color.red('Could not detect package manager'));
+		if (!options.verbose) {
+			loading.stop(`Completed setup for ${color.bold(blockName)}`);
 		}
-
-		const resolved = resolveCommand(pm.agent, 'execute', ['vitest', 'run', tempTestFileName]);
-
-		if (resolved == null) {
-			program.error(color.red(`Could not resolve add command for '${pm.agent}'.`));
-		}
-
-		const { command, args } = resolved;
-
-		const testCommand = `${command} ${args.join(' ')}`;
-
-		loading.stop(`Setup test files for ${blockName}`);
-
-		const testingProcess = execa({
-			cwd: process.cwd(),
-			stdio: ['ignore', 'pipe', 'pipe'],
-		})`${testCommand}`;
-
-		const handler = (data: string) => console.info(data.toString());
-
-		testingProcess.stdout.on('data', handler);
-		testingProcess.stderr.on('data', handler);
-
-		try {
-			await testingProcess;
-		} catch {
-			failedTestInfo = { command: testCommand, blockName, testFile: tempTestFileName };
-			break;
-		}
-
-		loading.stop(`All done with testing for ${color.cyan.bold(blockName)}`);
 	}
 
-	if (failedTestInfo !== undefined) {
+	verbose('Beginning testing');
+
+	const pm = await detect({ cwd: process.cwd() });
+
+	if (pm == null) {
+		program.error(color.red('Could not detect package manager'));
+	}
+
+	const resolved = resolveCommand(pm.agent, 'execute', ['vitest', 'run', tempTestDirectory]);
+
+	if (resolved == null) {
+		program.error(color.red(`Could not resolve add command for '${pm.agent}'.`));
+	}
+
+	const { command, args } = resolved;
+
+	const testCommand = `${command} ${args.join(' ')}`;
+
+	const testingProcess = execa({
+		cwd: process.cwd(),
+		stdio: ['ignore', 'pipe', 'pipe'],
+	})`${testCommand}`;
+
+	const handler = (data: string) => console.info(data.toString());
+
+	testingProcess.stdout.on('data', handler);
+	testingProcess.stderr.on('data', handler);
+
+	try {
+		await testingProcess;
+
+		cleanUp();
+
+		outro(color.green('All done!'));
+	} catch {
 		if (options.debug) {
 			console.info(
-				`${color.bold('--debug')} flag provided skipping cleanup. Run '${color.bold(
-					failedTestInfo.command
+				`${color.bold('--debug')} flag provided. Skipping cleanup. Run '${color.bold(
+					testCommand
 				)}' to retry tests.\n`
 			);
 		} else {
 			cleanUp();
 		}
 
-		program.error(color.red(`${color.bold(failedTestInfo.blockName)} Tests failed!`));
-	} else {
-		cleanUp();
-		outro(color.green('All done!'));
+		program.error(color.red('Tests failed!'));
 	}
 };
 
