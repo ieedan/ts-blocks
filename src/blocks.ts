@@ -24,6 +24,9 @@ const blocks: Record<string, Block> = {
 	sleep: {
 		category: 'utilities',
 	},
+	pad: {
+		category: 'utilities',
+	},
 };
 
 export { blocks };
