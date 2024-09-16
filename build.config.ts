@@ -6,10 +6,11 @@ export default defineBuildConfig({
 		'src/blocks',
 		'src/commands/add',
 		'src/commands/init',
+		'src/commands/test',
 		'src/commands/index',
 		'src/config/index',
+		'src/utils/index',
 	],
-	failOnWarn: false,
 	declaration: true,
 	clean: true,
 });
