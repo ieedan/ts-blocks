@@ -1,5 +1,11 @@
 # ts-blocks
 
+## 0.5.0
+
+### Minor Changes
+
+- 34965d3: You can now run tests on all detected blocks by leaving `blocks` blank when running the `test` command.
+
 ## 0.4.2
 
 ### Patch Changes
