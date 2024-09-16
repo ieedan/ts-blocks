@@ -1,5 +1,11 @@
 # ts-blocks
 
+## 0.6.0
+
+### Minor Changes
+
+- 7c7b82f: Add `pad` utility for left and right pad functions.
+
 ## 0.5.0
 
 ### Minor Changes
