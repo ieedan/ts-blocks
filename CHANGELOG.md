@@ -1,5 +1,11 @@
 # ts-blocks
 
+## 0.4.2
+
+### Patch Changes
+
+- 9e3e247: Fixed an issue with silent failures due to `import.meta.dirname` being undefined in `test` and `add` commands
+
 ## 0.4.1
 
 ### Patch Changes
