@@ -8,9 +8,9 @@ import { resolveCommand } from 'package-manager-detector/commands';
 import { detect } from 'package-manager-detector/detect';
 import { Project, type SourceFile } from 'ts-morph';
 import { type InferInput, boolean, object, parse } from 'valibot';
-import { INFO, WARN } from '../utils/index';
 import { blocks } from '../blocks';
 import { getConfig } from '../config';
+import { INFO, WARN } from '../utils/index';
 
 const schema = object({
 	yes: boolean(),
