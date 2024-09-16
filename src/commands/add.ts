@@ -1,16 +1,16 @@
-import fs from 'node:fs';
-import path from 'node:path';
-import { cancel, confirm, intro, isCancel, outro, spinner } from '@clack/prompts';
-import color from 'chalk';
-import { Argument, Command, program } from 'commander';
-import { execa } from 'execa';
-import { resolveCommand } from 'package-manager-detector/commands';
-import { detect } from 'package-manager-detector/detect';
-import { Project, type SourceFile } from 'ts-morph';
-import { type InferInput, boolean, object, parse } from 'valibot';
-import { INFO, WARN } from '.';
-import { blocks } from '../blocks';
-import { getConfig } from '../config';
+import fs from "node:fs";
+import path from "node:path";
+import { cancel, confirm, intro, isCancel, outro, spinner } from "@clack/prompts";
+import color from "chalk";
+import { Argument, Command, program } from "commander";
+import { execa } from "execa";
+import { resolveCommand } from "package-manager-detector/commands";
+import { detect } from "package-manager-detector/detect";
+import { Project, type SourceFile } from "ts-morph";
+import { type InferInput, boolean, object, parse } from "valibot";
+import { INFO, WARN } from "../utils/index";
+import { blocks } from "../blocks";
+import { getConfig } from "../config";
 
 const schema = object({
 	yes: boolean(),
@@ -19,14 +19,14 @@ const schema = object({
 
 type Options = InferInput<typeof schema>;
 
-const add = new Command('add')
+const add = new Command("add")
 	.addArgument(
-		new Argument('[blocks...]', 'Whichever block you want to add to your project.')
+		new Argument("[blocks...]", "Whichever block you want to add to your project.")
 			.choices(Object.entries(blocks).map(([key]) => key))
 			.argRequired()
 	)
-	.option('-y, --yes', 'Add and install any required dependencies.', false)
-	.option('--verbose', 'Include debug logs.', false)
+	.option("-y, --yes", "Add and install any required dependencies.", false)
+	.option("--verbose", "Include debug logs.", false)
 	.action(async (blockNames, opts) => {
 		const options = parse(schema, opts);
 
@@ -42,7 +42,7 @@ const _add = async (blockNames: string[], options: Options) => {
 
 	verbose(`Attempting to add ${JSON.stringify(blockNames)}`);
 
-	intro(color.bgBlueBright('ts-blocks'));
+	intro(color.bgBlueBright("ts-blocks"));
 
 	const config = getConfig();
 
@@ -60,7 +60,7 @@ const _add = async (blockNames: string[], options: Options) => {
 
 		verbose(`Found block ${JSON.stringify(block)}`);
 
-		const registryDir = path.join(import.meta.dirname, '../../blocks');
+		const registryDir = path.join(import.meta.url, "../../../blocks").replace(/^file:\\/, "");
 
 		const registryFilePath = path.join(registryDir, `${block.category}/${blockName}.ts`);
 
@@ -87,7 +87,7 @@ const _add = async (blockNames: string[], options: Options) => {
 			});
 
 			if (isCancel(result) || !result) {
-				cancel('Canceled!');
+				cancel("Canceled!");
 				process.exit(0);
 			}
 		}
@@ -102,9 +102,9 @@ const _add = async (blockNames: string[], options: Options) => {
 		fs.copyFileSync(registryFilePath, newPath);
 
 		if (config.includeIndexFile) {
-			verbose('Trying to include index file');
+			verbose("Trying to include index file");
 
-			const indexPath = path.join(directory, 'index.ts');
+			const indexPath = path.join(directory, "index.ts");
 
 			const project = new Project();
 
@@ -129,43 +129,38 @@ const _add = async (blockNames: string[], options: Options) => {
 		}
 
 		if (config.includeTests) {
-			verbose('Trying to include tests');
+			verbose("Trying to include tests");
 
-			const registryTestPath = path.join(
-				registryDir,
-				`${block.category}/${blockName}.test.ts`
-			);
+			const registryTestPath = path.join(registryDir, `${block.category}/${blockName}.test.ts`);
 
 			if (fs.existsSync(registryTestPath)) {
-				const { devDependencies } = JSON.parse(fs.readFileSync('package.json').toString());
+				const { devDependencies } = JSON.parse(fs.readFileSync("package.json").toString());
 
 				if (devDependencies.vitest === undefined) {
-					loading.message(`Installing ${color.cyan('vitest')}`);
+					loading.message(`Installing ${color.cyan("vitest")}`);
 
 					const pm = await detect({ cwd: process.cwd() });
 
 					if (pm == null) {
-						program.error(color.red('Could not detect package manager'));
+						program.error(color.red("Could not detect package manager"));
 					}
 
-					const resolved = resolveCommand(pm.agent, 'install', ['vitest', '--save-dev']);
+					const resolved = resolveCommand(pm.agent, "install", ["vitest", "--save-dev"]);
 
 					if (resolved == null) {
-						program.error(
-							color.red(`Could not resolve add command for '${pm.agent}'.`)
-						);
+						program.error(color.red(`Could not resolve add command for '${pm.agent}'.`));
 					}
 
 					const { command, args } = resolved;
 
-					const installCommand = `${command} ${args.join(' ')}`;
+					const installCommand = `${command} ${args.join(" ")}`;
 
 					try {
 						await execa({ cwd: process.cwd() })`${installCommand}`;
 					} catch {
 						program.error(
 							color.red(
-								`Failed to install ${color.bold('vitest')}! Failed while running '${color.bold(
+								`Failed to install ${color.bold("vitest")}! Failed while running '${color.bold(
 									installCommand
 								)}'`
 							)
@@ -178,15 +173,15 @@ const _add = async (blockNames: string[], options: Options) => {
 		}
 
 		if (block.dependencies) {
-			verbose('Trying to include dependencies');
+			verbose("Trying to include dependencies");
 
 			if (!options.yes) {
 				const result = await confirm({
-					message: 'Add and install dependencies?',
+					message: "Add and install dependencies?",
 				});
 
 				if (isCancel(result)) {
-					cancel('Canceled!');
+					cancel("Canceled!");
 					process.exit(0);
 				}
 
@@ -195,7 +190,7 @@ const _add = async (blockNames: string[], options: Options) => {
 
 			if (options.yes) {
 				// currently no functions require dependencies (lets try and keep it that way)
-				throw new Error('NOT IMPLEMENTED');
+				throw new Error("NOT IMPLEMENTED");
 			}
 		}
 
@@ -206,7 +201,7 @@ const _add = async (blockNames: string[], options: Options) => {
 		}
 	}
 
-	outro(color.green('All done!'));
+	outro(color.green("All done!"));
 };
 
 export { add };
