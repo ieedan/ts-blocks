@@ -1,5 +1,11 @@
 # ts-blocks
 
+## 0.7.1
+
+### Patch Changes
+
+- 1ef78dc: Update README.md with typedoc generated github pages link.
+
 ## 0.7.0
 
 ### Minor Changes
