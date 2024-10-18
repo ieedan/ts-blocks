@@ -35,7 +35,8 @@
 		"check": "pnpm biome check",
 		"ci:release": "unbuild && changeset publish",
 		"changeset": "changeset",
-		"test": "vitest"
+		"test": "vitest",
+		"docs:generate": "typedoc"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "1.9.4",

@@ -25,7 +25,7 @@ jobs:
               run: pnpm install
 
             - name: Generate Documentation
-              run: pnpm dlx typedoc
+              run: pnpm docs:generate
 
             - name: Deploy
               uses: peaceiris/actions-gh-pages@v4
