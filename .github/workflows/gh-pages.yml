@@ -20,8 +20,9 @@ jobs:
               with:
                   node-version: "20"
 
-            - name: Install Typedoc Plugins
-              run: pnpm add -D typedoc-material-theme --ignore-scripts
+            # we have to do this to load the typedoc plugins
+            - name: Install Dependencies
+              run: pnpm install
 
             - name: Generate Documentation
               run: pnpm dlx typedoc
