@@ -1,0 +1,35 @@
+name: GitHub Pages
+
+on:
+    push:
+        branches:
+            - main
+    pull_request:
+
+jobs:
+    deploy:
+        runs-on: ubuntu-latest
+        permissions:
+            contents: write
+        concurrency:
+            group: ${{ github.workflow }}-${{ github.ref }}
+        steps:
+            - uses: actions/checkout@v4
+            - uses: pnpm/action-setup@v4
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: "20"
+
+            # we have to do this to load the typedoc plugins
+            - name: Install Dependencies
+              run: pnpm install
+
+            - name: Generate Documentation
+              run: pnpm docs:generate
+
+            - name: Deploy
+              uses: peaceiris/actions-gh-pages@v4
+              if: github.ref == 'refs/heads/main'
+              with:
+                  github_token: ${{ secrets.GITHUB_TOKEN }}
+                  publish_dir: ./docs

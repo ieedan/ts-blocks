@@ -1,0 +1,10 @@
+{
+	// theme
+	"plugin": ["typedoc-material-theme"],
+	"themeColor": "#cb9820",
+
+	"entryPointStrategy": "expand",
+	"entryPoints": ["./blocks"],
+	"out": "docs",
+	"exclude": ["**/*test.ts"]
+}

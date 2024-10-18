@@ -27,6 +27,9 @@ const blocks: Record<string, Block> = {
 	pad: {
 		category: 'utilities',
 	},
+	stopwatch: {
+		category: 'utilities',
+	},
 };
 
 export { blocks };
