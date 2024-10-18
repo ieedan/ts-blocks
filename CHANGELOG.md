@@ -1,5 +1,15 @@
 # ts-blocks
 
+## 0.7.0
+
+### Minor Changes
+
+- 69fc7cf: Add stopwatch utility.
+
+### Patch Changes
+
+- 69fc7cf: Now generates documentation with `typedoc` to be hosted on gh-pages.
+
 ## 0.6.0
 
 ### Minor Changes
