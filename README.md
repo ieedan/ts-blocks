@@ -6,6 +6,14 @@
 npx ts-blocks init
 ```
 
+Check out our [docs](https://ieedan.github.io/ts-blocks/).
+
+## What is ts-blocks?
+
+ts-blocks is a collection of well documented, tested utility functions and types that can be easily dropped into your project.
+
+They have 0 dependencies and allow you to modify the code to your own requirements. This allows you to own the code without having to write it yourself every time.
+
 ## Setup
 
 Run the `init` command to setup the `blocks.json` file.
@@ -44,15 +52,11 @@ npx ts-blocks add result array-sum
 
 # Blocks
 
-All blocks can be found under `./blocks`.
-
-## Documentation
-
-Each block is well documented including examples of usage.
+All blocks can be found under the `./blocks` directory or you can view the typedoc generated documentation [here](https://ieedan.github.io/ts-blocks/).
 
 ## Tests
 
-Each block is tested using [vitest](https://vitest.dev/). By default we add these tests to your repository to disable this behavior configure `includeTests` in your `blocks.json` file.
+Each block is tested using [vitest](https://vitest.dev/). By default we add these tests to your project when you add a block. To disable this behavior configure `includeTests` in your `blocks.json` file.
 
 > [!NOTE]
 > If [vitest](https://vitest.dev/) isn't already installed in your project we will attempt to install it for you.
@@ -68,7 +72,7 @@ Each block is tested using [vitest](https://vitest.dev/). By default we add thes
 ## Testing CLI Command
 
 ```
-npx ts-blocks test 
+npx ts-blocks test
 ```
 
 If you don't want to include the tests in your project source or simply want to keep your code up to date with the latest test cases you can run tests through the CLI.
