@@ -1,4 +1,4 @@
-export type Category = 'types' | 'utilities';
+export type Category = "types" | "utilities";
 
 export type Block = {
 	dependencies?: Record<string, string>;
@@ -7,25 +7,28 @@ export type Block = {
 
 const blocks: Record<string, Block> = {
 	result: {
-		category: 'types',
+		category: "types",
 	},
-	'array-to-map': {
-		category: 'utilities',
+	"array-to-map": {
+		category: "utilities",
 	},
-	'map-to-array': {
-		category: 'utilities',
+	"map-to-array": {
+		category: "utilities",
 	},
 	truncate: {
-		category: 'utilities',
+		category: "utilities",
 	},
-	'array-sum': {
-		category: 'utilities',
+	"array-sum": {
+		category: "utilities",
 	},
 	sleep: {
-		category: 'utilities',
+		category: "utilities",
 	},
 	pad: {
-		category: 'utilities',
+		category: "utilities",
+	},
+	stopwatch: {
+		category: "utilities",
 	},
 };
 
