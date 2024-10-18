@@ -1,27 +1,33 @@
 name: GitHub Pages
 
 on:
-  push:
-    branches:
-      - main 
-  pull_request:
+    push:
+        branches:
+            - main
+    pull_request:
 
 jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    concurrency:
-      group: ${{ github.workflow }}-${{ github.ref }}
-    steps:
-      - uses: actions/checkout@v4
+    deploy:
+        runs-on: ubuntu-latest
+        permissions:
+            contents: write
+        concurrency:
+            group: ${{ github.workflow }}-${{ github.ref }}
+        steps:
+            - uses: pnpm/action-setup@v4
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: "20"
 
-      - name: Build
-        run: npx typedoc
+            - name: Install Typedoc Plugins
+              run: pnpm add -D typedoc-material-theme --ignore-scripts
 
-      - name: Deploy
-        uses: peaceiris/actions-gh-pages@v4
-        if: github.ref == 'refs/heads/main'
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./docs
+            - name: Generate Documentation
+              run: pnpm dlx typedoc
+
+            - name: Deploy
+              uses: peaceiris/actions-gh-pages@v4
+              if: github.ref == 'refs/heads/main'
+              with:
+                  github_token: ${{ secrets.GITHUB_TOKEN }}
+                  publish_dir: ./docs
