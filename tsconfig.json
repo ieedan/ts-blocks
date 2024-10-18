@@ -12,5 +12,6 @@
 		"skipDefaultLibCheck": true,
 		"skipLibCheck": true
 	},
+	"include": ["src/**/*", "blocks/**/*"],
 	"exclude": ["node_modules", "templates"]
 }
