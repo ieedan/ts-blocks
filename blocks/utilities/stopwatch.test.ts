@@ -1,10 +1,11 @@
-import { expect, test } from "vitest";
-import { stopwatch } from "./stopwatch";
+import { expect, test } from 'vitest';
+import { stopwatch } from './stopwatch';
 
 // we add this here so that we have a 0 dependency test
-const sleep = async (durationMs: number): Promise<void> => new Promise((res) => setTimeout(res, durationMs));
+const sleep = async (durationMs: number): Promise<void> =>
+	new Promise((res) => setTimeout(res, durationMs));
 
-test("Expect correct elapsed time", async () => {
+test('Expect correct elapsed time', async () => {
 	const w = stopwatch();
 
 	w.start();
@@ -14,22 +15,22 @@ test("Expect correct elapsed time", async () => {
 	expect(w.elapsed()).toBeGreaterThanOrEqual(25);
 });
 
-test("Expect error while accessing before start", async () => {
+test('Expect error while accessing before start', async () => {
 	const w = stopwatch();
 
 	expect(w.elapsed).toThrow();
 });
 
-test("Expect reset to reset", async () => {
+test('Expect reset to reset', async () => {
 	const w = stopwatch();
 
-    w.start()
+	w.start();
 
-    w.stop()
+	w.stop();
 
-    w.elapsed()
+	w.elapsed();
 
-    w.reset()
+	w.reset();
 
 	expect(w.elapsed).toThrow();
 });

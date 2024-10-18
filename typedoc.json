@@ -6,5 +6,5 @@
 	"entryPointStrategy": "expand",
 	"entryPoints": ["./blocks"],
 	"out": "docs",
-	"exclude": ["**/*test.ts"],
+	"exclude": ["**/*test.ts"]
 }

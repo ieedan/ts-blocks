@@ -1,11 +1,11 @@
 /** Allows you to time operations. */
 export type Stopwatch = {
 	/** Start the stopwatch.
-	 * 
-	 * @returns 
-	 * 
+	 *
+	 * @returns
+	 *
 	 * # Usage
-	 * 
+	 *
 	 * ```ts
 	 * const w = stopwatch();
 	 *
@@ -14,51 +14,51 @@ export type Stopwatch = {
 	 */
 	start: () => void;
 	/** Stop the stopwatch.
-	 * 
-	 * @returns 
-	 * 
+	 *
+	 * @returns
+	 *
 	 * # Usage
-	 * 
+	 *
 	 * ```ts
 	 * const w = stopwatch();
 	 *
 	 * w.start();
-	 * 
+	 *
 	 * await sleep(1000);
 	 *
 	 * w.stop(); // stop counting
-	 * 
+	 *
 	 * await sleep(1000);
-	 * 
+	 *
 	 * console.log(w.elapsed()); // 1000
 	 * ```
 	 */
 	stop: () => void;
 	/** Reset the stopwatch.
-	 * 
-	 * @returns 
-	 * 
+	 *
+	 * @returns
+	 *
 	 * # Usage
-	 * 
+	 *
 	 * ```ts
 	 * const w = stopwatch();
 	 *
 	 * w.start();
 	 *
 	 * w.stop();
-	 * 
+	 *
 	 * w.reset();
-	 * 
+	 *
 	 * w.elapsed(); // Error: "Call `.start()` first!"
 	 * ```
 	 */
 	reset: () => void;
 	/** Tries to get the elapsed ms. Throws if the Stopwatch has not been started.
-	 * 
-	 * @returns 
-	 * 
+	 *
+	 * @returns
+	 *
 	 * # Usage
-	 * 
+	 *
 	 * ```ts
 	 * const w = watch();
 	 *
@@ -101,8 +101,8 @@ const stopwatch = (): Stopwatch => {
 		},
 		elapsed: () => {
 			// if this hasn't been defined its always an error in the users code
-			if (!startedAt) { 
-				throw new Error("Call `.start()` first!");
+			if (!startedAt) {
+				throw new Error('Call `.start()` first!');
 			}
 
 			let tempEndedAt = endedAt;
