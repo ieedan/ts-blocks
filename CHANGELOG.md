@@ -1,5 +1,13 @@
 # ts-blocks
 
+## 0.8.0
+
+### Minor Changes
+
+- a02ab02: Changed default value for `includeTests` to be false because in practice I am normally turning it off to run remote tests anyways.
+- a02ab02: Add `dispatcher` block
+- a02ab02: Add `imports` option to config to allow you to configure the import style.
+
 ## 0.7.1
 
 ### Patch Changes
