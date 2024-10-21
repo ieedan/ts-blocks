@@ -82,7 +82,9 @@ const _add = async (blockNames: string[], options: Options) => {
 
 		if (fs.existsSync(newPath) && !options.yes) {
 			const result = await confirm({
-				message: `${color.bold(blockName)} already exists in your project would you like to overwrite it?`,
+				message: `${color.bold(
+					blockName
+				)} already exists in your project would you like to overwrite it?`,
 				initialValue: false,
 			});
 
@@ -117,10 +119,17 @@ const _add = async (blockNames: string[], options: Options) => {
 					index = project.createSourceFile(indexPath);
 				}
 
-				index.addExportDeclaration({
-					moduleSpecifier: `./${blockName}`,
-					isTypeOnly: false,
-				});
+				if (config.imports === 'node') {
+					index.addExportDeclaration({
+						moduleSpecifier: `./${blockName}`,
+						isTypeOnly: false,
+					});
+				} else if (config.imports === 'deno') {
+					index.addExportDeclaration({
+						moduleSpecifier: `./${blockName}.ts`,
+						isTypeOnly: false,
+					});
+				}
 
 				index.saveSync();
 			} catch {
@@ -165,9 +174,9 @@ const _add = async (blockNames: string[], options: Options) => {
 					} catch {
 						program.error(
 							color.red(
-								`Failed to install ${color.bold('vitest')}! Failed while running '${color.bold(
-									installCommand
-								)}'`
+								`Failed to install ${color.bold(
+									'vitest'
+								)}! Failed while running '${color.bold(installCommand)}'`
 							)
 						);
 					}

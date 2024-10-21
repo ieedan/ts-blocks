@@ -26,7 +26,7 @@ const init = new Command('init')
 		'--no-index-file',
 		'Will create an index.ts file at the root of the folder to re-export functions from.'
 	)
-	.option('--no-tests', 'Will include tests along with the functions.')
+	.option('--tests', 'Will include tests along with the functions.', false)
 	.action(async (opts) => {
 		const options = parse(schema, opts);
 
@@ -57,12 +57,23 @@ const _init = async (options: Options) => {
 		options.path = result;
 	}
 
+	let isDeno = false;
+
+	// very trivially tries to detect whether you are in a deno project
+	try {
+		fs.readFileSync('deno.json');
+		isDeno = true;
+	} catch {
+		isDeno = false;
+	}
+
 	const config: Config = {
 		$schema: `https://unpkg.com/ts-blocks@${version}/schema.json`,
 		path: options.path,
 		addByCategory: options.addByCategory,
 		includeIndexFile: options.indexFile,
 		includeTests: options.tests,
+		imports: isDeno ? 'deno' : 'node',
 	};
 
 	fs.writeFileSync(CONFIG_NAME, `${JSON.stringify(config, null, '\t')}\n`);

@@ -20,6 +20,11 @@
 			"description": "When true includes the test files for each function in the same directory.",
 			"type": "boolean",
 			"default": "true"
+		},
+		"imports": {
+			"description": "Controls the suffix when re-exporting from index.ts.",
+			"enum": ["deno", "node"],
+			"default": "node"
 		}
 	},
 	"required": ["path", "addByCategory", "includeIndexFile", "includeTests"]

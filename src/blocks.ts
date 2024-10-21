@@ -30,6 +30,9 @@ const blocks: Record<string, Block> = {
 	stopwatch: {
 		category: 'utilities',
 	},
+	dispatcher: {
+		category: 'utilities',
+	},
 };
 
 export { blocks };
