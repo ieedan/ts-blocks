@@ -119,7 +119,7 @@ const _add = async (blockNames: string[], options: Options) => {
 					index = project.createSourceFile(indexPath);
 				}
 
-				if (config.imports === undefined || config.imports === 'node') {
+				if (config.imports === 'node') {
 					index.addExportDeclaration({
 						moduleSpecifier: `./${blockName}`,
 						isTypeOnly: false,
