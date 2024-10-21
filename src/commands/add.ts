@@ -7,7 +7,7 @@ import { execa } from 'execa';
 import { resolveCommand } from 'package-manager-detector/commands';
 import { detect } from 'package-manager-detector/detect';
 import { Project, type SourceFile } from 'ts-morph';
-import { boolean, type InferInput, object, parse } from 'valibot';
+import { type InferInput, boolean, object, parse } from 'valibot';
 import { blocks } from '../blocks';
 import { getConfig } from '../config';
 import { INFO, WARN } from '../utils/index';

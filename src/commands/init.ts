@@ -2,8 +2,8 @@ import fs from 'node:fs';
 import { cancel, intro, isCancel, outro, text } from '@clack/prompts';
 import color from 'chalk';
 import { Command } from 'commander';
-import { boolean, type InferInput, object, optional, parse, string } from 'valibot';
-import { type Config, CONFIG_NAME } from '../config';
+import { type InferInput, boolean, object, optional, parse, string } from 'valibot';
+import { CONFIG_NAME, type Config } from '../config';
 
 const schema = object({
 	path: optional(string()),
