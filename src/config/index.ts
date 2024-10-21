@@ -1,7 +1,18 @@
 import fs from 'node:fs';
 import color from 'chalk';
 import { program } from 'commander';
-import { type InferInput, boolean, minLength, object, parse, pipe, string } from 'valibot';
+import {
+	type InferInput,
+	boolean,
+	literal,
+	minLength,
+	object,
+	optional,
+	parse,
+	pipe,
+	string,
+	union,
+} from 'valibot';
 
 const CONFIG_NAME = 'blocks.json';
 
@@ -11,6 +22,7 @@ const schema = object({
 	includeIndexFile: boolean(),
 	includeTests: boolean(),
 	path: pipe(string(), minLength(1)),
+	imports: optional(union([literal('deno'), literal('node')])),
 });
 
 type Config = InferInput<typeof schema>;

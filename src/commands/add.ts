@@ -7,7 +7,7 @@ import { execa } from 'execa';
 import { resolveCommand } from 'package-manager-detector/commands';
 import { detect } from 'package-manager-detector/detect';
 import { Project, type SourceFile } from 'ts-morph';
-import { type InferInput, boolean, object, parse } from 'valibot';
+import { boolean, type InferInput, object, parse } from 'valibot';
 import { blocks } from '../blocks';
 import { getConfig } from '../config';
 import { INFO, WARN } from '../utils/index';
@@ -82,7 +82,9 @@ const _add = async (blockNames: string[], options: Options) => {
 
 		if (fs.existsSync(newPath) && !options.yes) {
 			const result = await confirm({
-				message: `${color.bold(blockName)} already exists in your project would you like to overwrite it?`,
+				message: `${color.bold(
+					blockName
+				)} already exists in your project would you like to overwrite it?`,
 				initialValue: false,
 			});
 
@@ -117,10 +119,17 @@ const _add = async (blockNames: string[], options: Options) => {
 					index = project.createSourceFile(indexPath);
 				}
 
-				index.addExportDeclaration({
-					moduleSpecifier: `./${blockName}`,
-					isTypeOnly: false,
-				});
+				if (config.imports === undefined || config.imports === 'node') {
+					index.addExportDeclaration({
+						moduleSpecifier: `./${blockName}`,
+						isTypeOnly: false,
+					});
+				} else if (config.imports === 'deno') {
+					index.addExportDeclaration({
+						moduleSpecifier: `./${blockName}.ts`,
+						isTypeOnly: false,
+					});
+				}
 
 				index.saveSync();
 			} catch {
@@ -165,9 +174,9 @@ const _add = async (blockNames: string[], options: Options) => {
 					} catch {
 						program.error(
 							color.red(
-								`Failed to install ${color.bold('vitest')}! Failed while running '${color.bold(
-									installCommand
-								)}'`
+								`Failed to install ${color.bold(
+									'vitest'
+								)}! Failed while running '${color.bold(installCommand)}'`
 							)
 						);
 					}
