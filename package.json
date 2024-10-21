@@ -7,10 +7,7 @@
 		"type": "git",
 		"url": "git+https://github.com/ieedan/ts-blocks"
 	},
-	"keywords": [
-		"changelog",
-		"date"
-	],
+	"keywords": ["changelog", "date"],
 	"author": "Aidan Bleser",
 	"license": "MIT",
 	"bugs": {
