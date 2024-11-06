@@ -8,7 +8,7 @@ import { resolveCommand } from 'package-manager-detector/commands';
 import { detect } from 'package-manager-detector/detect';
 import { Project, type SourceFile } from 'ts-morph';
 import { type InferInput, boolean, object, parse } from 'valibot';
-import { blocks } from '../blocks';
+import { type Block, blocks } from '../blocks';
 import { getConfig } from '../config';
 import { getInstalledBlocks } from '../utils/get-installed-blocks';
 import { getWatermark } from '../utils/get-watermark';
@@ -60,9 +60,9 @@ const _add = async (blockNames: string[], options: Options) => {
 
 	const installedBlocks = getInstalledBlocks(config);
 
-	let installBlocks = blockNames;
+	let installingBlockNames = blockNames;
 
-	if (installBlocks.length === 0) {
+	if (installingBlockNames.length === 0) {
 		const promptResult = await multiselect({
 			message: 'Select which blocks to add.',
 			options: Object.entries(blocks).map(([key]) => {
@@ -83,20 +83,41 @@ const _add = async (blockNames: string[], options: Options) => {
 			process.exit(0);
 		}
 
-		installBlocks = promptResult as string[];
+		installingBlockNames = promptResult as string[];
 	}
 
-	const tasks: Task[] = [];
+	const installingBlocks: { name: string; subDependency: boolean; block: Block }[] = [];
 
-	for (const blockName of installBlocks) {
-		verbose(`Attempting to add ${blockName}`);
-
-		// in the future maybe we add a registry but for now it can just be fs
+	installingBlockNames.map((blockName) => {
 		const block = blocks[blockName];
 
 		if (!block) {
 			program.error(color.red(`Invalid block! ${color.bold(blockName)} does not exist!`));
 		}
+
+		installingBlocks.push({ name: blockName, subDependency: false, block });
+
+		if (block.localDependencies && block.localDependencies.length > 0) {
+			for (const dep of block.localDependencies) {
+				if (installingBlocks.find(({ name }) => name === dep)) continue;
+
+				const block = blocks[dep];
+
+				if (!block) {
+					program.error(
+						color.red(`Invalid block! ${color.bold(blockName)} does not exist!`)
+					);
+				}
+
+				installingBlocks.push({ name: dep, subDependency: true, block });
+			}
+		}
+	});
+
+	const tasks: Task[] = [];
+
+	for (const { name: blockName, block } of installingBlocks) {
+		verbose(`Attempting to add ${blockName}`);
 
 		verbose(`Found block ${JSON.stringify(block)}`);
 
@@ -117,9 +138,6 @@ const _add = async (blockNames: string[], options: Options) => {
 
 		verbose(`Creating directory ${color.bold(directory)}`);
 
-		// in case the directory didn't already exist
-		fs.mkdirSync(directory, { recursive: true });
-
 		if (fs.existsSync(newPath) && !options.yes) {
 			const result = await confirm({
 				message: `${color.bold(blockName)} already exists in your project would you like to overwrite it?`,
@@ -136,6 +154,9 @@ const _add = async (blockNames: string[], options: Options) => {
 			loadingMessage: `Adding ${blockName}`,
 			completedMessage: `Added ${blockName}`,
 			run: async () => {
+				// in case the directory didn't already exist
+				fs.mkdirSync(directory, { recursive: true });
+
 				verbose(
 					`Copying files from ${color.bold(registryFilePath)} to ${color.bold(newPath)}`
 				);
@@ -148,15 +169,59 @@ const _add = async (blockNames: string[], options: Options) => {
 
 				fs.writeFileSync(newPath, registryFile);
 
+				// resolve local dependencies if they are not organized by category as they are in the project
+				//
+				// this must be done because of the `addByCategory` option which can
+				// allow you to put all of your blocks in one file instead of sub-categories
+				if (
+					!config.addByCategory &&
+					block.localDependencies &&
+					block.localDependencies.length > 0
+				) {
+					const project = new Project();
+
+					const blockFile = project.addSourceFileAtPath(newPath);
+
+					const imports = blockFile.getImportDeclarations();
+
+					for (const dep of block.localDependencies) {
+						const depBlock = blocks[dep];
+
+						if (!depBlock) {
+							program.error(
+								color.red(`Invalid block! ${color.bold(dep)} does not exist!`)
+							);
+						}
+
+						const importDeclaration = imports.find((declaration) =>
+							declaration.getModuleSpecifierValue().includes(dep)
+						);
+
+						if (importDeclaration === undefined) {
+							program.error(
+								color.red(
+									`Expected dependency '${color.bold(dep)}' to be imported from ${newPath}.`
+								)
+							);
+						}
+
+						importDeclaration.setModuleSpecifier(
+							`./${dep}${config.imports === 'deno' ? '.ts' : ''}`
+						);
+
+						project.saveSync();
+					}
+				}
+
 				if (config.includeIndexFile) {
 					verbose('Trying to include index file');
 
 					const indexPath = path.join(directory, 'index.ts');
 
-					const project = new Project();
-
 					try {
 						let index: SourceFile;
+
+						const project = new Project();
 
 						if (fs.existsSync(indexPath)) {
 							index = project.addSourceFileAtPath(indexPath);

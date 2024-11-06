@@ -8,7 +8,7 @@ import { resolveCommand } from 'package-manager-detector/commands';
 import { detect } from 'package-manager-detector/detect';
 import { Project } from 'ts-morph';
 import { type InferInput, boolean, object, parse } from 'valibot';
-import { blocks } from '../blocks';
+import { blocks, categories } from '../blocks';
 import { getConfig } from '../config';
 import { INFO } from '../utils';
 
@@ -69,9 +69,25 @@ const _test = async (blockNames: string[], options: Options) => {
 			loading.start('Locating blocks');
 		}
 
-		const files = fs
-			.readdirSync(config.path)
-			.filter((file) => file.endsWith('.ts') && !file.endsWith('test.ts'));
+		let files: string[] = [];
+
+		if (config.addByCategory) {
+			const directories = fs
+				.readdirSync(config.path)
+				.filter((dir) => categories.find((cat) => cat === dir));
+
+			for (const dir of directories) {
+				files.push(
+					...fs
+						.readdirSync(path.join(config.path, dir))
+						.filter((file) => file.endsWith('.ts') && !file.endsWith('test.ts'))
+				);
+			}
+		} else {
+			files = fs
+				.readdirSync(config.path)
+				.filter((file) => file.endsWith('.ts') && !file.endsWith('test.ts'));
+		}
 
 		for (const file of files) {
 			if (file === 'index.ts') continue;
@@ -91,20 +107,24 @@ const _test = async (blockNames: string[], options: Options) => {
 		program.error(color.red('There were no blocks found in your project!'));
 	}
 
-	for (const blockName of blockNames) {
+	const testingBlocks = blockNames.map((blockName) => {
 		const block = blocks[blockName];
 
 		if (!block) {
 			program.error(color.red(`Invalid block! ${color.bold(blockName)} does not exist!`));
 		}
 
+		return { name: blockName, block };
+	});
+
+	for (const { name: blockName, block } of testingBlocks) {
 		if (!options.verbose) {
 			loading.start(`Setting up test file for ${blockName}`);
 		}
 
 		const tempTestFileName = `${blockName}.test.ts`;
 
-		const tempTestFilePath = path.join(tempTestDirectory, tempTestFileName);
+		const tempTestFilePath: string = path.join(tempTestDirectory, tempTestFileName);
 
 		const registryTestFilePath = path.join(
 			registryDir,
@@ -113,7 +133,12 @@ const _test = async (blockNames: string[], options: Options) => {
 
 		verbose(`Copying test files for ${blockName}`);
 
-		fs.copyFileSync(registryTestFilePath, tempTestFilePath);
+		try {
+			fs.copyFileSync(registryTestFilePath, tempTestFilePath);
+		} catch {
+			loading.stop(`Couldn't find test file for ${color.cyan(blockName)} skipping.`);
+			continue;
+		}
 
 		let blockFilePath: string;
 		let directory: string;
