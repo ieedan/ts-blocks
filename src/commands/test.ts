@@ -117,22 +117,6 @@ const _test = async (blockNames: string[], options: Options) => {
 		}
 
 		testingBlocks.push({ name: blockName, subDependency: false, block });
-
-		if (block.localDependencies && block.localDependencies.length > 0) {
-			for (const dep of block.localDependencies) {
-				if (testingBlocks.find(({ name }) => name === dep)) continue;
-
-				const block = blocks[dep];
-
-				if (!block) {
-					program.error(
-						color.red(`Invalid block! ${color.bold(blockName)} does not exist!`)
-					);
-				}
-
-				testingBlocks.push({ name: dep, subDependency: true, block });
-			}
-		}
 	});
 
 	for (const { name: blockName, block } of testingBlocks) {
