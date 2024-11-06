@@ -112,7 +112,7 @@ const _add = async (blockNames: string[], options: Options) => {
 
 	const tasks: Task[] = [];
 
-	for (const { name: blockName, block, subDependency } of installingBlocks) {
+	for (const { name: blockName, block } of installingBlocks) {
 		verbose(`Attempting to add ${blockName}`);
 
 		verbose(`Found block ${JSON.stringify(block)}`);
@@ -134,11 +134,7 @@ const _add = async (blockNames: string[], options: Options) => {
 
 		verbose(`Creating directory ${color.bold(directory)}`);
 
-		// in case the directory didn't already exist
-		fs.mkdirSync(directory, { recursive: true });
-
-		// don't ask for confirmation if the block is a subDependency
-		if (fs.existsSync(newPath) && !options.yes && !subDependency) {
+		if (fs.existsSync(newPath) && !options.yes) {
 			const result = await confirm({
 				message: `${color.bold(blockName)} already exists in your project would you like to overwrite it?`,
 				initialValue: false,
@@ -154,6 +150,9 @@ const _add = async (blockNames: string[], options: Options) => {
 			loadingMessage: `Adding ${blockName}`,
 			completedMessage: `Added ${blockName}`,
 			run: async () => {
+				// in case the directory didn't already exist
+				fs.mkdirSync(directory, { recursive: true });
+
 				verbose(`Copying files from ${color.bold(registryFilePath)} to ${color.bold(newPath)}`);
 
 				let registryFile = fs.readFileSync(registryFilePath).toString();

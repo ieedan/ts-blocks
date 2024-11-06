@@ -8,7 +8,7 @@ import { resolveCommand } from "package-manager-detector/commands";
 import { detect } from "package-manager-detector/detect";
 import { Project } from "ts-morph";
 import { type InferInput, boolean, object, parse } from "valibot";
-import { blocks, categories } from "../blocks";
+import { type Block, blocks, categories } from "../blocks";
 import { getConfig } from "../config";
 import { INFO } from "../utils";
 
@@ -103,26 +103,51 @@ const _test = async (blockNames: string[], options: Options) => {
 		program.error(color.red("There were no blocks found in your project!"));
 	}
 
-	for (const blockName of blockNames) {
+	const testingBlocks: { name: string; subDependency: boolean; block: Block }[] = [];
+
+	blockNames.map((blockName) => {
 		const block = blocks[blockName];
 
 		if (!block) {
 			program.error(color.red(`Invalid block! ${color.bold(blockName)} does not exist!`));
 		}
 
+		testingBlocks.push({ name: blockName, subDependency: false, block });
+
+		if (block.localDependencies && block.localDependencies.length > 0) {
+			for (const dep of block.localDependencies) {
+				if (testingBlocks.find(({ name }) => name === dep)) continue;
+
+				const block = blocks[dep];
+
+				if (!block) {
+					program.error(color.red(`Invalid block! ${color.bold(blockName)} does not exist!`));
+				}
+
+				testingBlocks.push({ name: dep, subDependency: true, block });
+			}
+		}
+	});
+
+	for (const { name: blockName, block } of testingBlocks) {
 		if (!options.verbose) {
 			loading.start(`Setting up test file for ${blockName}`);
 		}
 
 		const tempTestFileName = `${blockName}.test.ts`;
 
-		const tempTestFilePath = path.join(tempTestDirectory, tempTestFileName);
+		const tempTestFilePath: string = path.join(tempTestDirectory, tempTestFileName);
 
 		const registryTestFilePath = path.join(registryDir, `${block.category}/${blockName}.test.ts`);
 
 		verbose(`Copying test files for ${blockName}`);
 
-		fs.copyFileSync(registryTestFilePath, tempTestFilePath);
+		try {
+			fs.copyFileSync(registryTestFilePath, tempTestFilePath);
+		} catch {
+			loading.stop(`Couldn't find test file for ${color.cyan(blockName)} skipping.`)
+			continue;
+		}
 
 		let blockFilePath: string;
 		let directory: string;
