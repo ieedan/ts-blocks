@@ -100,7 +100,7 @@ const _add = async (blockNames: string[], options: Options) => {
 
 		verbose(`Found block ${JSON.stringify(block)}`);
 
-		const registryDir = path.join(import.meta.url, '../../../blocks').replace(/^file:\\/, '');
+		const registryDir = path.join(import.meta.url, '../../blocks').replace(/^file:\\/, '');
 
 		const registryFilePath = path.join(registryDir, `${block.category}/${blockName}.ts`);
 

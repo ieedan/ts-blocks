@@ -13,7 +13,11 @@ const runTasks = async (tasks: Task[], { verbose = false }) => {
 		// we don't want this to clear logs when in verbose mode
 		if (!verbose) loading.start(task.loadingMessage);
 
-		await task.run();
+		try {
+			await task.run();
+		} catch (err) {
+			console.error(err);
+		}
 
 		loading.stop(task.completedMessage);
 	}
