@@ -107,16 +107,14 @@ const _test = async (blockNames: string[], options: Options) => {
 		program.error(color.red('There were no blocks found in your project!'));
 	}
 
-	const testingBlocks: { name: string; subDependency: boolean; block: Block }[] = [];
-
-	blockNames.map((blockName) => {
+	const testingBlocks = blockNames.map((blockName) => {
 		const block = blocks[blockName];
 
 		if (!block) {
 			program.error(color.red(`Invalid block! ${color.bold(blockName)} does not exist!`));
 		}
 
-		testingBlocks.push({ name: blockName, subDependency: false, block });
+		return { name: blockName, block };
 	});
 
 	for (const { name: blockName, block } of testingBlocks) {
