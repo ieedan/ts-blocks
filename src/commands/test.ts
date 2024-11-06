@@ -57,7 +57,7 @@ const _test = async (blockNames: string[], options: Options) => {
 		fs.rmSync(tempTestDirectory, { recursive: true, force: true });
 	};
 
-	const registryDir = path.join(import.meta.url, '../../../blocks').replace(/^file:\\/, '');
+	const registryDir = path.join(import.meta.url, '../../blocks').replace(/^file:\\/, '');
 
 	const loading = spinner();
 
