@@ -8,7 +8,7 @@ import { resolveCommand } from 'package-manager-detector/commands';
 import { detect } from 'package-manager-detector/detect';
 import { Project } from 'ts-morph';
 import { type InferInput, boolean, object, parse } from 'valibot';
-import { type Block, blocks, categories } from '../blocks';
+import { blocks, categories } from '../blocks';
 import { getConfig } from '../config';
 import { INFO } from '../utils';
 
