@@ -7,8 +7,7 @@
 		"module": "ES2022",
 		"target": "ES2022",
 		"skipLibCheck": true,
-		"strict": true,
-		"noUncheckedIndexedAccess": true
+		"strict": true
 	},
 	"include": ["src/**/*.ts", "blocks/**/*.ts"]
 }
