@@ -1,0 +1,9 @@
+{
+	"$schema": "https://unpkg.com/ts-blocks@0.9.0/schema.json",
+	"path": "testing/blocks",
+	"addByCategory": false,
+	"includeIndexFile": true,
+	"includeTests": false,
+	"imports": "node",
+	"watermark": true
+}

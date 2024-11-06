@@ -25,6 +25,11 @@
 			"description": "Controls the suffix when re-exporting from index.ts.",
 			"enum": ["deno", "node"],
 			"default": "node"
+		},
+		"watermark": {
+			"description": "When true will add a watermark with the version at the top of the installed files.",
+			"type": "boolean",
+			"default": "true"
 		}
 	},
 	"required": ["path", "addByCategory", "includeIndexFile", "includeTests"]

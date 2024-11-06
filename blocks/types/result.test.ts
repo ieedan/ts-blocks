@@ -1,302 +1,304 @@
-import { assert, expect, test } from 'vitest';
+import { assert, describe, expect, it } from 'vitest';
 import { Err, Ok, type Result } from './result';
 
 const failingFunction = <E>(err: E): Result<boolean, E> => Err(err);
 
 const passingFunction = <T>(val: T): Result<T, string> => Ok(val);
 
-// --- match ---
+describe('Result', () => {
+	// --- match ---
 
-test('match: Expect pass value from match', () => {
-	const expected = true;
+	it('Result.match: Expect pass value from match', () => {
+		const expected = true;
 
-	const res = passingFunction(expected).match(
-		(val) => val,
-		() => {
-			throw new Error('This should not throw');
-		}
-	);
+		const res = passingFunction(expected).match(
+			(val) => val,
+			() => {
+				throw new Error('This should not throw');
+			}
+		);
 
-	expect(res).toBe(expected);
-});
+		expect(res).toBe(expected);
+	});
 
-test('match: Expect fail value from match', () => {
-	const expected = true;
+	it('Result.match: Expect fail value from match', () => {
+		const expected = true;
 
-	const res = failingFunction(expected).match(
-		() => {
-			throw new Error('This should not throw');
-		},
-		(err) => err
-	);
+		const res = failingFunction(expected).match(
+			() => {
+				throw new Error('This should not throw');
+			},
+			(err) => err
+		);
 
-	expect(res).toBe(expected);
-});
+		expect(res).toBe(expected);
+	});
 
-// --- isOk / isErr ---
+	// --- isOk / isErr ---
 
-test('isOk / isErr: Expect correct `Ok` boolean assertions', () => {
-	const result = passingFunction(undefined);
+	it('Result.isOk / isErr: Expect correct `Ok` boolean assertions', () => {
+		const result = passingFunction(undefined);
 
-	expect(result.isOk()).toBe(true);
-	expect(result.isErr()).toBe(false);
-});
+		expect(result.isOk()).toBe(true);
+		expect(result.isErr()).toBe(false);
+	});
 
-test('isOk / isErr: Expect correct `Err` boolean assertions', () => {
-	const result = failingFunction(undefined);
+	it('Result.isOk / isErr: Expect correct `Err` boolean assertions', () => {
+		const result = failingFunction(undefined);
 
-	expect(result.isOk()).toBe(false);
-	expect(result.isErr()).toBe(true);
-});
+		expect(result.isOk()).toBe(false);
+		expect(result.isErr()).toBe(true);
+	});
 
-// --- unwrap ---
+	// --- unwrap ---
 
-test('unwrap: Expect correct value', () => {
-	const expected = 'Success';
+	it('Result.unwrap: Expect correct value', () => {
+		const expected = 'Success';
 
-	const result = passingFunction(expected);
+		const result = passingFunction(expected);
 
-	expect(result.unwrap()).toBe(expected);
-});
+		expect(result.unwrap()).toBe(expected);
+	});
 
-test('unwrap: Should throw if failed', () => {
-	const result = failingFunction('oops!');
+	it('Result.unwrap: Should throw if failed', () => {
+		const result = failingFunction('oops!');
 
-	assert.throws(result.unwrap);
-});
+		assert.throws(result.unwrap);
+	});
 
-// --- unwrapOr ---
+	// --- unwrapOr ---
 
-test('unwrapOr: Expect correct value if err', () => {
-	const expected = true;
+	it('Result.unwrapOr: Expect correct value if err', () => {
+		const expected = true;
 
-	const result = failingFunction('oops!');
+		const result = failingFunction('oops!');
 
-	expect(result.unwrapOr(expected)).toBe(expected);
-});
+		expect(result.unwrapOr(expected)).toBe(expected);
+	});
 
-test('unwrapOr: Expect correct value is ok', () => {
-	const expected = true;
+	it('Result.unwrapOr: Expect correct value is ok', () => {
+		const expected = true;
 
-	const result = passingFunction(expected);
+		const result = passingFunction(expected);
 
-	expect(result.unwrapOr(false)).toBe(expected);
-});
+		expect(result.unwrapOr(false)).toBe(expected);
+	});
 
-// --- unwrapOrElse ---
+	// --- unwrapOrElse ---
 
-test('unwrapOrElse: Expect correct value if err', () => {
-	const expected = true;
+	it('Result.unwrapOrElse: Expect correct value if err', () => {
+		const expected = true;
 
-	const result = failingFunction('oops!');
+		const result = failingFunction('oops!');
 
-	expect(result.unwrapOrElse(() => expected)).toBe(expected);
-});
+		expect(result.unwrapOrElse(() => expected)).toBe(expected);
+	});
 
-test('unwrapOrElse: Expect correct value is ok', () => {
-	const expected = true;
+	it('Result.unwrapOrElse: Expect correct value is ok', () => {
+		const expected = true;
 
-	const result = passingFunction(expected);
+		const result = passingFunction(expected);
 
-	expect(result.unwrapOrElse(() => false)).toBe(expected);
-});
+		expect(result.unwrapOrElse(() => false)).toBe(expected);
+	});
 
-// --- unwrapErr ---
+	// --- unwrapErr ---
 
-test('unwrapErr: Expect correct error', () => {
-	const expected = 'I failed!';
+	it('Result.unwrapErr: Expect correct error', () => {
+		const expected = 'I failed!';
 
-	const result = failingFunction(expected);
+		const result = failingFunction(expected);
 
-	expect(result.unwrapErr()).toBe(expected);
-});
+		expect(result.unwrapErr()).toBe(expected);
+	});
 
-test('unwrapErr: Should throw if passed', () => {
-	const result = passingFunction(true);
+	it('Result.unwrapErr: Should throw if passed', () => {
+		const result = passingFunction(true);
 
-	assert.throws(result.unwrapErr);
-});
+		assert.throws(result.unwrapErr);
+	});
 
-// --- unwrapErrOr ---
+	// --- unwrapErrOr ---
 
-test('unwrapErrOr: Expect correct error', () => {
-	const expected = 'I failed!';
+	it('Result.unwrapErrOr: Expect correct error', () => {
+		const expected = 'I failed!';
 
-	const result = passingFunction(expected);
+		const result = passingFunction(expected);
 
-	expect(result.unwrapErrOr(expected)).toBe(expected);
-});
+		expect(result.unwrapErrOr(expected)).toBe(expected);
+	});
 
-test('unwrapErrOr: Expect correct error on fail', () => {
-	const expected = 'I failed!';
+	it('Result.unwrapErrOr: Expect correct error on fail', () => {
+		const expected = 'I failed!';
 
-	const result = failingFunction(expected);
+		const result = failingFunction(expected);
 
-	expect(result.unwrapErrOr(expected)).toBe(expected);
-});
+		expect(result.unwrapErrOr(expected)).toBe(expected);
+	});
 
-// --- unwrapErrOrElse ---
+	// --- unwrapErrOrElse ---
 
-test('unwrapErrOrElse: Expect correct value on err', () => {
-	const expected = 'I failed!';
+	it('Result.unwrapErrOrElse: Expect correct value on err', () => {
+		const expected = 'I failed!';
 
-	const result = failingFunction(expected);
+		const result = failingFunction(expected);
 
-	expect(result.unwrapErrOr('nope')).toBe(expected);
-});
+		expect(result.unwrapErrOr('nope')).toBe(expected);
+	});
 
-test('unwrapErrOrElse: Expect correct error on fail', () => {
-	const expected = 'I failed!';
+	it('Result.unwrapErrOrElse: Expect correct error on fail', () => {
+		const expected = 'I failed!';
 
-	const result = passingFunction('nope');
+		const result = passingFunction('nope');
 
-	expect(result.unwrapErrOr(expected)).toBe(expected);
-});
+		expect(result.unwrapErrOr(expected)).toBe(expected);
+	});
 
-// --- expect ---
+	// --- expect ---
 
-test('expect: Expect correct value', () => {
-	const expected = 'Success';
+	it('Result.expect: Expect correct value', () => {
+		const expected = 'Success';
 
-	const result = passingFunction(expected);
+		const result = passingFunction(expected);
 
-	expect(result.expect('Oh no!')).toBe(expected);
-});
+		expect(result.expect('Oh no!')).toBe(expected);
+	});
 
-test('expect: Should throw if failed', () => {
-	const result = failingFunction('oops!');
+	it('Result.expect: Should throw if failed', () => {
+		const result = failingFunction('oops!');
 
-	assert.throws(() => result.expect('Oh no'), 'Oh no');
-});
+		assert.throws(() => result.expect('Oh no'), 'Oh no');
+	});
 
-// --- expectErr ---
+	// --- expectErr ---
 
-test('expectErr: Expect correct value', () => {
-	const expected = 'Failure';
+	it('Result.expectErr: Expect correct value', () => {
+		const expected = 'Failure';
 
-	const result = failingFunction(expected);
+		const result = failingFunction(expected);
 
-	expect(result.expectErr('Oh no!')).toBe(expected);
-});
+		expect(result.expectErr('Oh no!')).toBe(expected);
+	});
 
-test('expectErr: Should throw if ok', () => {
-	const result = passingFunction('oops!');
+	it('Result.expectErr: Should throw if ok', () => {
+		const result = passingFunction('oops!');
 
-	assert.throws(() => result.expectErr('Oh no'), 'Oh no');
-});
+		assert.throws(() => result.expectErr('Oh no'), 'Oh no');
+	});
 
-// --- map ---
+	// --- map ---
 
-test('map: Should map correctly if ok', () => {
-	const expected = 'Something';
-	const result = passingFunction(expected);
+	it('Result.map: Should map correctly if ok', () => {
+		const expected = 'Something';
+		const result = passingFunction(expected);
 
-	expect(result.map((val) => val.length).unwrap()).toBe(expected.length);
-});
+		expect(result.map((val) => val.length).unwrap()).toBe(expected.length);
+	});
 
-test('map: Should map correctly if err', () => {
-	const expected = 'Something';
-	const result = failingFunction(expected);
+	it('Result.map: Should map correctly if err', () => {
+		const expected = 'Something';
+		const result = failingFunction(expected);
 
-	expect(result.map(() => 'foo'.length).unwrapErr()).toBe(expected);
-});
+		expect(result.map(() => 'foo'.length).unwrapErr()).toBe(expected);
+	});
 
-// --- mapOr ---
+	// --- mapOr ---
 
-test('mapOr: Should map correctly if ok', () => {
-	const expected = 'Something';
-	const result = passingFunction(expected);
+	it('Result.mapOr: Should map correctly if ok', () => {
+		const expected = 'Something';
+		const result = passingFunction(expected);
 
-	expect(result.mapOr(1, (val) => val.length)).toBe(expected.length);
-});
+		expect(result.mapOr(1, (val) => val.length)).toBe(expected.length);
+	});
 
-test('mapOr: Should map correctly if err', () => {
-	const expected = 'Something';
-	const result = failingFunction('error');
+	it('Result.mapOr: Should map correctly if err', () => {
+		const expected = 'Something';
+		const result = failingFunction('error');
 
-	expect(result.mapOr(expected.length, () => 1)).toBe(expected.length);
-});
+		expect(result.mapOr(expected.length, () => 1)).toBe(expected.length);
+	});
 
-// --- mapOrElse ---
+	// --- mapOrElse ---
 
-test('mapOrElse: Should map correctly if ok', () => {
-	const expected = 'Something';
-	const result = passingFunction(expected);
+	it('Result.mapOrElse: Should map correctly if ok', () => {
+		const expected = 'Something';
+		const result = passingFunction(expected);
 
-	expect(
-		result.mapOrElse(
-			() => 0,
-			(val) => val.length
-		)
-	).toBe(expected.length);
-});
+		expect(
+			result.mapOrElse(
+				() => 0,
+				(val) => val.length
+			)
+		).toBe(expected.length);
+	});
 
-test('mapOrElse: Should map correctly if err', () => {
-	const expected = 'Something';
-	const result = failingFunction('error');
+	it('Result.mapOrElse: Should map correctly if err', () => {
+		const expected = 'Something';
+		const result = failingFunction('error');
 
-	expect(
-		result.mapOrElse(
-			() => expected.length,
-			() => 1
-		)
-	).toBe(expected.length);
-});
+		expect(
+			result.mapOrElse(
+				() => expected.length,
+				() => 1
+			)
+		).toBe(expected.length);
+	});
 
-// --- mapErr ---
+	// --- mapErr ---
 
-test('mapErr: Should map correctly if err', () => {
-	const expected = 'Something';
-	const result = failingFunction(expected);
+	it('Result.mapErr: Should map correctly if err', () => {
+		const expected = 'Something';
+		const result = failingFunction(expected);
 
-	expect(result.mapErr((err) => err.length).unwrapErr()).toBe(expected.length);
-});
+		expect(result.mapErr((err) => err.length).unwrapErr()).toBe(expected.length);
+	});
 
-test('mapErr: Should map correctly if ok', () => {
-	const expected = 'foo';
-	const result = passingFunction(expected);
+	it('Result.mapErr: Should map correctly if ok', () => {
+		const expected = 'foo';
+		const result = passingFunction(expected);
 
-	expect(result.mapErr(() => expected).unwrap()).toBe(expected);
-});
+		expect(result.mapErr(() => expected).unwrap()).toBe(expected);
+	});
 
-// --- mapErrOr ---
+	// --- mapErrOr ---
 
-test('mapErrOr: Should map correctly if err', () => {
-	const expected = 'Something';
-	const result = failingFunction(expected);
+	it('Result.mapErrOr: Should map correctly if err', () => {
+		const expected = 'Something';
+		const result = failingFunction(expected);
 
-	expect(result.mapErrOr(1, (val) => val.length)).toBe(expected.length);
-});
+		expect(result.mapErrOr(1, (val) => val.length)).toBe(expected.length);
+	});
 
-test('mapErrOr: Should map correctly if ok', () => {
-	const expected = 'Something';
-	const result = passingFunction('error');
+	it('Result.mapErrOr: Should map correctly if ok', () => {
+		const expected = 'Something';
+		const result = passingFunction('error');
 
-	expect(result.mapErrOr(expected.length, () => 1)).toBe(expected.length);
-});
+		expect(result.mapErrOr(expected.length, () => 1)).toBe(expected.length);
+	});
 
-// --- mapErrOrElse ---
+	// --- mapErrOrElse ---
 
-test('mapErrOrElse: Should map correctly if err', () => {
-	const expected = 'Something';
-	const result = failingFunction(expected);
+	it('Result.mapErrOrElse: Should map correctly if err', () => {
+		const expected = 'Something';
+		const result = failingFunction(expected);
 
-	expect(
-		result.mapErrOrElse(
-			() => 1,
-			(val) => val.length
-		)
-	).toBe(expected.length);
-});
+		expect(
+			result.mapErrOrElse(
+				() => 1,
+				(val) => val.length
+			)
+		).toBe(expected.length);
+	});
 
-test('mapErrOrElse: Should map correctly if ok', () => {
-	const expected = 'Something';
-	const result = passingFunction('error');
+	it('Result.mapErrOrElse: Should map correctly if ok', () => {
+		const expected = 'Something';
+		const result = passingFunction('error');
 
-	expect(
-		result.mapErrOrElse(
-			() => expected.length,
-			() => 1
-		)
-	).toBe(expected.length);
+		expect(
+			result.mapErrOrElse(
+				() => expected.length,
+				() => 1
+			)
+		).toBe(expected.length);
+	});
 });

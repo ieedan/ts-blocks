@@ -1,5 +1,5 @@
 import fs from 'node:fs';
-import { cancel, intro, isCancel, outro, text } from '@clack/prompts';
+import { cancel, confirm, intro, isCancel, outro, text } from '@clack/prompts';
 import color from 'chalk';
 import { Command } from 'commander';
 import { type InferInput, boolean, object, optional, parse, string } from 'valibot';
@@ -37,16 +37,16 @@ const _init = async (options: Options) => {
 	intro(color.bgBlueBright('ts-blocks'));
 
 	const { version } = JSON.parse(
-		fs.readFileSync(new URL('../../package.json', import.meta.url), 'utf-8')
+		fs.readFileSync(new URL('../package.json', import.meta.url), 'utf-8')
 	);
 
 	if (!options.path) {
 		const result = await text({
 			message: 'Where should we add the blocks?',
-			placeholder: 'src/blocks',
 			validate(value) {
 				if (value.trim() === '') return 'Please provide a value';
 			},
+			initialValue: 'src/blocks',
 		});
 
 		if (isCancel(result)) {
@@ -57,14 +57,21 @@ const _init = async (options: Options) => {
 		options.path = result;
 	}
 
-	let isDeno = false;
+	// checks if this is a Deno project
+	let isDeno = fs.existsSync('deno.json');
 
-	// very trivially tries to detect whether you are in a deno project
-	try {
-		fs.readFileSync('deno.json');
-		isDeno = true;
-	} catch {
-		isDeno = false;
+	if (!isDeno && fs.existsSync('jsr.json')) {
+		const result = await confirm({
+			message: `${color.cyan('jsr.json')} detected. Are you using Deno?`,
+			initialValue: true,
+		});
+
+		if (isCancel(result)) {
+			cancel('Canceled!');
+			process.exit(0);
+		}
+
+		isDeno = result;
 	}
 
 	const config: Config = {
@@ -74,9 +81,12 @@ const _init = async (options: Options) => {
 		includeIndexFile: options.indexFile,
 		includeTests: options.tests,
 		imports: isDeno ? 'deno' : 'node',
+		watermark: true,
 	};
 
 	fs.writeFileSync(CONFIG_NAME, `${JSON.stringify(config, null, '\t')}\n`);
+
+	fs.mkdirSync(config.path, { recursive: true });
 
 	outro(color.green('All done!'));
 };

@@ -11,25 +11,15 @@ const schema = object({
 	includeIndexFile: boolean(),
 	includeTests: boolean(),
 	path: pipe(string(), minLength(1)),
-	imports: optional(union([literal('deno'), literal('node')])),
+	imports: optional(union([literal('deno'), literal('node')]), 'node'),
+	watermark: optional(boolean(), true),
 });
 
-type Config = {
-	$schema: string;
-	addByCategory: boolean;
-	includeIndexFile: boolean;
-	includeTests: boolean;
-	path: string;
-	imports: 'deno' | 'node';
-};
-
-const getConfig = (): Config => {
+const getConfig = () => {
 	if (!fs.existsSync(CONFIG_NAME)) {
 		program.error(
 			color.red(
-				`Could not find your configuration file! Please run ${color.bold(
-					`'ts-blocks init'`
-				)}.`
+				`Could not find your configuration file! Please run ${color.bold(`'ts-blocks init'`)}.`
 			)
 		);
 	}
@@ -38,13 +28,9 @@ const getConfig = (): Config => {
 		message: color.red('Invalid config file!'),
 	});
 
-	// set defaults here
-
-	if (config.imports === undefined) {
-		config.imports = 'node';
-	}
-
-	return config as Config;
+	return config;
 };
+
+type Config = ReturnType<typeof getConfig>;
 
 export { type Config, CONFIG_NAME, getConfig, schema };

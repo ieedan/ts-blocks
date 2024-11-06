@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { cancel, confirm, intro, isCancel, outro, spinner } from '@clack/prompts';
+import { cancel, confirm, intro, isCancel, multiselect, outro, spinner } from '@clack/prompts';
 import color from 'chalk';
 import { Argument, Command, program } from 'commander';
 import { execa } from 'execa';
@@ -10,7 +10,10 @@ import { Project, type SourceFile } from 'ts-morph';
 import { type InferInput, boolean, object, parse } from 'valibot';
 import { blocks } from '../blocks';
 import { getConfig } from '../config';
+import { getInstalledBlocks } from '../utils/get-installed-blocks';
+import { getWatermark } from '../utils/get-watermark';
 import { INFO, WARN } from '../utils/index';
+import { type Task, runTasks } from '../utils/prompts';
 
 const schema = object({
 	yes: boolean(),
@@ -21,9 +24,9 @@ type Options = InferInput<typeof schema>;
 
 const add = new Command('add')
 	.addArgument(
-		new Argument('[blocks...]', 'Whichever block you want to add to your project.')
-			.choices(Object.entries(blocks).map(([key]) => key))
-			.argRequired()
+		new Argument('[blocks...]', 'Whichever block you want to add to your project.').choices(
+			Object.entries(blocks).map(([key]) => key)
+		)
 	)
 	.option('-y, --yes', 'Add and install any required dependencies.', false)
 	.option('--verbose', 'Include debug logs.', false)
@@ -34,6 +37,11 @@ const add = new Command('add')
 	});
 
 const _add = async (blockNames: string[], options: Options) => {
+	// get version from package.json
+	const { version } = JSON.parse(
+		fs.readFileSync(new URL('../package.json', import.meta.url), 'utf-8')
+	);
+
 	const verbose = (msg: string) => {
 		if (options.verbose) {
 			console.info(`${INFO} ${msg}`);
@@ -48,7 +56,39 @@ const _add = async (blockNames: string[], options: Options) => {
 
 	const loading = spinner();
 
-	for (const blockName of blockNames) {
+	const watermark = getWatermark(version);
+
+	const installedBlocks = getInstalledBlocks(config);
+
+	let installBlocks = blockNames;
+
+	if (installBlocks.length === 0) {
+		const promptResult = await multiselect({
+			message: 'Select which blocks to add.',
+			options: Object.entries(blocks).map(([key]) => {
+				const blockExists = installedBlocks.findIndex((block) => block === key) !== -1;
+
+				return {
+					label: blockExists ? color.gray(key) : key,
+					value: key,
+					// show hint for `Installed` if block is already installed
+					hint: blockExists ? 'Installed' : undefined,
+				};
+			}),
+			required: true,
+		});
+
+		if (isCancel(promptResult)) {
+			cancel('Canceled!');
+			process.exit(0);
+		}
+
+		installBlocks = promptResult as string[];
+	}
+
+	const tasks: Task[] = [];
+
+	for (const blockName of installBlocks) {
 		verbose(`Attempting to add ${blockName}`);
 
 		// in the future maybe we add a registry but for now it can just be fs
@@ -82,9 +122,7 @@ const _add = async (blockNames: string[], options: Options) => {
 
 		if (fs.existsSync(newPath) && !options.yes) {
 			const result = await confirm({
-				message: `${color.bold(
-					blockName
-				)} already exists in your project would you like to overwrite it?`,
+				message: `${color.bold(blockName)} already exists in your project would you like to overwrite it?`,
 				initialValue: false,
 			});
 
@@ -94,126 +132,142 @@ const _add = async (blockNames: string[], options: Options) => {
 			}
 		}
 
-		// this will clear other logs and we don't want that
-		if (!options.verbose) {
-			loading.start(`Adding ${color.bold(blockName)}`);
-		}
+		tasks.push({
+			loadingMessage: `Adding ${blockName}`,
+			completedMessage: `Added ${blockName}`,
+			run: async () => {
+				verbose(
+					`Copying files from ${color.bold(registryFilePath)} to ${color.bold(newPath)}`
+				);
 
-		verbose(`Copying files from ${color.bold(registryFilePath)} to ${color.bold(newPath)}`);
+				let registryFile = fs.readFileSync(registryFilePath).toString();
 
-		fs.copyFileSync(registryFilePath, newPath);
-
-		if (config.includeIndexFile) {
-			verbose('Trying to include index file');
-
-			const indexPath = path.join(directory, 'index.ts');
-
-			const project = new Project();
-
-			try {
-				let index: SourceFile;
-
-				if (fs.existsSync(indexPath)) {
-					index = project.addSourceFileAtPath(indexPath);
-				} else {
-					index = project.createSourceFile(indexPath);
+				if (config.watermark) {
+					registryFile = `${watermark}${registryFile}`;
 				}
 
-				if (config.imports === 'node') {
-					index.addExportDeclaration({
-						moduleSpecifier: `./${blockName}`,
-						isTypeOnly: false,
-					});
-				} else if (config.imports === 'deno') {
-					index.addExportDeclaration({
-						moduleSpecifier: `./${blockName}.ts`,
-						isTypeOnly: false,
-					});
-				}
+				fs.writeFileSync(newPath, registryFile);
 
-				index.saveSync();
-			} catch {
-				console.warn(`${WARN} Failed to modify ${indexPath}!`);
-			}
-		}
+				if (config.includeIndexFile) {
+					verbose('Trying to include index file');
 
-		if (config.includeTests) {
-			verbose('Trying to include tests');
+					const indexPath = path.join(directory, 'index.ts');
 
-			const registryTestPath = path.join(
-				registryDir,
-				`${block.category}/${blockName}.test.ts`
-			);
-
-			if (fs.existsSync(registryTestPath)) {
-				const { devDependencies } = JSON.parse(fs.readFileSync('package.json').toString());
-
-				if (devDependencies.vitest === undefined) {
-					loading.message(`Installing ${color.cyan('vitest')}`);
-
-					const pm = await detect({ cwd: process.cwd() });
-
-					if (pm == null) {
-						program.error(color.red('Could not detect package manager'));
-					}
-
-					const resolved = resolveCommand(pm.agent, 'install', ['vitest', '--save-dev']);
-
-					if (resolved == null) {
-						program.error(
-							color.red(`Could not resolve add command for '${pm.agent}'.`)
-						);
-					}
-
-					const { command, args } = resolved;
-
-					const installCommand = `${command} ${args.join(' ')}`;
+					const project = new Project();
 
 					try {
-						await execa({ cwd: process.cwd() })`${installCommand}`;
+						let index: SourceFile;
+
+						if (fs.existsSync(indexPath)) {
+							index = project.addSourceFileAtPath(indexPath);
+						} else {
+							index = project.createSourceFile(indexPath);
+						}
+
+						if (config.imports === 'node') {
+							index.addExportDeclaration({
+								moduleSpecifier: `./${blockName}`,
+								isTypeOnly: false,
+							});
+						} else if (config.imports === 'deno') {
+							index.addExportDeclaration({
+								moduleSpecifier: `./${blockName}.ts`,
+								isTypeOnly: false,
+							});
+						}
+
+						index.saveSync();
 					} catch {
-						program.error(
-							color.red(
-								`Failed to install ${color.bold(
-									'vitest'
-								)}! Failed while running '${color.bold(installCommand)}'`
-							)
-						);
+						console.warn(`${WARN} Failed to modify ${indexPath}!`);
 					}
 				}
 
-				fs.copyFileSync(registryTestPath, path.join(directory, `${blockName}.test.ts`));
-			}
-		}
+				if (config.includeTests) {
+					verbose('Trying to include tests');
 
-		if (block.dependencies) {
-			verbose('Trying to include dependencies');
+					const registryTestPath = path.join(
+						registryDir,
+						`${block.category}/${blockName}.test.ts`
+					);
 
-			if (!options.yes) {
-				const result = await confirm({
-					message: 'Add and install dependencies?',
-				});
+					if (fs.existsSync(registryTestPath)) {
+						const { devDependencies } = JSON.parse(
+							fs.readFileSync('package.json').toString()
+						);
 
-				if (isCancel(result)) {
-					cancel('Canceled!');
-					process.exit(0);
+						if (devDependencies.vitest === undefined) {
+							loading.message(`Installing ${color.cyan('vitest')}`);
+
+							const pm = await detect({ cwd: process.cwd() });
+
+							if (pm == null) {
+								program.error(color.red('Could not detect package manager'));
+							}
+
+							const resolved = resolveCommand(pm.agent, 'install', [
+								'vitest',
+								'--save-dev',
+							]);
+
+							if (resolved == null) {
+								program.error(
+									color.red(`Could not resolve add command for '${pm.agent}'.`)
+								);
+							}
+
+							const { command, args } = resolved;
+
+							const installCommand = `${command} ${args.join(' ')}`;
+
+							try {
+								await execa({ cwd: process.cwd() })`${installCommand}`;
+							} catch {
+								program.error(
+									color.red(
+										`Failed to install ${color.bold('vitest')}! Failed while running '${color.bold(
+											installCommand
+										)}'`
+									)
+								);
+							}
+						}
+
+						let registryTestFile = fs.readFileSync(registryTestPath).toString();
+
+						if (config.watermark) {
+							registryTestFile = `${watermark}${registryTestFile}`;
+						}
+
+						fs.writeFileSync(newPath, path.join(directory, `${blockName}.test.ts`));
+					}
 				}
 
-				options.yes = result;
-			}
+				if (block.dependencies) {
+					verbose('Trying to include dependencies');
 
-			if (options.yes) {
-				// currently no functions require dependencies (lets try and keep it that way)
-				throw new Error('NOT IMPLEMENTED');
-			}
-		}
+					if (!options.yes) {
+						const result = await confirm({
+							message: 'Add and install dependencies?',
+						});
 
-		if (options.verbose) {
-			verbose(`Added ${blockName}`);
-		} else {
-			loading.stop(`Added ${blockName}`);
-		}
+						if (isCancel(result)) {
+							cancel('Canceled!');
+							process.exit(0);
+						}
+
+						options.yes = result;
+					}
+
+					if (options.yes) {
+						// currently no functions require dependencies (lets try and keep it that way)
+						throw new Error('NOT IMPLEMENTED');
+					}
+				}
+			},
+		});
 	}
+
+	await runTasks(tasks, { verbose: options.verbose });
 
 	outro(color.green('All done!'));
 };
