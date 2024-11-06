@@ -1,41 +1,49 @@
-export type Category = 'types' | 'utilities';
+const categories = ['utilities', 'types'] as const;
+
+export type Category = typeof categories[number];
 
 export type Block = {
 	dependencies?: Record<string, string>;
+	/** Other utilities this block depends on */
+	localDependencies?: string[];
 	category: Category;
 };
 
 const blocks: Record<string, Block> = {
 	result: {
-		category: 'types',
+		category: "types",
 	},
-	'array-to-map': {
-		category: 'utilities',
+	"array-to-map": {
+		category: "utilities",
 	},
-	'map-to-array': {
-		category: 'utilities',
+	"map-to-array": {
+		category: "utilities",
 	},
 	truncate: {
-		category: 'utilities',
+		category: "utilities",
 	},
-	'array-sum': {
-		category: 'utilities',
+	"array-sum": {
+		category: "utilities",
 	},
 	sleep: {
-		category: 'utilities',
+		category: "utilities",
 	},
 	pad: {
-		category: 'utilities',
+		category: "utilities",
 	},
 	stopwatch: {
-		category: 'utilities',
+		category: "utilities",
 	},
 	dispatcher: {
-		category: 'utilities',
+		category: "utilities",
 	},
-	'is-number': {
-		category: 'utilities',
+	"is-number": {
+		category: "utilities",
+	},
+	"ipv4-address": {
+		category: "utilities",
+		localDependencies: ["result"],
 	},
 };
 
-export { blocks };
+export { blocks, categories };
