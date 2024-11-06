@@ -10,10 +10,10 @@ import { Project, type SourceFile } from 'ts-morph';
 import { type InferInput, boolean, object, parse } from 'valibot';
 import { blocks } from '../blocks';
 import { getConfig } from '../config';
-import { INFO, WARN } from '../utils/index';
 import { getInstalledBlocks } from '../utils/get-installed-blocks';
-import { runTasks, type Task } from '../utils/prompts';
 import { getWatermark } from '../utils/get-watermark';
+import { INFO, WARN } from '../utils/index';
+import { type Task, runTasks } from '../utils/prompts';
 
 const schema = object({
 	yes: boolean(),

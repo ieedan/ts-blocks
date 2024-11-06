@@ -1,7 +1,7 @@
-import type { Config } from '../config';
-import { blocks } from '../blocks';
-import path from 'node:path';
 import fs from 'node:fs';
+import path from 'node:path';
+import { blocks } from '../blocks';
+import type { Config } from '../config';
 
 const getInstalledBlocks = (config: Config) => {
 	const installedBlocks: string[] = [];

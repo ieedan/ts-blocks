@@ -1,4 +1,4 @@
-import { assert, expect, describe, it } from 'vitest';
+import { assert, describe, expect, it } from 'vitest';
 import { Err, Ok, type Result } from './result';
 
 const failingFunction = <E>(err: E): Result<boolean, E> => Err(err);
