@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { cancel, confirm, intro, isCancel, outro, spinner } from '@clack/prompts';
+import { cancel, confirm, intro, isCancel, multiselect, outro, spinner } from '@clack/prompts';
 import color from 'chalk';
 import { Argument, Command, program } from 'commander';
 import { execa } from 'execa';
@@ -11,6 +11,7 @@ import { type InferInput, boolean, object, parse } from 'valibot';
 import { blocks } from '../blocks';
 import { getConfig } from '../config';
 import { INFO, WARN } from '../utils/index';
+import { getInstalledBlocks } from '../utils/get-installed-blocks';
 
 const schema = object({
 	yes: boolean(),
@@ -21,9 +22,9 @@ type Options = InferInput<typeof schema>;
 
 const add = new Command('add')
 	.addArgument(
-		new Argument('[blocks...]', 'Whichever block you want to add to your project.')
-			.choices(Object.entries(blocks).map(([key]) => key))
-			.argRequired()
+		new Argument('[blocks...]', 'Whichever block you want to add to your project.').choices(
+			Object.entries(blocks).map(([key]) => key)
+		)
 	)
 	.option('-y, --yes', 'Add and install any required dependencies.', false)
 	.option('--verbose', 'Include debug logs.', false)
@@ -48,7 +49,34 @@ const _add = async (blockNames: string[], options: Options) => {
 
 	const loading = spinner();
 
-	for (const blockName of blockNames) {
+	const installedBlocks = getInstalledBlocks(config);
+
+	let installBlocks = blockNames;
+
+	if (installBlocks.length === 0) {
+		const promptResult = await multiselect({
+			message: 'Select which blocks to add.',
+			options: Object.entries(blocks).map(([key]) => ({
+				label: key,
+				value: key,
+				// show hint for `Overwrite` if block is already installed
+				hint:
+					installedBlocks.findIndex((block) => block === key) !== -1
+						? 'Overwrite'
+						: undefined,
+			})),
+			required: true,
+		});
+
+		if (isCancel(promptResult)) {
+			cancel('Canceled!');
+			process.exit(0);
+		}
+
+		installBlocks = promptResult as string[];
+	}
+
+	for (const blockName of installBlocks) {
 		verbose(`Attempting to add ${blockName}`);
 
 		// in the future maybe we add a registry but for now it can just be fs
@@ -82,9 +110,7 @@ const _add = async (blockNames: string[], options: Options) => {
 
 		if (fs.existsSync(newPath) && !options.yes) {
 			const result = await confirm({
-				message: `${color.bold(
-					blockName
-				)} already exists in your project would you like to overwrite it?`,
+				message: `${color.bold(blockName)} already exists in your project would you like to overwrite it?`,
 				initialValue: false,
 			});
 
@@ -174,9 +200,9 @@ const _add = async (blockNames: string[], options: Options) => {
 					} catch {
 						program.error(
 							color.red(
-								`Failed to install ${color.bold(
-									'vitest'
-								)}! Failed while running '${color.bold(installCommand)}'`
+								`Failed to install ${color.bold('vitest')}! Failed while running '${color.bold(
+									installCommand
+								)}'`
 							)
 						);
 					}
