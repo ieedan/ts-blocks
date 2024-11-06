@@ -1,5 +1,11 @@
 # ts-blocks
 
+## 0.10.1
+
+### Patch Changes
+
+- bda0f15: Fixes issue with typedoc not generating docs.
+
 ## 0.10.0
 
 ### Minor Changes
