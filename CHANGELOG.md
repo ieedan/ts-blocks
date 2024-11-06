@@ -1,5 +1,11 @@
 # ts-blocks
 
+## 0.10.2
+
+### Patch Changes
+
+- a5bc75d: Fixed error while adding blocks.
+
 ## 0.10.1
 
 ### Patch Changes
