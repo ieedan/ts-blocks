@@ -1,5 +1,5 @@
-import { describe, it, expect } from 'vitest';
-import { parse, validate, formatToString } from './ipv4-address';
+import { describe, expect, it } from 'vitest';
+import { formatToString, parse, validate } from './ipv4-address';
 
 describe('parse', () => {
 	it(`Allows '.' separator.`, () => {
