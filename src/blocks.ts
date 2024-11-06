@@ -33,6 +33,9 @@ const blocks: Record<string, Block> = {
 	dispatcher: {
 		category: 'utilities',
 	},
+	'is-number': {
+		category: 'utilities',
+	},
 };
 
 export { blocks };

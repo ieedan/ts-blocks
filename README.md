@@ -10,7 +10,7 @@ Check out our [docs](https://ieedan.github.io/ts-blocks/).
 
 ## What is ts-blocks?
 
-ts-blocks is a collection of well documented, tested utility functions and types that can be easily dropped into your project.
+ts-blocks is a collection of well documented, and tested utility functions and types that can be easily dropped into your project.
 
 They have 0 dependencies and allow you to modify the code to your own requirements. This allows you to own the code without having to write it yourself every time.
 
@@ -28,26 +28,12 @@ npx ts-blocks init
 
 ```bash
 npx ts-blocks add result
-
-┌  ts-blocks
-│
-◇  Added result
-│
-└  All done!
 ```
 
 ### Multiple
 
 ```bash
 npx ts-blocks add result array-sum
-
-┌  ts-blocks
-│
-◇  Added result
-│
-◇  Added array-sum
-│
-└  All done!
 ```
 
 # Blocks
