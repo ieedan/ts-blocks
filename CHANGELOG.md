@@ -1,5 +1,17 @@
 # ts-blocks
 
+## 0.10.0
+
+### Minor Changes
+
+- 52f9480: Add optional `watermark` that will show the version that the component was installed at as well as a link to documentation.
+- 52f9480: Added multi-select prompt to add command so that you can browser which components to add/upgrade.
+
+### Patch Changes
+
+- 2eff64a: Improves tests with `describe` and `it` syntax.
+- 52f9480: Fixed issue with init command not accepting default value.
+
 ## 0.9.0
 
 ### Minor Changes
