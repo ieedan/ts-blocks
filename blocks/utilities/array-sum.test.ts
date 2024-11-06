@@ -1,14 +1,22 @@
-import { expect, test } from 'vitest';
+import { expect, describe, it } from 'vitest';
 import { arraySum } from './array-sum';
 
-test('Correct Sum Of All Elements', () => {
-	const total = arraySum([1, 2, 3, 4, 5], (num) => num);
+describe('arraySum', () => {
+	it('Correctly sums the array', () => {
+		const total = arraySum([1, 2, 3, 4, 5], (num) => num);
 
-	expect(total).toBe(15);
-});
+		expect(total).toBe(15);
+	});
 
-test('Expect 0 on empty', () => {
-	const total = arraySum([], (num) => num);
+	it('Correctly sums negative and positive numbers', () => {
+		const total = arraySum([1, -1], (num) => num);
 
-	expect(total).toBe(0);
+		expect(total).toBe(0);
+	});
+
+	it('Returns 0 when empty', () => {
+		const total = arraySum([], (num) => num);
+
+		expect(total).toBe(0);
+	});
 });

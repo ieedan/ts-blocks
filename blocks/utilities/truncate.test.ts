@@ -1,26 +1,28 @@
-import { expect, test } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { truncate } from './truncate';
 
-test('Correct forward', () => {
-	const str = truncate('Hello World!', 5);
+describe('truncate', () => {
+	it('Correctly truncates forward', () => {
+		const str = truncate('Hello World!', 5);
 
-	expect(str).toBe('Hello');
-});
+		expect(str).toBe('Hello');
+	});
 
-test('Correct reverse', () => {
-	const str = truncate('Hello World!', 6, { reverse: true });
+	it('Correctly truncates reverse', () => {
+		const str = truncate('Hello World!', 6, { reverse: true });
 
-	expect(str).toBe('World!');
-});
+		expect(str).toBe('World!');
+	});
 
-test('Correct forward with ending', () => {
-	const str = truncate('Hello World!', 5, { ending: '...' });
+	it('Adds ending to the end of forward truncated string', () => {
+		const str = truncate('Hello World!', 5, { ending: '...' });
 
-	expect(str).toBe('Hello...');
-});
+		expect(str).toBe('Hello...');
+	});
 
-test('Correct reverse with ending', () => {
-	const str = truncate('Hello World!', 6, { ending: '...', reverse: true });
+	it('Adds ending to the start of a reverse truncated string', () => {
+		const str = truncate('Hello World!', 6, { ending: '...', reverse: true });
 
-	expect(str).toBe('...World!');
+		expect(str).toBe('...World!');
+	});
 });

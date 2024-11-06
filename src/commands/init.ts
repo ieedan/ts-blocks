@@ -1,9 +1,9 @@
-import fs from "node:fs";
-import { cancel, confirm, intro, isCancel, outro, text } from "@clack/prompts";
-import color from "chalk";
-import { Command } from "commander";
-import { type InferInput, boolean, object, optional, parse, string } from "valibot";
-import { CONFIG_NAME, type Config } from "../config";
+import fs from 'node:fs';
+import { cancel, confirm, intro, isCancel, outro, text } from '@clack/prompts';
+import color from 'chalk';
+import { Command } from 'commander';
+import { type InferInput, boolean, object, optional, parse, string } from 'valibot';
+import { CONFIG_NAME, type Config } from '../config';
 
 const schema = object({
 	path: optional(string()),
@@ -14,12 +14,19 @@ const schema = object({
 
 type Options = InferInput<typeof schema>;
 
-const init = new Command("init")
-	.description("Initializes the configuration file")
-	.option("--path <path>", "Path to install the blocks")
-	.option("--add-by-category", "Will create directories to contain each block by category.", false)
-	.option("--no-index-file", "Will create an index.ts file at the root of the folder to re-export functions from.")
-	.option("--tests", "Will include tests along with the functions.", false)
+const init = new Command('init')
+	.description('Initializes the configuration file')
+	.option('--path <path>', 'Path to install the blocks')
+	.option(
+		'--add-by-category',
+		'Will create directories to contain each block by category.',
+		false
+	)
+	.option(
+		'--no-index-file',
+		'Will create an index.ts file at the root of the folder to re-export functions from.'
+	)
+	.option('--tests', 'Will include tests along with the functions.', false)
 	.action(async (opts) => {
 		const options = parse(schema, opts);
 
@@ -27,21 +34,23 @@ const init = new Command("init")
 	});
 
 const _init = async (options: Options) => {
-	intro(color.bgBlueBright("ts-blocks"));
+	intro(color.bgBlueBright('ts-blocks'));
 
-	const { version } = JSON.parse(fs.readFileSync(new URL("../../package.json", import.meta.url), "utf-8"));
+	const { version } = JSON.parse(
+		fs.readFileSync(new URL('../../package.json', import.meta.url), 'utf-8')
+	);
 
 	if (!options.path) {
 		const result = await text({
-			message: "Where should we add the blocks?",
+			message: 'Where should we add the blocks?',
 			validate(value) {
-				if (value.trim() === "") return "Please provide a value";
+				if (value.trim() === '') return 'Please provide a value';
 			},
-			initialValue: "src/blocks",
+			initialValue: 'src/blocks',
 		});
 
 		if (isCancel(result)) {
-			cancel("Canceled!");
+			cancel('Canceled!');
 			process.exit(0);
 		}
 
@@ -49,16 +58,16 @@ const _init = async (options: Options) => {
 	}
 
 	// checks if this is a Deno project
-	let isDeno = fs.existsSync("deno.json");
+	let isDeno = fs.existsSync('deno.json');
 
-	if (!isDeno && fs.existsSync("jsr.json")) {
+	if (!isDeno && fs.existsSync('jsr.json')) {
 		const result = await confirm({
-			message: `${color.cyan("jsr.json")} detected. Are you using Deno?`,
+			message: `${color.cyan('jsr.json')} detected. Are you using Deno?`,
 			initialValue: true,
 		});
 
 		if (isCancel(result)) {
-			cancel("Canceled!");
+			cancel('Canceled!');
 			process.exit(0);
 		}
 
@@ -71,15 +80,15 @@ const _init = async (options: Options) => {
 		addByCategory: options.addByCategory,
 		includeIndexFile: options.indexFile,
 		includeTests: options.tests,
-		imports: isDeno ? "deno" : "node",
+		imports: isDeno ? 'deno' : 'node',
 		watermark: true,
 	};
 
-	fs.writeFileSync(CONFIG_NAME, `${JSON.stringify(config, null, "\t")}\n`);
+	fs.writeFileSync(CONFIG_NAME, `${JSON.stringify(config, null, '\t')}\n`);
 
 	fs.mkdirSync(config.path, { recursive: true });
 
-	outro(color.green("All done!"));
+	outro(color.green('All done!'));
 };
 
 export { init };
