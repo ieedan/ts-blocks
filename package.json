@@ -7,16 +7,13 @@
 		"type": "git",
 		"url": "git+https://github.com/ieedan/ts-blocks"
 	},
-	"keywords": [
-		"changelog",
-		"date"
-	],
+	"keywords": ["changelog", "date"],
 	"author": "Aidan Bleser",
 	"license": "MIT",
 	"bugs": {
 		"url": "https://github.com/ieedan/ts-blocks/issues"
 	},
-	"homepage": "https://github.com/ieedan/ts-blocks",
+	"homepage": "https://ieedan.github.io/ts-blocks/",
 	"main": "bin.mjs",
 	"bin": "./bin.mjs",
 	"type": "module",
