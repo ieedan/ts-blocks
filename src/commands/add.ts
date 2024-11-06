@@ -12,6 +12,7 @@ import { blocks } from "../blocks";
 import { getConfig } from "../config";
 import { INFO, WARN } from "../utils/index";
 import { getInstalledBlocks } from "../utils/get-installed-blocks";
+import { runTasks, type Task } from "../utils/prompts";
 
 const schema = object({
 	yes: boolean(),
@@ -77,6 +78,8 @@ const _add = async (blockNames: string[], options: Options) => {
 		installBlocks = promptResult as string[];
 	}
 
+	const tasks: Task[] = [];
+
 	for (const blockName of installBlocks) {
 		verbose(`Attempting to add ${blockName}`);
 
@@ -121,121 +124,118 @@ const _add = async (blockNames: string[], options: Options) => {
 			}
 		}
 
-		// this will clear other logs and we don't want that
-		if (!options.verbose) {
-			loading.start(`Adding ${color.bold(blockName)}`);
-		}
+		tasks.push({
+			loadingMessage: `Adding ${blockName}`,
+			completedMessage: `Added ${blockName}`,
+			run: async () => {
+				verbose(`Copying files from ${color.bold(registryFilePath)} to ${color.bold(newPath)}`);
 
-		verbose(`Copying files from ${color.bold(registryFilePath)} to ${color.bold(newPath)}`);
+				fs.copyFileSync(registryFilePath, newPath);
 
-		fs.copyFileSync(registryFilePath, newPath);
+				if (config.includeIndexFile) {
+					verbose("Trying to include index file");
 
-		if (config.includeIndexFile) {
-			verbose("Trying to include index file");
+					const indexPath = path.join(directory, "index.ts");
 
-			const indexPath = path.join(directory, "index.ts");
-
-			const project = new Project();
-
-			try {
-				let index: SourceFile;
-
-				if (fs.existsSync(indexPath)) {
-					index = project.addSourceFileAtPath(indexPath);
-				} else {
-					index = project.createSourceFile(indexPath);
-				}
-
-				if (config.imports === "node") {
-					index.addExportDeclaration({
-						moduleSpecifier: `./${blockName}`,
-						isTypeOnly: false,
-					});
-				} else if (config.imports === "deno") {
-					index.addExportDeclaration({
-						moduleSpecifier: `./${blockName}.ts`,
-						isTypeOnly: false,
-					});
-				}
-
-				index.saveSync();
-			} catch {
-				console.warn(`${WARN} Failed to modify ${indexPath}!`);
-			}
-		}
-
-		if (config.includeTests) {
-			verbose("Trying to include tests");
-
-			const registryTestPath = path.join(registryDir, `${block.category}/${blockName}.test.ts`);
-
-			if (fs.existsSync(registryTestPath)) {
-				const { devDependencies } = JSON.parse(fs.readFileSync("package.json").toString());
-
-				if (devDependencies.vitest === undefined) {
-					loading.message(`Installing ${color.cyan("vitest")}`);
-
-					const pm = await detect({ cwd: process.cwd() });
-
-					if (pm == null) {
-						program.error(color.red("Could not detect package manager"));
-					}
-
-					const resolved = resolveCommand(pm.agent, "install", ["vitest", "--save-dev"]);
-
-					if (resolved == null) {
-						program.error(color.red(`Could not resolve add command for '${pm.agent}'.`));
-					}
-
-					const { command, args } = resolved;
-
-					const installCommand = `${command} ${args.join(" ")}`;
+					const project = new Project();
 
 					try {
-						await execa({ cwd: process.cwd() })`${installCommand}`;
+						let index: SourceFile;
+
+						if (fs.existsSync(indexPath)) {
+							index = project.addSourceFileAtPath(indexPath);
+						} else {
+							index = project.createSourceFile(indexPath);
+						}
+
+						if (config.imports === "node") {
+							index.addExportDeclaration({
+								moduleSpecifier: `./${blockName}`,
+								isTypeOnly: false,
+							});
+						} else if (config.imports === "deno") {
+							index.addExportDeclaration({
+								moduleSpecifier: `./${blockName}.ts`,
+								isTypeOnly: false,
+							});
+						}
+
+						index.saveSync();
 					} catch {
-						program.error(
-							color.red(
-								`Failed to install ${color.bold("vitest")}! Failed while running '${color.bold(
-									installCommand
-								)}'`
-							)
-						);
+						console.warn(`${WARN} Failed to modify ${indexPath}!`);
 					}
 				}
 
-				fs.copyFileSync(registryTestPath, path.join(directory, `${blockName}.test.ts`));
-			}
-		}
+				if (config.includeTests) {
+					verbose("Trying to include tests");
 
-		if (block.dependencies) {
-			verbose("Trying to include dependencies");
+					const registryTestPath = path.join(registryDir, `${block.category}/${blockName}.test.ts`);
 
-			if (!options.yes) {
-				const result = await confirm({
-					message: "Add and install dependencies?",
-				});
+					if (fs.existsSync(registryTestPath)) {
+						const { devDependencies } = JSON.parse(fs.readFileSync("package.json").toString());
 
-				if (isCancel(result)) {
-					cancel("Canceled!");
-					process.exit(0);
+						if (devDependencies.vitest === undefined) {
+							loading.message(`Installing ${color.cyan("vitest")}`);
+
+							const pm = await detect({ cwd: process.cwd() });
+
+							if (pm == null) {
+								program.error(color.red("Could not detect package manager"));
+							}
+
+							const resolved = resolveCommand(pm.agent, "install", ["vitest", "--save-dev"]);
+
+							if (resolved == null) {
+								program.error(color.red(`Could not resolve add command for '${pm.agent}'.`));
+							}
+
+							const { command, args } = resolved;
+
+							const installCommand = `${command} ${args.join(" ")}`;
+
+							try {
+								await execa({ cwd: process.cwd() })`${installCommand}`;
+							} catch {
+								program.error(
+									color.red(
+										`Failed to install ${color.bold("vitest")}! Failed while running '${color.bold(
+											installCommand
+										)}'`
+									)
+								);
+							}
+						}
+
+						fs.copyFileSync(registryTestPath, path.join(directory, `${blockName}.test.ts`));
+					}
 				}
 
-				options.yes = result;
-			}
+				if (block.dependencies) {
+					verbose("Trying to include dependencies");
 
-			if (options.yes) {
-				// currently no functions require dependencies (lets try and keep it that way)
-				throw new Error("NOT IMPLEMENTED");
-			}
-		}
+					if (!options.yes) {
+						const result = await confirm({
+							message: "Add and install dependencies?",
+						});
 
-		if (options.verbose) {
-			verbose(`Added ${blockName}`);
-		} else {
-			loading.stop(`Added ${blockName}`);
-		}
+						if (isCancel(result)) {
+							cancel("Canceled!");
+							process.exit(0);
+						}
+
+						options.yes = result;
+					}
+
+					if (options.yes) {
+						// currently no functions require dependencies (lets try and keep it that way)
+						throw new Error("NOT IMPLEMENTED");
+					}
+				}
+			},
+		});
 	}
+
+	await runTasks(tasks, { verbose: options.verbose });
 
 	outro(color.green("All done!"));
 };

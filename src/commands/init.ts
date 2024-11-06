@@ -48,28 +48,21 @@ const _init = async (options: Options) => {
 		options.path = result;
 	}
 
-	let isDeno = false;
+	// checks if this is a Deno project
+	let isDeno = fs.existsSync("deno.json");
 
-	// very trivially tries to detect whether you are in a deno project
-	try {
-		fs.readFileSync("deno.json");
-		isDeno = true;
-	} catch {
-		isDeno = false;
+	if (!isDeno && fs.existsSync("jsr.json")) {
+		const result = await confirm({
+			message: `${color.cyan("jsr.json")} detected. Are you using Deno?`,
+			initialValue: true,
+		});
 
-		if (fs.readFileSync("jsr.json")) {
-			const result = await confirm({
-				message: `${color.cyan("jsr.json")} detected. Are you using Deno?`,
-				initialValue: true,
-			});
-
-			if (isCancel(result)) {
-				cancel("Canceled!");
-				process.exit(0);
-			}
-
-			isDeno = result;
+		if (isCancel(result)) {
+			cancel("Canceled!");
+			process.exit(0);
 		}
+
+		isDeno = result;
 	}
 
 	const config: Config = {
@@ -82,6 +75,8 @@ const _init = async (options: Options) => {
 	};
 
 	fs.writeFileSync(CONFIG_NAME, `${JSON.stringify(config, null, "\t")}\n`);
+
+	fs.mkdirSync(config.path, { recursive: true });
 
 	outro(color.green("All done!"));
 };
