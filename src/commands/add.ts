@@ -39,7 +39,7 @@ const add = new Command('add')
 const _add = async (blockNames: string[], options: Options) => {
 	// get version from package.json
 	const { version } = JSON.parse(
-		fs.readFileSync(new URL('../../package.json', import.meta.url), 'utf-8')
+		fs.readFileSync(new URL('../package.json', import.meta.url), 'utf-8')
 	);
 
 	const verbose = (msg: string) => {

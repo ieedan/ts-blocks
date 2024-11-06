@@ -2,12 +2,17 @@
 	"name": "ts-blocks",
 	"description": "A CLI to blocks to your project.",
 	"version": "0.9.0",
-	"packageManager": "pnpm@9.8.0",
+	"packageManager": "pnpm@9.12.3",
 	"repository": {
 		"type": "git",
 		"url": "git+https://github.com/ieedan/ts-blocks"
 	},
-	"keywords": ["blocks", "typescript", "tested", "documented"],
+	"keywords": [
+		"blocks",
+		"typescript",
+		"tested",
+		"documented"
+	],
 	"author": "Aidan Bleser",
 	"license": "MIT",
 	"bugs": {
@@ -28,12 +33,12 @@
 		"blocks/**/*"
 	],
 	"scripts": {
-		"start": "unbuild && node bin.mjs",
-		"build": "unbuild",
+		"start": "tsup --silent && node bin.mjs",
+		"build": "tsup",
 		"format": "biome format --write",
 		"lint": "biome lint --write",
 		"check": "pnpm biome check",
-		"ci:release": "unbuild && changeset publish",
+		"ci:release": "tsup && changeset publish",
 		"changeset": "changeset",
 		"test": "vitest",
 		"docs:generate": "typedoc"
@@ -41,9 +46,9 @@
 	"devDependencies": {
 		"@biomejs/biome": "1.9.4",
 		"@types/node": "^22.9.0",
+		"tsup": "^8.3.5",
 		"typedoc": "^0.26.11",
 		"typescript": "^5.6.3",
-		"unbuild": "^2.0.0",
 		"vitest": "^2.1.4"
 	},
 	"dependencies": {
