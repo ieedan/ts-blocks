@@ -1,5 +1,11 @@
 # ts-blocks
 
+## 0.9.0
+
+### Minor Changes
+
+- 5f120fd: Adds `isNumber` block.
+
 ## 0.8.0
 
 ### Minor Changes
