@@ -72,6 +72,7 @@ const _init = async (options: Options) => {
 		includeIndexFile: options.indexFile,
 		includeTests: options.tests,
 		imports: isDeno ? "deno" : "node",
+		watermark: true,
 	};
 
 	fs.writeFileSync(CONFIG_NAME, `${JSON.stringify(config, null, "\t")}\n`);

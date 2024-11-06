@@ -13,6 +13,7 @@ import { getConfig } from "../config";
 import { INFO, WARN } from "../utils/index";
 import { getInstalledBlocks } from "../utils/get-installed-blocks";
 import { runTasks, type Task } from "../utils/prompts";
+import { getWatermark } from "../utils/get-watermark";
 
 const schema = object({
 	yes: boolean(),
@@ -36,6 +37,9 @@ const add = new Command("add")
 	});
 
 const _add = async (blockNames: string[], options: Options) => {
+	// get version from package.json
+	const { version } = JSON.parse(fs.readFileSync(new URL("../../package.json", import.meta.url), "utf-8"));
+
 	const verbose = (msg: string) => {
 		if (options.verbose) {
 			console.info(`${INFO} ${msg}`);
@@ -49,6 +53,8 @@ const _add = async (blockNames: string[], options: Options) => {
 	const config = getConfig();
 
 	const loading = spinner();
+
+	const watermark = getWatermark(version);
 
 	const installedBlocks = getInstalledBlocks(config);
 
@@ -130,7 +136,13 @@ const _add = async (blockNames: string[], options: Options) => {
 			run: async () => {
 				verbose(`Copying files from ${color.bold(registryFilePath)} to ${color.bold(newPath)}`);
 
-				fs.copyFileSync(registryFilePath, newPath);
+				let registryFile = fs.readFileSync(registryFilePath).toString();
+
+				if (config.watermark) {
+					registryFile = `${watermark}${registryFile}`;
+				}
+
+				fs.writeFileSync(newPath, registryFile);
 
 				if (config.includeIndexFile) {
 					verbose("Trying to include index file");
@@ -206,7 +218,13 @@ const _add = async (blockNames: string[], options: Options) => {
 							}
 						}
 
-						fs.copyFileSync(registryTestPath, path.join(directory, `${blockName}.test.ts`));
+						let registryTestFile = fs.readFileSync(registryTestPath).toString();
+
+						if (config.watermark) {
+							registryTestFile = `${watermark}${registryTestFile}`;
+						}
+
+						fs.writeFileSync(newPath, path.join(directory, `${blockName}.test.ts`));
 					}
 				}
 
