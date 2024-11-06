@@ -1,5 +1,16 @@
 # ts-blocks
 
+## 0.11.0
+
+### Minor Changes
+
+- b9b4f34: Adds the ability for blocks to depend on other blocks.
+- b9b4f34: Adds `ipv4-address` block with basic parsing, validation, and formatting.
+
+### Patch Changes
+
+- ced0696: Fixes issue where the `test` command wouldn't work if you were using `addByCategory` in your config.
+
 ## 0.10.2
 
 ### Patch Changes
