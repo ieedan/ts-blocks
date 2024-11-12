@@ -18,20 +18,17 @@ jobs:
             - uses: pnpm/action-setup@v4
             - uses: actions/setup-node@v4
               with:
-                  node-version: '20'
+                  node-version: "20"
 
             - name: Install dependencies
               run: pnpm install
-
-            - name: Build Blocks
-              run: pnpm blocks:build
 
             - name: Create Release Pull Request or Publish
               id: changesets
               uses: changesets/action@v1
               with:
-                  commit: 'chore(release): version package'
-                  title: 'chore(release): version package'
+                  commit: "chore(release): version package"
+                  title: "chore(release): version package"
                   publish: pnpm ci:release
               env:
                   NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
