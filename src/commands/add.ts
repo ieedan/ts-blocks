@@ -281,7 +281,7 @@ ${rawUrl.href}`
 				if (config.watermark) {
 					const watermark = getWatermark(
 						context.package.version,
-						config.repoPath ?? context.package.repository.url.replaceAll("+git", "")
+						config.repoPath ?? context.package.repository.url.replaceAll("git+", "")
 					);
 
 					blockFileContent = `${watermark}${blockFileContent}`;
