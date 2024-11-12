@@ -1,7 +1,7 @@
 {
 	"name": "ts-blocks",
 	"description": "A CLI to blocks to your project.",
-	"version": "0.0.1",
+	"version": "0.0.2",
 	"packageManager": "pnpm@9.12.3",
 	"repository": {
 		"type": "git",
