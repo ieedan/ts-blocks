@@ -11,8 +11,9 @@ export type Category = {
 
 export type Block = {
 	name: string;
-	tests: boolean;
+    category: string;
 	localDependencies?: string[];
+    tests: boolean;
 };
 
 /** Using the provided path to the blocks folder builds the blocks into categories and also resolves localDependencies
@@ -96,8 +97,9 @@ const buildBlocksDirectory = (blocksPath: string): Category[] => {
 
 			const block: Block = {
 				name,
-				tests: hasTests,
+                category: categoryName,
 				localDependencies: localDeps,
+                tests: hasTests,
 			};
 
 			category.blocks.push(block);

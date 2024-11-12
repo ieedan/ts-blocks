@@ -7,7 +7,6 @@ const CONFIG_NAME = 'blocks.json';
 
 const schema = object({
 	$schema: string(),
-	addByCategory: boolean(),
 	includeIndexFile: boolean(),
 	includeTests: boolean(),
 	path: pipe(string(), minLength(1)),

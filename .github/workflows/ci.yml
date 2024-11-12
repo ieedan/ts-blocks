@@ -27,3 +27,6 @@ jobs:
 
             - name: Build
               run: pnpm build
+
+            - name: Build Blocks
+              run: pnpm blocks:build

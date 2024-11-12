@@ -4,8 +4,9 @@
         "blocks": [
             {
                 "name": "result",
-                "tests": true,
-                "localDependencies": []
+                "category": "types",
+                "localDependencies": [],
+                "tests": true
             }
         ]
     },
@@ -14,55 +15,66 @@
         "blocks": [
             {
                 "name": "array-sum",
-                "tests": true,
-                "localDependencies": []
+                "category": "utilities",
+                "localDependencies": [],
+                "tests": true
             },
             {
                 "name": "array-to-map",
-                "tests": true,
-                "localDependencies": []
+                "category": "utilities",
+                "localDependencies": [],
+                "tests": true
             },
             {
                 "name": "dispatcher",
-                "tests": true,
-                "localDependencies": []
+                "category": "utilities",
+                "localDependencies": [],
+                "tests": true
             },
             {
                 "name": "ipv4-address",
-                "tests": true,
+                "category": "utilities",
                 "localDependencies": [
-                    "types/result"
-                ]
+                    "types/result",
+                    "utilities/is-number"
+                ],
+                "tests": true
             },
             {
                 "name": "is-number",
-                "tests": true,
-                "localDependencies": []
+                "category": "utilities",
+                "localDependencies": [],
+                "tests": true
             },
             {
                 "name": "map-to-array",
-                "tests": true,
-                "localDependencies": []
+                "category": "utilities",
+                "localDependencies": [],
+                "tests": true
             },
             {
                 "name": "pad",
-                "tests": true,
-                "localDependencies": []
+                "category": "utilities",
+                "localDependencies": [],
+                "tests": true
             },
             {
                 "name": "sleep",
-                "tests": true,
-                "localDependencies": []
+                "category": "utilities",
+                "localDependencies": [],
+                "tests": true
             },
             {
                 "name": "stopwatch",
-                "tests": true,
-                "localDependencies": []
+                "category": "utilities",
+                "localDependencies": [],
+                "tests": true
             },
             {
                 "name": "truncate",
-                "tests": true,
-                "localDependencies": []
+                "category": "utilities",
+                "localDependencies": [],
+                "tests": true
             }
         ]
     }
