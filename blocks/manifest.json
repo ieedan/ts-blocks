@@ -34,10 +34,7 @@
 			{
 				"name": "ipv4-address",
 				"category": "utilities",
-				"localDependencies": [
-					"types/result",
-					"utilities/is-number"
-				],
+				"localDependencies": ["types/result", "utilities/is-number"],
 				"tests": true
 			},
 			{
