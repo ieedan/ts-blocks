@@ -6,6 +6,11 @@
 			"description": "Repository that hosts the blocks. (Defaults to local)",
 			"type": "string"
 		},
+		"trustRepoPath": {
+			"description": "When enabled ts-blocks won't ask before downloading code from the provided `repoPath`.",
+			"type": "boolean",
+			"default": "false"
+		},
 		"blocksPath": {
 			"description": "Location of the blocks directory containing the `manifest.json` file in the repository.",
 			"type": "string",
@@ -41,5 +46,5 @@
 			"default": "true"
 		}
 	},
-	"required": ["path", "includeIndexFile", "includeTests"]
+	"required": ["path", "includeIndexFile", "includeTests", "trustRepoPath"]
 }

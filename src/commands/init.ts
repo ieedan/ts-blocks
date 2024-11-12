@@ -72,6 +72,7 @@ const _init = async (options: Options) => {
 	const config: Config = {
 		$schema: `https://unpkg.com/ts-blocks@${version}/schema.json`,
 		blocksPath: "./blocks",
+		trustRepoPath: false,
 		listLocal: true,
 		path: options.path,
 		includeIndexFile: options.indexFile,

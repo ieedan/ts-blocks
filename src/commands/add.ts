@@ -60,6 +60,20 @@ const _add = async (blockNames: string[], options: Options) => {
 	if (config.repoPath !== undefined) {
 		const repoPath = config.repoPath;
 
+		if (!options.yes && !config.trustRepoPath) {
+			const result = await confirm({
+				message: `Allow ${color.cyan("ts-blocks")} to download the manifest and other files from ${color.cyan(
+					repoPath
+				)}?`,
+				initialValue: true,
+			});
+
+			if (isCancel(result) || !result) {
+				cancel("Canceled!");
+				process.exit(0);
+			}
+		}
+
 		let rawUrl: URL;
 		let providerInfo: gitProviders.Info;
 
