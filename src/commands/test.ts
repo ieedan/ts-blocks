@@ -71,11 +71,12 @@ const _test = async (blockNames: string[], options: Options) => {
 			.readdirSync(config.path)
 			.filter((dir) => context.categories.find((cat) => cat.name === dir));
 
-		for (const dir of directories) {
+		for (const category of directories) {
 			files.push(
 				...fs
-					.readdirSync(path.join(config.path, dir))
+					.readdirSync(path.join(config.path, category))
 					.filter((file) => file.endsWith(".ts") && !file.endsWith("test.ts"))
+					.map((file) => `${category}/${file}`)
 			);
 		}
 
@@ -107,9 +108,11 @@ const _test = async (blockNames: string[], options: Options) => {
 		return { name: blockName, block };
 	});
 
-	for (const { name: blockName, block } of testingBlocks) {
+	for (const { name: specifier, block } of testingBlocks) {
+		const [_, blockName] = specifier.split("/");
+
 		if (!options.verbose) {
-			loading.start(`Setting up test file for ${blockName}`);
+			loading.start(`Setting up test file for ${specifier}`);
 		}
 
 		const tempTestFileName = `${blockName}.test.ts`;
@@ -118,12 +121,12 @@ const _test = async (blockNames: string[], options: Options) => {
 
 		const registryTestFilePath = path.join(registryDir, `${block.category}/${blockName}.test.ts`);
 
-		verbose(`Copying test files for ${blockName}`);
+		verbose(`Copying test files for ${specifier}`);
 
 		try {
 			fs.copyFileSync(registryTestFilePath, tempTestFilePath);
 		} catch {
-			loading.stop(`Couldn't find test file for ${color.cyan(blockName)} skipping.`);
+			loading.stop(`Couldn't find test file for ${color.cyan(specifier)} skipping.`);
 			continue;
 		}
 
@@ -140,7 +143,7 @@ const _test = async (blockNames: string[], options: Options) => {
 
 		blockFilePath = blockFilePath.replaceAll("\\", "/");
 
-		verbose(`${color.bold(blockName)} file path is ${color.bold(blockFilePath)}`);
+		verbose(`${color.bold(specifier)} file path is ${color.bold(blockFilePath)}`);
 
 		const project = new Project();
 
@@ -159,10 +162,10 @@ const _test = async (blockNames: string[], options: Options) => {
 
 		project.saveSync();
 
-		verbose(`Completed ${color.cyan.bold(blockName)} test file`);
+		verbose(`Completed ${color.cyan.bold(specifier)} test file`);
 
 		if (!options.verbose) {
-			loading.stop(`Completed setup for ${color.bold(blockName)}`);
+			loading.stop(`Completed setup for ${color.bold(specifier)}`);
 		}
 	}
 

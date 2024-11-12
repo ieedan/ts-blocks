@@ -84,14 +84,14 @@ const _add = async (blockNames: string[], options: Options) => {
 
 	const installingBlocks: { name: string; subDependency: boolean; block: Block }[] = [];
 
-	installingBlockNames.map((blockName) => {
-		const block = context.blocks.get(blockName);
+	installingBlockNames.map((blockSpecifier) => {
+		const block = context.blocks.get(blockSpecifier);
 
 		if (!block) {
-			program.error(color.red(`Invalid block! ${color.bold(blockName)} does not exist!`));
+			program.error(color.red(`Invalid block! ${color.bold(blockSpecifier)} does not exist!`));
 		}
 
-		installingBlocks.push({ name: blockName, subDependency: false, block });
+		installingBlocks.push({ name: blockSpecifier, subDependency: false, block });
 
 		if (block.localDependencies && block.localDependencies.length > 0) {
 			for (const dep of block.localDependencies) {
@@ -100,7 +100,7 @@ const _add = async (blockNames: string[], options: Options) => {
 				const block = context.blocks.get(dep);
 
 				if (!block) {
-					program.error(color.red(`Invalid block! ${color.bold(blockName)} does not exist!`));
+					program.error(color.red(`Invalid block! ${color.bold(blockSpecifier)} does not exist!`));
 				}
 
 				installingBlocks.push({ name: dep, subDependency: true, block });
@@ -110,8 +110,10 @@ const _add = async (blockNames: string[], options: Options) => {
 
 	const tasks: Task[] = [];
 
-	for (const { name: blockName, block } of installingBlocks) {
-		verbose(`Attempting to add ${blockName}`);
+	for (const { name: specifier, block } of installingBlocks) {
+		const [_, blockName] = specifier.split("/");
+
+		verbose(`Attempting to add ${specifier}`);
 
 		verbose(`Found block ${JSON.stringify(block)}`);
 
