@@ -209,9 +209,11 @@ ${rawUrl.href}`
 		let fullName: string;
 
 		if (block.sourceRepo) {
-			fullName = `${block.sourceRepo.name}/${block.sourceRepo.owner}/${block.sourceRepo.repoName}/${block.category}/${block.name}`;
+			fullName = color.cyan(
+				`${block.sourceRepo.name}/${block.sourceRepo.owner}/${block.sourceRepo.repoName}/${block.category}/${block.name}`
+			);
 		} else {
-			fullName = `${block.category}/${block.name}`;
+			fullName = color.cyan(`${block.category}/${block.name}`);
 		}
 
 		tasks.push({
