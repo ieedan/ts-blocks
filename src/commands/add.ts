@@ -60,8 +60,12 @@ const _add = async (blockNames: string[], options: Options) => {
 			options: Array.from(context.blocks.entries()).map(([key]) => {
 				const blockExists = installedBlocks.findIndex((block) => block === key) !== -1;
 
+				const [category, name] = key.split("/");
+
+				const label = `${color.cyan(category)}/${name}`;
+
 				return {
-					label: blockExists ? color.gray(key) : key,
+					label: blockExists ? color.gray(label) : label,
 					value: key,
 					// show hint for `Installed` if block is already installed
 					hint: blockExists ? "Installed" : undefined,

@@ -44,7 +44,7 @@ const _build = async (options: Options) => {
 	const categories = buildBlocksDirectory(blocksPath);
 
 	if (options.output) {
-		fs.writeFileSync(outputPath, JSON.stringify(categories, null, 4));
+		fs.writeFileSync(outputPath, JSON.stringify(categories, null, "\t"));
 
 		loading.stop(`Built and wrote output to ${color.cyan(outputPath)}!`);
 	} else {
