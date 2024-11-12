@@ -1,19 +1,22 @@
-import fs from 'node:fs';
-import path from 'node:path';
-import { cancel, confirm, intro, isCancel, multiselect, outro, spinner } from '@clack/prompts';
-import color from 'chalk';
-import { Argument, Command, program } from 'commander';
-import { execa } from 'execa';
-import { resolveCommand } from 'package-manager-detector/commands';
-import { detect } from 'package-manager-detector/detect';
-import { Project, type SourceFile } from 'ts-morph';
-import { type InferInput, boolean, object, parse } from 'valibot';
-import { type Block, blocks } from '../blocks';
-import { getConfig } from '../config';
-import { getInstalledBlocks } from '../utils/get-installed-blocks';
-import { getWatermark } from '../utils/get-watermark';
-import { INFO, WARN } from '../utils/index';
-import { type Task, runTasks } from '../utils/prompts';
+import fs from "node:fs";
+import path from "node:path";
+import { cancel, confirm, intro, isCancel, multiselect, outro, spinner } from "@clack/prompts";
+import color from "chalk";
+import { Argument, Command, program } from "commander";
+import { execa } from "execa";
+import { resolveCommand } from "package-manager-detector/commands";
+import { detect } from "package-manager-detector/detect";
+import { Project, type SourceFile } from "ts-morph";
+import { type InferInput, boolean, object, parse } from "valibot";
+import { type Block, blocks } from "../blocks";
+import { getConfig } from "../config";
+import { getInstalledBlocks } from "../utils/get-installed-blocks";
+import { getWatermark } from "../utils/get-watermark";
+import { INFO, WARN } from "../utils/index";
+import { type Task, runTasks } from "../utils/prompts";
+import { readCategories } from "../utils/build";
+import { context } from "..";
+import { OUTPUT_FILE } from "./build";
 
 const schema = object({
 	yes: boolean(),
@@ -59,6 +62,8 @@ const _add = async (blockNames: string[], options: Options) => {
 	const watermark = getWatermark(version);
 
 	const installedBlocks = getInstalledBlocks(config);
+
+	const blocksManifest = readCategories(context.resolveRelativeToRoot(`blocks/${OUTPUT_FILE}`));
 
 	let installingBlockNames = blockNames;
 

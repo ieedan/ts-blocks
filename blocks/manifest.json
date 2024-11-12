@@ -1,0 +1,69 @@
+[
+    {
+        "name": "types",
+        "blocks": [
+            {
+                "name": "result",
+                "tests": true,
+                "localDependencies": []
+            }
+        ]
+    },
+    {
+        "name": "utilities",
+        "blocks": [
+            {
+                "name": "array-sum",
+                "tests": true,
+                "localDependencies": []
+            },
+            {
+                "name": "array-to-map",
+                "tests": true,
+                "localDependencies": []
+            },
+            {
+                "name": "dispatcher",
+                "tests": true,
+                "localDependencies": []
+            },
+            {
+                "name": "ipv4-address",
+                "tests": true,
+                "localDependencies": [
+                    "types/result"
+                ]
+            },
+            {
+                "name": "is-number",
+                "tests": true,
+                "localDependencies": []
+            },
+            {
+                "name": "map-to-array",
+                "tests": true,
+                "localDependencies": []
+            },
+            {
+                "name": "pad",
+                "tests": true,
+                "localDependencies": []
+            },
+            {
+                "name": "sleep",
+                "tests": true,
+                "localDependencies": []
+            },
+            {
+                "name": "stopwatch",
+                "tests": true,
+                "localDependencies": []
+            },
+            {
+                "name": "truncate",
+                "tests": true,
+                "localDependencies": []
+            }
+        ]
+    }
+]
