@@ -1,4 +1,4 @@
-import type { Block, Category } from "./build";
+import type { Block, Category } from './build';
 
 export interface CLIContext {
 	/** The package.json of the CLI */

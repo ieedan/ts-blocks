@@ -1,8 +1,8 @@
-import { program } from "commander";
-import color from "chalk";
-import fs from "node:fs";
-import path from "node:path";
-import { Project } from "ts-morph";
+import fs from 'node:fs';
+import path from 'node:path';
+import color from 'chalk';
+import { program } from 'commander';
+import { Project } from 'ts-morph';
 
 export type Category = {
 	name: string;
@@ -11,9 +11,9 @@ export type Category = {
 
 export type Block = {
 	name: string;
-    category: string;
+	category: string;
 	localDependencies?: string[];
-    tests: boolean;
+	tests: boolean;
 };
 
 /** Using the provided path to the blocks folder builds the blocks into categories and also resolves localDependencies
@@ -27,7 +27,7 @@ const buildBlocksDirectory = (blocksPath: string): Category[] => {
 	try {
 		paths = fs.readdirSync(blocksPath);
 	} catch {
-		program.error(color.red(`Couldn't read ${color.bold("/blocks")} directory.`));
+		program.error(color.red(`Couldn't read ${color.bold('/blocks')} directory.`));
 	}
 
 	const categories: Category[] = [];
@@ -49,9 +49,9 @@ const buildBlocksDirectory = (blocksPath: string): Category[] => {
 		const project = new Project();
 
 		for (const file of files) {
-			if (!file.endsWith(".ts") || file.endsWith(".test.ts")) continue;
+			if (!file.endsWith('.ts') || file.endsWith('.test.ts')) continue;
 
-			const name = path.basename(file).replace(".ts", "");
+			const name = path.basename(file).replace('.ts', '');
 
 			const hasTests = files.findIndex((f) => f === `${name}.test.ts`) !== -1;
 
@@ -60,13 +60,13 @@ const buildBlocksDirectory = (blocksPath: string): Category[] => {
 			const imports = blockFile.getImportDeclarations();
 
 			const relativeImports = imports.filter((declaration) =>
-				declaration.getModuleSpecifierValue().startsWith(".")
+				declaration.getModuleSpecifierValue().startsWith('.')
 			);
 
 			const localDeps: string[] = [];
 
 			const removeExtension = (p: string) => {
-				const index = p.lastIndexOf(".");
+				const index = p.lastIndexOf('.');
 
 				if (index === -1) return p;
 
@@ -79,15 +79,15 @@ const buildBlocksDirectory = (blocksPath: string): Category[] => {
 			for (const relativeImport of relativeImports) {
 				const mod = relativeImport.getModuleSpecifierValue();
 
-				if (mod.startsWith("./")) {
+				if (mod.startsWith('./')) {
 					localDeps.push(`${categoryName}/${removeExtension(path.basename(mod))}`);
 					continue;
 				}
 
 				// path cannot be resolved
-				if (!mod.startsWith("../") || mod.startsWith("../.")) continue;
+				if (!mod.startsWith('../') || mod.startsWith('../.')) continue;
 
-				const segments = mod.replaceAll("../", "").split("/");
+				const segments = mod.replaceAll('../', '').split('/');
 
 				// invalid path
 				if (segments.length !== 2) continue;
@@ -97,9 +97,9 @@ const buildBlocksDirectory = (blocksPath: string): Category[] => {
 
 			const block: Block = {
 				name,
-                category: categoryName,
+				category: categoryName,
 				localDependencies: localDeps,
-                tests: hasTests,
+				tests: hasTests,
 			};
 
 			category.blocks.push(block);
@@ -111,6 +111,7 @@ const buildBlocksDirectory = (blocksPath: string): Category[] => {
 	return categories;
 };
 
-const readCategories = (outputFilePath: string): Category[] => JSON.parse(fs.readFileSync(outputFilePath).toString());
+const readCategories = (outputFilePath: string): Category[] =>
+	JSON.parse(fs.readFileSync(outputFilePath).toString());
 
 export { buildBlocksDirectory, readCategories };

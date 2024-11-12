@@ -3,7 +3,7 @@ import path from 'node:path';
 import type { Config } from '../config';
 import type { Block } from './build';
 
-const getInstalledBlocks = (blocks: Map<string, Block> ,config: Config): string[] => {
+const getInstalledBlocks = (blocks: Map<string, Block>, config: Config): string[] => {
 	const installedBlocks: string[] = [];
 
 	for (const [_, block] of blocks) {

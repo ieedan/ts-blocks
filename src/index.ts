@@ -1,19 +1,21 @@
-import fs from "node:fs";
-import { program } from "commander";
-import * as commands from "./commands";
-import type { CLIContext } from "./utils/context";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
-import { type Block, type Category, readCategories } from "./utils/build";
-import { OUTPUT_FILE } from "./commands/build";
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { program } from 'commander';
+import * as commands from './commands';
+import { OUTPUT_FILE } from './commands/build';
+import { type Block, type Category, readCategories } from './utils/build';
+import type { CLIContext } from './utils/context';
 
 const resolveRelativeToRoot = (p: string): string => {
 	const dirname = fileURLToPath(import.meta.url);
-	return path.join(dirname, "../..", p);
+	return path.join(dirname, '../..', p);
 };
 
 // get version from package.json
-const { version, name, description } = JSON.parse(fs.readFileSync(resolveRelativeToRoot("package.json"), "utf-8"));
+const { version, name, description } = JSON.parse(
+	fs.readFileSync(resolveRelativeToRoot('package.json'), 'utf-8')
+);
 
 let categories: Category[];
 
