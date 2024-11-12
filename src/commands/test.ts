@@ -33,7 +33,7 @@ const test = new Command('test')
 	});
 
 const _test = async (blockNames: string[], options: Options) => {
-	intro(color.bgBlueBright('ts-blocks'));
+	intro(`${color.bgBlueBright(" ts-blocks ")}${color.gray(` v${context.package.version} `)}`);
 
 	const verbose = (msg: string) => {
 		if (options.verbose) {

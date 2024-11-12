@@ -29,7 +29,7 @@ const build = new Command('build')
 	});
 
 const _build = async (options: Options) => {
-	intro(color.bgBlueBright('ts-blocks'));
+	intro(`${color.bgBlueBright(" ts-blocks ")}${color.gray(` v${context.package.version} `)}`);
 
 	const loading = spinner();
 

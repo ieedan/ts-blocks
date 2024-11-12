@@ -4,6 +4,7 @@ import color from 'chalk';
 import { Command } from 'commander';
 import { type InferInput, boolean, object, optional, parse, string } from 'valibot';
 import { CONFIG_NAME, type Config } from '../config';
+import { context } from '..';
 
 const schema = object({
 	path: optional(string()),
@@ -28,7 +29,7 @@ const init = new Command('init')
 	});
 
 const _init = async (options: Options) => {
-	intro(color.bgBlueBright('ts-blocks'));
+	intro(`${color.bgBlueBright(" ts-blocks ")}${color.gray(` v${context.package.version} `)}`);
 
 	const { version } = JSON.parse(
 		fs.readFileSync(new URL('../package.json', import.meta.url), 'utf-8')
@@ -70,6 +71,8 @@ const _init = async (options: Options) => {
 
 	const config: Config = {
 		$schema: `https://unpkg.com/ts-blocks@${version}/schema.json`,
+		blocksPath: "./blocks",
+		listLocal: true,
 		path: options.path,
 		includeIndexFile: options.indexFile,
 		includeTests: options.tests,

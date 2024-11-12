@@ -7,6 +7,9 @@ const CONFIG_NAME = 'blocks.json';
 
 const schema = object({
 	$schema: string(),
+	repoPath: optional(string()),
+	blocksPath: optional(string(), "./blocks"),
+	listLocal: optional(boolean(), true),
 	includeIndexFile: boolean(),
 	includeTests: boolean(),
 	path: pipe(string(), minLength(1)),

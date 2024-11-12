@@ -2,6 +2,20 @@
 	"$schema": "http://json-schema.org/draft-07/schema#",
 	"type": "object",
 	"properties": {
+		"repoPath": {
+			"description": "Repository that hosts the blocks. (Defaults to local)",
+			"type": "string"
+		},
+		"blocksPath": {
+			"description": "Location of the blocks directory containing the `manifest.json` file in the repository.",
+			"type": "string",
+			"default": "./blocks"
+		},
+		"listLocal": {
+			"description": "When true will still list the local blocks along side any remote blocks.",
+			"type": "boolean",
+			"default": "true"
+		},
 		"path": {
 			"description": "The path to place the blocks",
 			"type": "string"

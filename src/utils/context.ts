@@ -6,6 +6,9 @@ export interface CLIContext {
 		name: string;
 		version: string;
 		description: string;
+		repository: {
+			url: string;
+		};
 	};
 	categories: Category[];
 	blocks: Map<string, Block>;
