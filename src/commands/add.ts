@@ -7,10 +7,10 @@ import { execa } from "execa";
 import { resolveCommand } from "package-manager-detector/commands";
 import { detect } from "package-manager-detector/detect";
 import { Project, type SourceFile } from "ts-morph";
-import { type InferInput, array, boolean, object, optional, parse, string } from "valibot";
+import { type InferInput, array, boolean, object, parse } from "valibot";
 import { context } from "..";
 import { getConfig } from "../config";
-import { Category, categorySchema, type Block } from "../utils/build";
+import { categorySchema, type Block } from "../utils/build";
 import { getInstalledBlocks } from "../utils/get-installed-blocks";
 import { getWatermark } from "../utils/get-watermark";
 import { INFO, WARN } from "../utils/index";
@@ -199,16 +199,27 @@ ${rawUrl.href}`
 	for (const { name: specifier, block } of installingBlocks) {
 		const [_, blockName] = specifier.split("/");
 
-		verbose(`Attempting to add ${specifier}`);
+		let fullName: string;
 
-		verbose(`Found block ${JSON.stringify(block)}`);
+		if (block.sourceRepo) {
+			fullName = color.cyan(
+				`${block.sourceRepo.name}/${block.sourceRepo.owner}/${block.sourceRepo.repoName}/${block.category}/${block.name}`
+			);
+		} else {
+			fullName = color.cyan(`${block.category}/${block.name}`);
+		}
+
+		verbose(`Attempting to add ${fullName}`);
 
 		const directory = path.join(config.path, block.category);
-		const newPath = path.join(directory, `${blockName}.ts`);
 
 		verbose(`Creating directory ${color.bold(directory)}`);
 
-		if (fs.existsSync(newPath) && !options.yes) {
+		const blockExists =
+			(!block.subdirectory && fs.existsSync(path.join(directory, `${blockName}.ts`))) ||
+			(block.subdirectory && fs.existsSync(path.join(directory, blockName)));
+
+		if (blockExists && !options.yes) {
 			const result = await confirm({
 				message: `${color.bold(blockName)} already exists in your project would you like to overwrite it?`,
 				initialValue: false,
@@ -220,16 +231,6 @@ ${rawUrl.href}`
 			}
 		}
 
-		let fullName: string;
-
-		if (block.sourceRepo) {
-			fullName = color.cyan(
-				`${block.sourceRepo.name}/${block.sourceRepo.owner}/${block.sourceRepo.repoName}/${block.category}/${block.name}`
-			);
-		} else {
-			fullName = color.cyan(`${block.category}/${block.name}`);
-		}
-
 		tasks.push({
 			loadingMessage: `Adding ${fullName}`,
 			completedMessage: `Added ${fullName}`,
@@ -237,62 +238,70 @@ ${rawUrl.href}`
 				// in case the directory didn't already exist
 				fs.mkdirSync(directory, { recursive: true });
 
-				let blockFileContent: string;
-				let testFileContents: string | undefined;
+				let files: { path: string; content: string; }[];
+
+				const sourceFileFetchers: { finalPath: string, fetch: () => Promise<string> }[] = [];
 
 				if (block.sourceRepo) {
-					// get from remote
-					const blockUrl = block.sourceRepo.provider.resolveRaw(
-						block.sourceRepo,
-						path.join(config.blocksPath, `${specifier}.ts`)
-					);
-
-					// remote repo blocks
-					let blockTestsURL: URL | undefined = undefined;
-					if (block.tests && config.includeTests) {
-						blockTestsURL = block.sourceRepo.provider.resolveRaw(
-							block.sourceRepo,
-							path.join(config.blocksPath, `${specifier}.test.ts`)
+					const getSourceFileFetcher = (sourceRepo: gitProviders.Info, filePath: string) => {
+						const rawUrl = block.sourceRepo.provider.resolveRaw(
+							sourceRepo,
+							path.join(config.blocksPath, filePath)
 						);
-					}
 
-					[blockFileContent, testFileContents] = await Promise.all([
-						(async () => {
-							const response = await fetch(blockUrl);
+						return async () => {
+							const response = await fetch(rawUrl);
 
 							if (!response.ok) {
-								loading.stop(`Error fetching ${color.cyan(blockUrl.href)}`);
+								loading.stop(`Error fetching ${color.cyan(rawUrl.href)}`);
 								program.error(color.red(`There was an error trying to get ${fullName}`));
 							}
 
 							return await response.text();
-						})(),
-						(async () => {
-							if (blockTestsURL === undefined) return undefined;
-							const response = await fetch(blockTestsURL);
+						};
+					};
 
-							if (!response.ok) {
-								loading.stop(`Error fetching ${color.cyan(blockTestsURL.href)}`);
-								program.error(color.red(`There was an error trying to get ${fullName} tests.`));
-							}
+					for (const sourceFile of block.files) {
+						if (!config.includeTests && sourceFile.endsWith(".ts")) continue;
 
-							return await response.text();
-						})(),
-					]);
+						let sourcePath: string;
+						let finalPath: string;
+						if (block.subdirectory) {
+							sourcePath = path.join(block.category, block.name, sourceFile);
+							finalPath = path.join(config.path, block.category, block.name, sourceFile);
+						} else {
+							sourcePath = path.join(block.category, sourceFile);
+							finalPath = path.join(config.path, block.category, sourceFile);
+						}
+
+						sourceFileFetchers.push({ finalPath, fetch: getSourceFileFetcher(block.sourceRepo, sourcePath) });
+					}
 				} else {
 					// get from local
 					const registryDir = context.resolveRelativeToRoot("./blocks");
 
-					const registryFilePath = path.join(registryDir, `${block.category}/${blockName}.ts`);
+					const getSourceFileFetcher = (filePath: string) => {
+						return async () => fs.readFileSync(filePath).toString();
+					};
 
-					blockFileContent = fs.readFileSync(registryFilePath).toString();
+					for (const sourceFile of block.files) {
+						if (!config.includeTests && sourceFile.endsWith(".ts")) continue;
 
-					if (config.includeTests) {
-						const registryTestPath = path.join(registryDir, `${block.category}/${blockName}.test.ts`);
+						let sourcePath: string;
+						let finalPath: string;
+						if (block.subdirectory) {
+							sourcePath = path.join(registryDir, block.category, sourceFile);
+							finalPath = path.join(config.path, block.category, sourceFile);
+						} else {
+							sourcePath = path.join(registryDir, block.category, block.name, sourceFile);
+							finalPath = path.join(config.path, block.category, block.name, sourceFile);
+						}
 
-						testFileContents = fs.readFileSync(registryTestPath).toString();
+						sourceFileFetchers.push({ finalPath, fetch: getSourceFileFetcher(sourcePath) })
 					}
 				}
+
+				files = await Promise.all(sourceFileFetchers.map(async (fetcher) => ({ content: await fetcher.fetch(), path: fetcher.finalPath })));
 
 				if (config.watermark) {
 					const watermark = getWatermark(
@@ -300,14 +309,10 @@ ${rawUrl.href}`
 						config.repoPath ?? context.package.repository.url.replaceAll("git+", "")
 					);
 
-					blockFileContent = `${watermark}${blockFileContent}`;
-
-					if (testFileContents) {
-						testFileContents = `${watermark}${testFileContents}`;
-					}
+					files = files.map((file) => ({ ...file, content: `${watermark}${file.content}` }));
 				}
 
-				fs.writeFileSync(newPath, blockFileContent);
+				await Promise.all(files.map((file) => fs.writeFileSync(file.path, file.content)))
 
 				if (config.includeIndexFile) {
 					verbose("Trying to include index file");
