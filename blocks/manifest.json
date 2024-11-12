@@ -1,0 +1,81 @@
+[
+	{
+		"name": "types",
+		"blocks": [
+			{
+				"name": "result",
+				"category": "types",
+				"localDependencies": [],
+				"tests": true
+			}
+		]
+	},
+	{
+		"name": "utilities",
+		"blocks": [
+			{
+				"name": "array-sum",
+				"category": "utilities",
+				"localDependencies": [],
+				"tests": true
+			},
+			{
+				"name": "array-to-map",
+				"category": "utilities",
+				"localDependencies": [],
+				"tests": true
+			},
+			{
+				"name": "dispatcher",
+				"category": "utilities",
+				"localDependencies": [],
+				"tests": true
+			},
+			{
+				"name": "ipv4-address",
+				"category": "utilities",
+				"localDependencies": [
+					"types/result",
+					"utilities/is-number"
+				],
+				"tests": true
+			},
+			{
+				"name": "is-number",
+				"category": "utilities",
+				"localDependencies": [],
+				"tests": true
+			},
+			{
+				"name": "map-to-array",
+				"category": "utilities",
+				"localDependencies": [],
+				"tests": true
+			},
+			{
+				"name": "pad",
+				"category": "utilities",
+				"localDependencies": [],
+				"tests": true
+			},
+			{
+				"name": "sleep",
+				"category": "utilities",
+				"localDependencies": [],
+				"tests": true
+			},
+			{
+				"name": "stopwatch",
+				"category": "utilities",
+				"localDependencies": [],
+				"tests": true
+			},
+			{
+				"name": "truncate",
+				"category": "utilities",
+				"localDependencies": [],
+				"tests": true
+			}
+		]
+	}
+]

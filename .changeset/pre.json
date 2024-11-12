@@ -1,0 +1,7 @@
+{
+    "mode": "pre",
+    "tag": "next",
+    "initialVersions": {
+      "ts-blocks": "0.11.0"
+    }
+  }

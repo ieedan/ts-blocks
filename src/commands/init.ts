@@ -7,7 +7,6 @@ import { CONFIG_NAME, type Config } from '../config';
 
 const schema = object({
 	path: optional(string()),
-	addByCategory: boolean(),
 	indexFile: boolean(),
 	tests: boolean(),
 });
@@ -17,11 +16,6 @@ type Options = InferInput<typeof schema>;
 const init = new Command('init')
 	.description('Initializes the configuration file')
 	.option('--path <path>', 'Path to install the blocks')
-	.option(
-		'--add-by-category',
-		'Will create directories to contain each block by category.',
-		false
-	)
 	.option(
 		'--no-index-file',
 		'Will create an index.ts file at the root of the folder to re-export functions from.'
@@ -77,7 +71,6 @@ const _init = async (options: Options) => {
 	const config: Config = {
 		$schema: `https://unpkg.com/ts-blocks@${version}/schema.json`,
 		path: options.path,
-		addByCategory: options.addByCategory,
 		includeIndexFile: options.indexFile,
 		includeTests: options.tests,
 		imports: isDeno ? 'deno' : 'node',

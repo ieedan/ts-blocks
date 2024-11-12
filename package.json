@@ -1,7 +1,7 @@
 {
 	"name": "ts-blocks",
 	"description": "A CLI to blocks to your project.",
-	"version": "0.11.0",
+	"version": "1.0.0-next.2",
 	"packageManager": "pnpm@9.12.3",
 	"repository": {
 		"type": "git",
@@ -35,13 +35,15 @@
 	"scripts": {
 		"start": "tsup --silent && node bin.mjs",
 		"build": "tsup",
+		"blocks:build": "pnpm start -- build",
 		"format": "biome format --write",
 		"lint": "biome lint --write",
-		"check": "pnpm biome check",
+		"check": "biome check",
 		"ci:release": "tsup && changeset publish",
 		"changeset": "changeset",
 		"test": "vitest",
-		"docs:generate": "typedoc"
+		"docs:generate": "typedoc",
+		"prepublish": "pnpm blocks:build"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "1.9.4",
