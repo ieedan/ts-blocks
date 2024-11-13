@@ -1,14 +1,14 @@
 {
-  "mode": "pre",
-  "tag": "next",
-  "initialVersions": {
-    "ts-blocks": "0.11.0"
-  },
-  "changesets": [
-    "friendly-timers-repeat",
-    "good-bulldogs-mate",
-    "healthy-flies-argue",
-    "olive-cars-relax",
-    "shiny-dodos-battle"
-  ]
+	"mode": "pre",
+	"tag": "next",
+	"initialVersions": {
+		"ts-blocks": "0.11.0"
+	},
+	"changesets": [
+		"friendly-timers-repeat",
+		"good-bulldogs-mate",
+		"healthy-flies-argue",
+		"olive-cars-relax",
+		"shiny-dodos-battle"
+	]
 }

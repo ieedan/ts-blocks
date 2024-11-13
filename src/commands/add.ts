@@ -4,6 +4,7 @@ import { cancel, confirm, intro, isCancel, multiselect, outro, spinner } from '@
 import color from 'chalk';
 import { Argument, Command, program } from 'commander';
 import { execa } from 'execa';
+import type { ResolvedCommand } from 'package-manager-detector';
 import { resolveCommand } from 'package-manager-detector/commands';
 import { detect } from 'package-manager-detector/detect';
 import { Project, type SourceFile } from 'ts-morph';
@@ -17,7 +18,6 @@ import * as gitProviders from '../utils/git-providers';
 import { INFO, WARN } from '../utils/index';
 import { type Task, runTasks } from '../utils/prompts';
 import { OUTPUT_FILE } from './build';
-import type { ResolvedCommand } from 'package-manager-detector';
 
 const schema = object({
 	yes: boolean(),
