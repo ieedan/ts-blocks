@@ -60,7 +60,7 @@
 				"name": "ipv4-address",
 				"category": "utilities",
 				"tests": true,
-				"subdirectory": false,
+				"subdirectory": true,
 				"files": [
 					"ipv4-address.test.ts",
 					"ipv4-address.ts"
@@ -75,7 +75,7 @@
 				"name": "is-number",
 				"category": "utilities",
 				"tests": true,
-				"subdirectory": false,
+				"subdirectory": true,
 				"files": [
 					"is-number.test.ts",
 					"is-number.ts"

@@ -115,7 +115,7 @@ const buildBlocksDirectory = (blocksPath: string): Category[] => {
 					name: blockName,
 					category: categoryName,
 					tests: hasTests,
-					subdirectory: false,
+					subdirectory: true,
 					files: [...blockFiles],
 					localDependencies: Array.from(localDepsSet.keys()),
 				};
