@@ -10,6 +10,8 @@ const schema = object({
 	path: optional(string()),
 	indexFile: boolean(),
 	tests: boolean(),
+	repo: string(),
+	watermark: boolean(),
 });
 
 type Options = InferInput<typeof schema>;
@@ -17,9 +19,14 @@ type Options = InferInput<typeof schema>;
 const init = new Command('init')
 	.description('Initializes the configuration file')
 	.option('--path <path>', 'Path to install the blocks')
+	.option('--repo <repo>', 'Repository to install the blocks from', "https://github.com/ieedan/ts-blocks")
 	.option(
 		'--no-index-file',
 		'Will create an index.ts file at the root of the folder to re-export functions from.'
+	)
+	.option(
+		'--no-watermark',
+		'Will not add a watermark to each file upon adding it to your project.'
 	)
 	.option('--tests', 'Will include tests along with the functions.', false)
 	.action(async (opts) => {
@@ -29,7 +36,7 @@ const init = new Command('init')
 	});
 
 const _init = async (options: Options) => {
-	intro(`${color.bgBlueBright(" ts-blocks ")}${color.gray(` v${context.package.version} `)}`);
+	intro(`${color.bgBlueBright(' ts-blocks ')}${color.gray(` v${context.package.version} `)}`);
 
 	const { version } = JSON.parse(
 		fs.readFileSync(new URL('../package.json', import.meta.url), 'utf-8')
@@ -71,14 +78,13 @@ const _init = async (options: Options) => {
 
 	const config: Config = {
 		$schema: `https://unpkg.com/ts-blocks@${version}/schema.json`,
-		blocksPath: "./blocks",
-		trustRepoPath: false,
-		listLocal: true,
+		repo: options.repo,
+		trustRepo: true,
 		path: options.path,
 		includeIndexFile: options.indexFile,
 		includeTests: options.tests,
 		imports: isDeno ? 'deno' : 'node',
-		watermark: true,
+		watermark: options.watermark,
 	};
 
 	fs.writeFileSync(CONFIG_NAME, `${JSON.stringify(config, null, '\t')}\n`);

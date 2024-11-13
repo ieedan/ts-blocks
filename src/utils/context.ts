@@ -10,8 +10,6 @@ export interface CLIContext {
 			url: string;
 		};
 	};
-	categories: Category[];
-	blocks: Map<string, Block>;
 	/** Resolves the path relative to the root of the application
 	 *
 	 * @param path

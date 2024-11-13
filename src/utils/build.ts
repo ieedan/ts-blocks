@@ -1,10 +1,10 @@
-import fs from "node:fs";
-import path from "node:path";
-import color from "chalk";
-import { program } from "commander";
-import { Project } from "ts-morph";
-import * as v from "valibot";
-import { findDependencies } from "./dependencies";
+import fs from 'node:fs';
+import path from 'node:path';
+import color from 'chalk';
+import { program } from 'commander';
+import { Project } from 'ts-morph';
+import * as v from 'valibot';
+import { findDependencies } from './dependencies';
 
 export const blockSchema = v.object({
 	name: v.string(),
@@ -13,6 +13,7 @@ export const blockSchema = v.object({
 	tests: v.boolean(),
 	/** Where to find the block relative to root */
 	directory: v.string(),
+	subdirectory: v.boolean(),
 	files: v.array(v.string()),
 });
 
@@ -36,7 +37,7 @@ const buildBlocksDirectory = (blocksPath: string): Category[] => {
 	try {
 		paths = fs.readdirSync(blocksPath);
 	} catch {
-		program.error(color.red(`Couldn't read ${color.bold("/blocks")} directory.`));
+		program.error(color.red(`Couldn't read ${color.bold('/blocks')} directory.`));
 	}
 
 	const categories: Category[] = [];
@@ -61,19 +62,20 @@ const buildBlocksDirectory = (blocksPath: string): Category[] => {
 			const blockDir = path.join(categoryDir, file);
 
 			if (fs.statSync(blockDir).isFile()) {
-				if (!file.endsWith(".ts") || file.endsWith(".test.ts")) continue;
+				if (!file.endsWith('.ts') || file.endsWith('.test.ts')) continue;
 
-				const name = path.basename(file).replace(".ts", "");
+				const name = path.basename(file).replace('.ts', '');
 
 				const hasTests = files.findIndex((f) => f === `${name}.test.ts`) !== -1;
 
 				const localDeps = findDependencies(blockDir, categoryName, false, project);
 
 				const block: Block = {
+					directory: categoryDir,
 					name,
 					category: categoryName,
 					tests: hasTests,
-					directory: categoryDir,
+					subdirectory: false,
 					files: [file],
 					localDependencies: localDeps,
 				};
@@ -88,15 +90,20 @@ const buildBlocksDirectory = (blocksPath: string): Category[] => {
 
 				const blockFiles = fs.readdirSync(blockDir);
 
-				const hasTests = blockFiles.findIndex((f) => f.endsWith("test.ts")) !== -1;
+				const hasTests = blockFiles.findIndex((f) => f.endsWith('test.ts')) !== -1;
 
 				const localDepsSet = new Set<string>();
 
 				// if it is a directory
 				for (const f of blockFiles) {
-					if (!f.endsWith(".ts") || f.endsWith(".test.ts")) continue;
+					if (!f.endsWith('.ts') || f.endsWith('.test.ts')) continue;
 
-					const localDeps = findDependencies(path.join(blockDir, f), categoryName, true, project);
+					const localDeps = findDependencies(
+						path.join(blockDir, f),
+						categoryName,
+						true,
+						project
+					);
 
 					for (const dep of localDeps) {
 						localDepsSet.add(dep);
@@ -104,10 +111,11 @@ const buildBlocksDirectory = (blocksPath: string): Category[] => {
 				}
 
 				const block: Block = {
+					directory: blockDir,
 					name: blockName,
 					category: categoryName,
 					tests: hasTests,
-					directory: blockDir,
+					subdirectory: false,
 					files: [...blockFiles],
 					localDependencies: Array.from(localDepsSet.keys()),
 				};

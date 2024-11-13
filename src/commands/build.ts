@@ -1,12 +1,12 @@
-import fs from "node:fs";
-import { intro, outro, spinner } from "@clack/prompts";
-import color from "chalk";
-import { Command } from "commander";
-import { type InferInput, array, boolean, object, parse, string } from "valibot";
-import { context } from "..";
-import { buildBlocksDirectory, type Category } from "../utils/build";
+import fs from 'node:fs';
+import { intro, outro, spinner } from '@clack/prompts';
+import color from 'chalk';
+import { Command } from 'commander';
+import { type InferInput, array, boolean, object, parse, string } from 'valibot';
+import { context } from '..';
+import { buildBlocksDirectory, type Category } from '../utils/build';
 
-export const OUTPUT_FILE = "blocks-manifest.json";
+export const OUTPUT_FILE = 'blocks-manifest.json';
 
 const schema = object({
 	verbose: boolean(),
@@ -16,11 +16,11 @@ const schema = object({
 
 type Options = InferInput<typeof schema>;
 
-const build = new Command("build")
-	.description("Builds the `/blocks` directory in the project root into a blocks.json file.")
-	.option("--dirs [dirs...]", "The directories containing the blocks.", ["./blocks"])
-	.option("--no-output", `Do not output \`${OUTPUT_FILE}\` file.`)
-	.option("--verbose", "Include debug logs.", false)
+const build = new Command('build')
+	.description('Builds the `/blocks` directory in the project root into a blocks.json file.')
+	.option('--dirs [dirs...]', 'The directories containing the blocks.', ['./blocks'])
+	.option('--no-output', `Do not output \`${OUTPUT_FILE}\` file.`)
+	.option('--verbose', 'Include debug logs.', false)
 	.action(async (opts) => {
 		const options = parse(schema, opts);
 
@@ -28,7 +28,7 @@ const build = new Command("build")
 	});
 
 const _build = async (options: Options) => {
-	intro(`${color.bgBlueBright(" ts-blocks ")}${color.gray(` v${context.package.version} `)}`);
+	intro(`${color.bgBlueBright(' ts-blocks ')}${color.gray(` v${context.package.version} `)}`);
 
 	const loading = spinner();
 
@@ -61,12 +61,12 @@ const _build = async (options: Options) => {
 	}
 
 	if (options.output) {
-		fs.writeFileSync(OUTPUT_FILE, JSON.stringify(categories, null, "\t"));
+		fs.writeFileSync(OUTPUT_FILE, JSON.stringify(categories, null, '\t'));
 	} else {
-		loading.stop("Built successfully!");
+		loading.stop('Built successfully!');
 	}
 
-	outro(color.green("All done!"));
+	outro(color.green('All done!'));
 };
 
 export { build };
