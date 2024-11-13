@@ -1,13 +1,18 @@
 {
 	"name": "ts-blocks",
 	"description": "A CLI to blocks to your project.",
-	"version": "1.0.0-next.4",
+	"version": "1.0.0-next.5",
 	"packageManager": "pnpm@9.12.3",
 	"repository": {
 		"type": "git",
 		"url": "git+https://github.com/ieedan/ts-blocks"
 	},
-	"keywords": ["blocks", "typescript", "tested", "documented"],
+	"keywords": [
+		"blocks",
+		"typescript",
+		"tested",
+		"documented"
+	],
 	"author": "Aidan Bleser",
 	"license": "MIT",
 	"bugs": {
