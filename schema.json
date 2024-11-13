@@ -11,18 +11,8 @@
 			"type": "boolean",
 			"default": "false"
 		},
-		"blocksPath": {
-			"description": "Location of the blocks directory containing the `manifest.json` file in the repository.",
-			"type": "string",
-			"default": "./blocks"
-		},
-		"listLocal": {
-			"description": "When true will still list the local blocks along side any remote blocks.",
-			"type": "boolean",
-			"default": "true"
-		},
 		"path": {
-			"description": "The path to place the blocks",
+			"description": "Where to place the blocks in your project.",
 			"type": "string"
 		},
 		"includeIndexFile": {
