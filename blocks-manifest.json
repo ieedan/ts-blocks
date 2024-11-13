@@ -44,21 +44,21 @@
 				"localDependencies": []
 			},
 			{
-				"directory": "blocks\\utilities\\ipv4-address",
+				"directory": "blocks\\utilities",
 				"name": "ipv4-address",
 				"category": "utilities",
 				"tests": true,
-				"subdirectory": true,
-				"files": ["ipv4-address.test.ts", "ipv4-address.ts"],
+				"subdirectory": false,
+				"files": ["ipv4-address.ts", "ipv4-address.test.ts"],
 				"localDependencies": ["types/result", "utilities/is-number"]
 			},
 			{
-				"directory": "blocks\\utilities\\is-number",
+				"directory": "blocks\\utilities",
 				"name": "is-number",
 				"category": "utilities",
 				"tests": true,
-				"subdirectory": true,
-				"files": ["is-number.test.ts", "is-number.ts"],
+				"subdirectory": false,
+				"files": ["is-number.ts", "is-number.test.ts"],
 				"localDependencies": []
 			},
 			{
