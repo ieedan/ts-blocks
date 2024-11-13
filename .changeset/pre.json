@@ -1,18 +1,18 @@
 {
-  "mode": "pre",
-  "tag": "next",
-  "initialVersions": {
-    "ts-blocks": "0.11.0"
-  },
-  "changesets": [
-    "empty-camels-smoke",
-    "friendly-timers-repeat",
-    "good-bulldogs-mate",
-    "healthy-flies-argue",
-    "hip-rivers-swim",
-    "lazy-humans-compete",
-    "neat-rockets-build",
-    "olive-cars-relax",
-    "shiny-dodos-battle"
-  ]
+	"mode": "pre",
+	"tag": "next",
+	"initialVersions": {
+		"ts-blocks": "0.11.0"
+	},
+	"changesets": [
+		"empty-camels-smoke",
+		"friendly-timers-repeat",
+		"good-bulldogs-mate",
+		"healthy-flies-argue",
+		"hip-rivers-swim",
+		"lazy-humans-compete",
+		"neat-rockets-build",
+		"olive-cars-relax",
+		"shiny-dodos-battle"
+	]
 }
