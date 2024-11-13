@@ -1,76 +1,118 @@
 # ts-blocks
 
-**Well documented**, **tested**, **self owned** building blocks for TypeScript applications.
-
 ```bash
-npx ts-blocks init
+npx ts-blocks@next init
 ```
 
-Check out our [docs](https://ieedan.github.io/ts-blocks/).
+A CLI to distribute shared TypeScript code without giving up ownership or adding bloated libraries.
 
 ## What is ts-blocks?
 
-ts-blocks is a collection of well documented, and tested utility functions and types that can be easily dropped into your project.
+**ts-blocks** allows you to add code from a repository straight into your project almost like shadcn-ui for TypeScript. Unlike shadcn-ui you can bring your own registry to download your blocks from.
 
-They have 0 dependencies and allow you to modify the code to your own requirements. This allows you to own the code without having to write it yourself every time.
+**ts-blocks** handles installing dependencies (including inter-block dependencies) and even testing, all from the CLI.
 
-## Setup
+## Why?
 
-Run the `init` command to setup the `blocks.json` file.
+npm dependencies come at a cost. Many times I find myself writing the same functions across different projects but creating a npm package is too much of a burden to justify. **ts-blocks** solves that problem. It makes the code easy to share and even easier to change.
 
-```bash
-npx ts-blocks init
+## Bring Your Own Registry
+
+In **ts-blocks** you can host your own registry out of a (for now just a) GitHub repository!
+
+To use your repository as a registry you will need to run the `build` command to assemble all of your blocks into a manifest that can be understood from the **ts-blocks** CLI. 
+
+The easiest way to do this is to create a `./blocks` directory in the root of your project. 
+
+```
+├── blocks-manifest.json
+├── package.json
+├── biome.json
+├── ...
+└── blocks
+    └── <category>
+		├── <block>.ts
+        └── <block>
+	 		├── ...
+	 		└── <block>.ts
+
 ```
 
-## Adding Blocks
+Within the blocks directory you can place your blocks directly as `.ts` files or create folders to contain them. Top level blocks will be added as a single file where as directories will be added as a directory of files.
 
-### Single
-
-```bash
-npx ts-blocks add result
+Once you have created all your blocks you can run:
+```
+npx ts-blocks@next build --dirs ./blocks
 ```
 
-### Multiple
+This will output a `blocks-manifest.json` file that **ts-blocks** will search for when you add blocks.
 
+### Adding blocks
+
+Once you have committed your blocks to a repository you can access them by running:
 ```bash
-npx ts-blocks add result array-sum
+# initialize config
+npx ts-blocks@next init --repos https://github.com/<owner>/<repo>
+
+# add blocks
+npx ts-blocks@next add 
 ```
 
-# Blocks
+### Depending on other blocks
 
-All blocks can be found under the `./blocks` directory or you can view the typedoc generated documentation [here](https://ieedan.github.io/ts-blocks/).
+Blocks can depend on other blocks within the same repository. Simply import the block using a standard relative import i.e. `./<block>` and **ts-blocks** will resolve that dependency when building into the manifest. 
 
-## Tests
+### Adding tests
 
-Each block is tested using [vitest](https://vitest.dev/). By default we add these tests to your project when you add a block. To disable this behavior configure `includeTests` in your `blocks.json` file.
+One of the most powerful (and dangerous) features of **ts-blocks** is the ability to provide tests to consumers via the CLI. 
 
-> [!NOTE]
-> If [vitest](https://vitest.dev/) isn't already installed in your project we will attempt to install it for you.
+By writing tests along side your blocks ts-blocks can either add those tests to the users repository or (using the `test`) command run tests from your repository against their local blocks.
+
+To add a test just add a file named the same as a block ending in `test.ts`:
+
+```
+├── blocks-manifest.json
+├── package.json
+├── biome.json
+├── ...
+└── blocks
+    └── <category>
+		├── <block>.ts
+		+++
+        └── <block>.test.ts
+	 	+++
+
+```
+
+Now you can run:
+
+```bash
+npx ts-blocks@next test
+```
+
+This finds any currently installed blocks and tests them against the tests in the remote repository.
+
+## blocks.json
+
+**ts-blocks** needs a config file to know where to put your blocks as well as where to get them from.
 
 ```jsonc
 {
-	"$schema": "https://unpkg.com/ts-blocks@0.1.0/schema.json",
-	// ...
-	"includeTests": false // disable including tests
+	"$schema": "https://unpkg.com/ts-blocks@1.0.0-next.8/schema.json",
+	// which repos to download blocks from
+	"repos": [
+		"https://github.com/ieedan/ts-blocks/tree/next"
+	],
+	"path": "testing/blocks",
+	// include an `index.ts` file at the category root
+	"includeIndexFile": true,
+	// include tests when installing the blocks
+	"includeTests": false,
+	// sets the `.ts` prefix for Deno environments
+	"imports": "node",
+	// whether or not to include meta data at the top of added blocks
+	"watermark": true
 }
 ```
 
-## Testing CLI Command
-
-```
-npx ts-blocks test
-```
-
-If you don't want to include the tests in your project source or simply want to keep your code up to date with the latest test cases you can run tests through the CLI.
-
-### Test single
-
-```bash
-ts-blocks test result
-```
-
-### Test multiple
-
-```bash
-ts-blocks test result array-sum
-```
+You'll notice that you can list multiple repos to download your blocks from using the `repos` key.
