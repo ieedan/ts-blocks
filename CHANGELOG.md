@@ -1,5 +1,11 @@
 # ts-blocks
 
+## 1.0.0-next.8
+
+### Patch Changes
+
+- c2f9ec9: fix test command to work with new remote repo approach.
+
 ## 1.0.0-next.7
 
 ### Patch Changes
