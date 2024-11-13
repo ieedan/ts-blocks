@@ -1,4 +1,5 @@
 export type Info = {
+	url: string;
 	name: string;
 	repoName: string;
 	owner: string;
@@ -60,6 +61,7 @@ const github: Provider = {
 		}
 
 		return {
+			url: repoPath,
 			name: github.name(),
 			repoName,
 			owner,

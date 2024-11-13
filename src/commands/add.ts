@@ -1,43 +1,45 @@
-import fs from 'node:fs';
-import path from 'node:path';
-import { cancel, confirm, intro, isCancel, multiselect, outro, spinner } from '@clack/prompts';
-import color from 'chalk';
-import { Argument, Command, program } from 'commander';
-import { execa } from 'execa';
-import { resolveCommand } from 'package-manager-detector/commands';
-import { detect } from 'package-manager-detector/detect';
-import { Project, type SourceFile } from 'ts-morph';
-import { type InferInput, array, boolean, object, optional, parse, string } from 'valibot';
-import { context } from '..';
-import { getConfig } from '../config';
-import { type Block, categorySchema } from '../utils/build';
-import { getInstalledBlocks } from '../utils/get-installed-blocks';
-import { getWatermark } from '../utils/get-watermark';
-import * as gitProviders from '../utils/git-providers';
-import { INFO, WARN } from '../utils/index';
-import { type Task, runTasks } from '../utils/prompts';
-import { OUTPUT_FILE } from './build';
+import fs from "node:fs";
+import path from "node:path";
+import { cancel, confirm, intro, isCancel, multiselect, outro, spinner } from "@clack/prompts";
+import color from "chalk";
+import { Argument, Command, program } from "commander";
+import { execa } from "execa";
+import { resolveCommand } from "package-manager-detector/commands";
+import { detect } from "package-manager-detector/detect";
+import { Project, type SourceFile } from "ts-morph";
+import { type InferInput, array, boolean, object, optional, parse, string } from "valibot";
+import { context } from "..";
+import { getConfig } from "../config";
+import { type Block, categorySchema } from "../utils/build";
+import { getInstalledBlocks } from "../utils/get-installed-blocks";
+import { getWatermark } from "../utils/get-watermark";
+import * as gitProviders from "../utils/git-providers";
+import { INFO, WARN } from "../utils/index";
+import { type Task, runTasks } from "../utils/prompts";
+import { OUTPUT_FILE } from "./build";
 
 const schema = object({
 	yes: boolean(),
 	verbose: boolean(),
 	repo: optional(string()),
+	allow: boolean(),
 });
 
 type Options = InferInput<typeof schema>;
 
-const add = new Command('add')
-	.addArgument(new Argument('[blocks...]', 'Whichever block you want to add to your project.'))
-	.option('-y, --yes', 'Add and install any required dependencies.', false)
-	.option('--repo <repo>', 'Repository to download the blocks from')
-	.option('--verbose', 'Include debug logs.', false)
+const add = new Command("add")
+	.addArgument(new Argument("[blocks...]", "Whichever block you want to add to your project."))
+	.option("-y, --yes", "Add and install any required dependencies.", false)
+	.option("-A, --allow", "Allow ts-blocks to download code from the provided repo.", false)
+	.option("--repo <repo>", "Repository to download the blocks from")
+	.option("--verbose", "Include debug logs.", false)
 	.action(async (blockNames, opts) => {
 		const options = parse(schema, opts);
 
 		await _add(blockNames, options);
 	});
 
-type RemoteBlock = Block;
+type RemoteBlock = Block & { sourceRepo: gitProviders.Info };
 
 const _add = async (blockNames: string[], options: Options) => {
 	const verbose = (msg: string) => {
@@ -48,7 +50,7 @@ const _add = async (blockNames: string[], options: Options) => {
 
 	verbose(`Attempting to add ${JSON.stringify(blockNames)}`);
 
-	intro(`${color.bgBlueBright(' ts-blocks ')}${color.gray(` v${context.package.version} `)}`);
+	intro(`${color.bgBlueBright(" ts-blocks ")}${color.gray(` v${context.package.version} `)}`);
 
 	const loading = spinner();
 
@@ -56,63 +58,67 @@ const _add = async (blockNames: string[], options: Options) => {
 
 	const blocksMap: Map<string, RemoteBlock> = new Map();
 
-	let repoPath = config.repo;
+	let repoPaths = config.repos;
 
-	if (options.repo) repoPath = options.repo;
+	// we just want to override all others if supplied via the CLI
+	if (options.repo) repoPaths = [options.repo];
 
-	if (!options.yes && !config.trustRepo) {
+	if (!options.allow && options.repo) {
 		const result = await confirm({
-			message: `Allow ${color.cyan('ts-blocks')} to download the manifest and other files from ${color.cyan(
-				repoPath
+			message: `Allow ${color.cyan("ts-blocks")} to download the manifest and other files from ${color.cyan(
+				options.repo
 			)}?`,
 			initialValue: true,
 		});
 
 		if (isCancel(result) || !result) {
-			cancel('Canceled!');
+			cancel("Canceled!");
 			process.exit(0);
 		}
 	}
 
-	let manifestUrl: URL;
-	let providerInfo: gitProviders.Info;
+	loading.start(`Fetching blocks from ${color.cyan(repoPaths.join(", "))}`);
 
-	if (gitProviders.github.matches(repoPath)) {
-		providerInfo = gitProviders.github.info(repoPath);
+	for (const repo of repoPaths) {
+		let manifestUrl: URL;
+		let providerInfo: gitProviders.Info;
 
-		manifestUrl = gitProviders.github.resolveRaw(providerInfo, OUTPUT_FILE);
-	} else {
-		// if you want to support your provider open a PR!
-		program.error(color.red('Only GitHub repositories are supported at this time!'));
-	}
+		if (gitProviders.github.matches(repo)) {
+			providerInfo = gitProviders.github.info(repo);
 
-	loading.start(`Fetching ${color.cyan(repoPath)} \`${OUTPUT_FILE}\``);
+			manifestUrl = gitProviders.github.resolveRaw(providerInfo, OUTPUT_FILE);
+		} else {
+			// if you want to support your provider open a PR!
+			program.error(color.red("Only GitHub repositories are supported at this time!"));
+		}
 
-	const response = await fetch(manifestUrl);
+		const response = await fetch(manifestUrl);
 
-	if (!response.ok) {
-		loading.stop(`Error fetching ${color.cyan(manifestUrl.href)}`);
-		program.error(
-			color.red(
-				`There was an error fetching the \`${OUTPUT_FILE}\` from the repository ${color.cyan(
-					config.repo
-				)} make sure the target repository has a \`${OUTPUT_FILE}\` in its root?`
-			)
-		);
-	}
+		if (!response.ok) {
+			loading.stop(`Error fetching ${color.cyan(manifestUrl.href)}`);
+			program.error(
+				color.red(
+					`There was an error fetching the \`${OUTPUT_FILE}\` from the repository ${color.cyan(
+						repo
+					)} make sure the target repository has a \`${OUTPUT_FILE}\` in its root?`
+				)
+			);
+		}
 
-	const categories = parse(array(categorySchema), await response.json());
+		const categories = parse(array(categorySchema), await response.json());
 
-	for (const category of categories) {
-		for (const block of category.blocks) {
-			// remote blocks will overwrite local blocks with the same name
-			blocksMap.set(`${category.name}/${block.name}`, {
-				...block,
-			});
+		for (const category of categories) {
+			for (const block of category.blocks) {
+				// blocks will override each other
+				blocksMap.set(`${category.name}/${block.name}`, {
+					...block,
+					sourceRepo: providerInfo,
+				});
+			}
 		}
 	}
 
-	loading.stop(`Retrieved blocks from ${config.repo}`);
+	loading.stop(`Retrieved blocks from ${color.cyan(repoPaths.join(","))}`);
 
 	const installedBlocks = getInstalledBlocks(blocksMap, config);
 
@@ -120,26 +126,35 @@ const _add = async (blockNames: string[], options: Options) => {
 
 	if (installingBlockNames.length === 0) {
 		const promptResult = await multiselect({
-			message: 'Select which blocks to add.',
-			options: Array.from(blocksMap.entries()).map(([key]) => {
+			message: "Select which blocks to add.",
+			options: Array.from(blocksMap.entries()).map(([key, value]) => {
 				const blockExists = installedBlocks.findIndex((block) => block === key) !== -1;
 
-				const [category, name] = key.split('/');
+				const [category, name] = key.split("/");
 
-				const label = `${color.cyan(category)}/${name}`;
+				let label: string;
+
+				// show the full repo if there are multiple repos
+				if (repoPaths.length > 1) {
+					label = `${color.cyan(
+						`${value.sourceRepo.name}/${value.sourceRepo.owner}/${value.sourceRepo.repoName}/${category}`
+					)}/${name}`;
+				} else {
+					label = `${color.cyan(category)}/${name}`;
+				}
 
 				return {
 					label: blockExists ? color.gray(label) : label,
 					value: key,
 					// show hint for `Installed` if block is already installed
-					hint: blockExists ? 'Installed' : undefined,
+					hint: blockExists ? "Installed" : undefined,
 				};
 			}),
 			required: true,
 		});
 
 		if (isCancel(promptResult)) {
-			cancel('Canceled!');
+			cancel("Canceled!");
 			process.exit(0);
 		}
 
@@ -149,16 +164,14 @@ const _add = async (blockNames: string[], options: Options) => {
 	const installingBlocks: {
 		name: string;
 		subDependency: boolean;
-		block: (Block & { sourceRepo: undefined }) | RemoteBlock;
+		block: RemoteBlock;
 	}[] = [];
 
 	installingBlockNames.map((blockSpecifier) => {
 		const block = blocksMap.get(blockSpecifier);
 
 		if (!block) {
-			program.error(
-				color.red(`Invalid block! ${color.bold(blockSpecifier)} does not exist!`)
-			);
+			program.error(color.red(`Invalid block! ${color.bold(blockSpecifier)} does not exist!`));
 		}
 
 		installingBlocks.push({ name: blockSpecifier, subDependency: false, block });
@@ -172,9 +185,7 @@ const _add = async (blockNames: string[], options: Options) => {
 				const block = blocksMap.get(dep);
 
 				if (!block) {
-					program.error(
-						color.red(`Invalid block! ${color.bold(blockSpecifier)} does not exist!`)
-					);
+					program.error(color.red(`Invalid block! ${color.bold(blockSpecifier)} does not exist!`));
 				}
 
 				installingBlocks.push({ name: dep, subDependency: true, block });
@@ -182,12 +193,14 @@ const _add = async (blockNames: string[], options: Options) => {
 		}
 	});
 
-	const watermark = getWatermark(context.package.version, config.repo);
-
 	const tasks: Task[] = [];
 
 	for (const { name: specifier, block } of installingBlocks) {
-		const [_, blockName] = specifier.split('/');
+		const [_, blockName] = specifier.split("/");
+
+		const watermark = getWatermark(context.package.version, block.sourceRepo.url);
+
+		const providerInfo = block.sourceRepo;
 
 		verbose(`Attempting to add ${specifier}`);
 
@@ -206,7 +219,7 @@ const _add = async (blockNames: string[], options: Options) => {
 			});
 
 			if (isCancel(result) || !result) {
-				cancel('Canceled!');
+				cancel("Canceled!");
 				process.exit(0);
 			}
 		}
@@ -234,7 +247,7 @@ const _add = async (blockNames: string[], options: Options) => {
 				};
 
 				for (const sourceFile of block.files) {
-					if (!config.includeTests && sourceFile.endsWith('test.ts')) continue;
+					if (!config.includeTests && sourceFile.endsWith("test.ts")) continue;
 
 					const sourcePath = path.join(block.directory, sourceFile);
 
@@ -265,9 +278,9 @@ const _add = async (blockNames: string[], options: Options) => {
 				}
 
 				if (config.includeIndexFile) {
-					verbose('Trying to include index file');
+					verbose("Trying to include index file");
 
-					const indexPath = path.join(directory, 'index.ts');
+					const indexPath = path.join(directory, "index.ts");
 
 					try {
 						let index: SourceFile;
@@ -280,12 +293,12 @@ const _add = async (blockNames: string[], options: Options) => {
 							index = project.createSourceFile(indexPath);
 						}
 
-						if (config.imports === 'node') {
+						if (config.imports === "node") {
 							index.addExportDeclaration({
 								moduleSpecifier: `./${blockName}`,
 								isTypeOnly: false,
 							});
-						} else if (config.imports === 'deno') {
+						} else if (config.imports === "deno") {
 							index.addExportDeclaration({
 								moduleSpecifier: `./${blockName}.ts`,
 								isTypeOnly: false,
@@ -299,42 +312,35 @@ const _add = async (blockNames: string[], options: Options) => {
 				}
 
 				if (config.includeTests) {
-					verbose('Trying to include tests');
+					verbose("Trying to include tests");
 
-					const { devDependencies } = JSON.parse(
-						fs.readFileSync('package.json').toString()
-					);
+					const { devDependencies } = JSON.parse(fs.readFileSync("package.json").toString());
 
 					if (devDependencies.vitest === undefined) {
-						loading.message(`Installing ${color.cyan('vitest')}`);
+						loading.message(`Installing ${color.cyan("vitest")}`);
 
 						const pm = await detect({ cwd: process.cwd() });
 
 						if (pm == null) {
-							program.error(color.red('Could not detect package manager'));
+							program.error(color.red("Could not detect package manager"));
 						}
 
-						const resolved = resolveCommand(pm.agent, 'install', [
-							'vitest',
-							'--save-dev',
-						]);
+						const resolved = resolveCommand(pm.agent, "install", ["vitest", "--save-dev"]);
 
 						if (resolved == null) {
-							program.error(
-								color.red(`Could not resolve add command for '${pm.agent}'.`)
-							);
+							program.error(color.red(`Could not resolve add command for '${pm.agent}'.`));
 						}
 
 						const { command, args } = resolved;
 
-						const installCommand = `${command} ${args.join(' ')}`;
+						const installCommand = `${command} ${args.join(" ")}`;
 
 						try {
 							await execa({ cwd: process.cwd() })`${installCommand}`;
 						} catch {
 							program.error(
 								color.red(
-									`Failed to install ${color.bold('vitest')}! Failed while running '${color.bold(
+									`Failed to install ${color.bold("vitest")}! Failed while running '${color.bold(
 										installCommand
 									)}'`
 								)
@@ -348,7 +354,7 @@ const _add = async (blockNames: string[], options: Options) => {
 
 	await runTasks(tasks, { verbose: options.verbose });
 
-	outro(color.green('All done!'));
+	outro(color.green("All done!"));
 };
 
 export { add };
