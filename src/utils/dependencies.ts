@@ -1,12 +1,21 @@
-import path from 'node:path';
-import { Project } from 'ts-morph';
+import path from "node:path";
+import { Project } from "ts-morph";
+import fs from "node:fs";
+import { findNearestPackageJson } from "./package";
+import { builtinModules } from "node:module";
+
+type ResolvedDependencies = {
+	local: string[];
+	devDependencies: string[];
+	dependencies: string[];
+};
 
 const findDependencies = (
 	filePath: string,
 	category: string,
 	isSubDir: boolean,
 	project: Project | undefined = undefined
-): string[] => {
+): ResolvedDependencies => {
 	let prj = project;
 	if (!prj) {
 		prj = new Project();
@@ -16,14 +25,12 @@ const findDependencies = (
 
 	const imports = blockFile.getImportDeclarations();
 
-	const relativeImports = imports.filter((declaration) =>
-		declaration.getModuleSpecifierValue().startsWith('.')
-	);
+	const relativeImports = imports.filter((declaration) => declaration.getModuleSpecifierValue().startsWith("."));
 
 	const localDeps: string[] = [];
 
 	const removeExtension = (p: string) => {
-		const index = p.lastIndexOf('.');
+		const index = p.lastIndexOf(".");
 
 		if (index === -1) return p;
 
@@ -36,17 +43,17 @@ const findDependencies = (
 	for (const relativeImport of relativeImports) {
 		const mod = relativeImport.getModuleSpecifierValue();
 
-		if (!isSubDir && mod.startsWith('./')) {
+		if (!isSubDir && mod.startsWith("./")) {
 			localDeps.push(`${category}/${removeExtension(path.basename(mod))}`);
 			continue;
 		}
 
-		if (isSubDir && mod.startsWith('../') && !mod.startsWith('../.')) {
+		if (isSubDir && mod.startsWith("../") && !mod.startsWith("../.")) {
 			localDeps.push(`${category}/${removeExtension(path.basename(mod))}`);
 			continue;
 		}
 
-		const segments = mod.replaceAll('../', '').split('/');
+		const segments = mod.replaceAll("../", "").split("/");
 
 		// invalid path
 		if (segments.length !== 2) continue;
@@ -54,7 +61,43 @@ const findDependencies = (
 		localDeps.push(`${segments[0]}/${segments[1]}`);
 	}
 
-	return localDeps;
+	const remoteImports = imports.filter(
+		(declaration) =>
+			!declaration.getModuleSpecifierValue().startsWith(".") &&
+			!builtinModules.includes(declaration.getModuleSpecifierValue()) &&
+			!declaration.getModuleSpecifierValue().startsWith("node:")
+	);
+
+	const pkgPath = findNearestPackageJson(path.dirname(filePath), "");
+
+	const dependencies: string[] = [];
+	const devDependencies: string[] = [];
+
+	if (pkgPath) {
+		const { devDependencies: packageDevDependencies, dependencies: packageDependencies } = JSON.parse(
+			fs.readFileSync(pkgPath, "utf-8")
+		);
+
+		for (const imp of remoteImports) {
+			let version = packageDependencies[imp.getModuleSpecifierValue()];
+
+			if (version !== undefined) {
+				dependencies.push(`${imp.getModuleSpecifierValue()}@${version}`);
+				continue;
+			}
+
+			version = packageDevDependencies[imp.getModuleSpecifierValue()];
+
+			if (version !== undefined) {
+				devDependencies.push(`${imp.getModuleSpecifierValue()}@${version}`);
+				continue;
+			}
+
+			dependencies.push(imp.getModuleSpecifierValue());
+		}
+	}
+
+	return { local: localDeps, dependencies, devDependencies };
 };
 
 export { findDependencies };

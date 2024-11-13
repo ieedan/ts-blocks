@@ -3,13 +3,18 @@
 		"name": "types",
 		"blocks": [
 			{
-				"directory": "blocks\\types",
 				"name": "result",
+				"directory": "blocks\\types",
 				"category": "types",
 				"tests": true,
 				"subdirectory": false,
-				"files": ["result.ts", "result.test.ts"],
-				"localDependencies": []
+				"files": [
+					"result.ts",
+					"result.test.ts"
+				],
+				"localDependencies": [],
+				"dependencies": [],
+				"devDependencies": []
 			}
 		]
 	},
@@ -17,94 +22,147 @@
 		"name": "utilities",
 		"blocks": [
 			{
-				"directory": "blocks\\utilities",
 				"name": "array-sum",
+				"directory": "blocks\\utilities",
 				"category": "utilities",
 				"tests": true,
 				"subdirectory": false,
-				"files": ["array-sum.ts", "array-sum.test.ts"],
-				"localDependencies": []
+				"files": [
+					"array-sum.ts",
+					"array-sum.test.ts"
+				],
+				"localDependencies": [],
+				"dependencies": [],
+				"devDependencies": []
 			},
 			{
-				"directory": "blocks\\utilities",
 				"name": "array-to-map",
+				"directory": "blocks\\utilities",
 				"category": "utilities",
 				"tests": true,
 				"subdirectory": false,
-				"files": ["array-to-map.ts", "array-to-map.test.ts"],
-				"localDependencies": []
+				"files": [
+					"array-to-map.ts",
+					"array-to-map.test.ts"
+				],
+				"localDependencies": [],
+				"dependencies": [],
+				"devDependencies": []
 			},
 			{
-				"directory": "blocks\\utilities",
 				"name": "dispatcher",
+				"directory": "blocks\\utilities",
 				"category": "utilities",
 				"tests": true,
 				"subdirectory": false,
-				"files": ["dispatcher.ts", "dispatcher.test.ts"],
-				"localDependencies": []
+				"files": [
+					"dispatcher.ts",
+					"dispatcher.test.ts"
+				],
+				"localDependencies": [],
+				"dependencies": [],
+				"devDependencies": []
 			},
 			{
-				"directory": "blocks\\utilities",
 				"name": "ipv4-address",
+				"directory": "blocks\\utilities",
 				"category": "utilities",
 				"tests": true,
 				"subdirectory": false,
-				"files": ["ipv4-address.ts", "ipv4-address.test.ts"],
-				"localDependencies": ["types/result", "utilities/is-number"]
+				"files": [
+					"ipv4-address.ts",
+					"ipv4-address.test.ts"
+				],
+				"localDependencies": [
+					"types/result",
+					"utilities/is-number"
+				],
+				"dependencies": [],
+				"devDependencies": []
 			},
 			{
-				"directory": "blocks\\utilities",
 				"name": "is-number",
+				"directory": "blocks\\utilities",
 				"category": "utilities",
 				"tests": true,
 				"subdirectory": false,
-				"files": ["is-number.ts", "is-number.test.ts"],
-				"localDependencies": []
+				"files": [
+					"is-number.ts",
+					"is-number.test.ts"
+				],
+				"localDependencies": [],
+				"dependencies": [],
+				"devDependencies": []
 			},
 			{
-				"directory": "blocks\\utilities",
 				"name": "map-to-array",
+				"directory": "blocks\\utilities",
 				"category": "utilities",
 				"tests": true,
 				"subdirectory": false,
-				"files": ["map-to-array.ts", "map-to-array.test.ts"],
-				"localDependencies": []
+				"files": [
+					"map-to-array.ts",
+					"map-to-array.test.ts"
+				],
+				"localDependencies": [],
+				"dependencies": [],
+				"devDependencies": []
 			},
 			{
-				"directory": "blocks\\utilities",
 				"name": "pad",
+				"directory": "blocks\\utilities",
 				"category": "utilities",
 				"tests": true,
 				"subdirectory": false,
-				"files": ["pad.ts", "pad.test.ts"],
-				"localDependencies": []
+				"files": [
+					"pad.ts",
+					"pad.test.ts"
+				],
+				"localDependencies": [],
+				"dependencies": [],
+				"devDependencies": []
 			},
 			{
-				"directory": "blocks\\utilities",
 				"name": "sleep",
+				"directory": "blocks\\utilities",
 				"category": "utilities",
 				"tests": true,
 				"subdirectory": false,
-				"files": ["sleep.ts", "sleep.test.ts"],
-				"localDependencies": []
+				"files": [
+					"sleep.ts",
+					"sleep.test.ts"
+				],
+				"localDependencies": [],
+				"dependencies": [],
+				"devDependencies": []
 			},
 			{
-				"directory": "blocks\\utilities",
 				"name": "stopwatch",
+				"directory": "blocks\\utilities",
 				"category": "utilities",
 				"tests": true,
 				"subdirectory": false,
-				"files": ["stopwatch.ts", "stopwatch.test.ts"],
-				"localDependencies": []
+				"files": [
+					"stopwatch.ts",
+					"stopwatch.test.ts"
+				],
+				"localDependencies": [],
+				"dependencies": [],
+				"devDependencies": []
 			},
 			{
-				"directory": "blocks\\utilities",
 				"name": "truncate",
+				"directory": "blocks\\utilities",
 				"category": "utilities",
 				"tests": true,
 				"subdirectory": false,
-				"files": ["truncate.ts", "truncate.test.ts"],
-				"localDependencies": []
+				"files": [
+					"truncate.ts",
+					"truncate.test.ts"
+				],
+				"localDependencies": [],
+				"dependencies": [],
+				"devDependencies": []
 			}
 		]
 	}
