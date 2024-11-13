@@ -3,7 +3,7 @@
 	"type": "object",
 	"properties": {
 		"repos": {
-			"description": "Repositories that host the blocks.",
+			"description": "Repositories to download blocks from.",
 			"type": "array",
 			"items": {
 				"type": "string"
@@ -11,26 +11,26 @@
 			"default": "https://github.com/ieedan/ts-blocks"
 		},
 		"path": {
-			"description": "Where to place the blocks in your project.",
+			"description": "Path to add blocks to in your project.",
 			"type": "string"
 		},
 		"includeIndexFile": {
-			"description": "When true creates an `index.ts` at the root of the folder and exports each function from it when added.",
+			"description": "When true creates an `index.ts` at the root of the category folder and exports all blocks from it.",
 			"type": "boolean",
 			"default": "true"
 		},
 		"includeTests": {
-			"description": "When true includes the test files for each function in the same directory.",
+			"description": "When true includes the test files for each block in the same directory.",
 			"type": "boolean",
 			"default": "true"
 		},
 		"imports": {
-			"description": "Controls the suffix when re-exporting from index.ts.",
+			"description": "Controls the suffix when re-exporting from `index.ts`.",
 			"enum": ["deno", "node"],
 			"default": "node"
 		},
 		"watermark": {
-			"description": "When true will add a watermark with the version at the top of the installed files.",
+			"description": "When true will add a watermark with the version and repository at the top of the installed files.",
 			"type": "boolean",
 			"default": "true"
 		}

@@ -17,9 +17,9 @@ const schema = object({
 type Options = InferInput<typeof schema>;
 
 const build = new Command('build')
-	.description('Builds the `/blocks` directory in the project root into a blocks.json file.')
+	.description(`Builds the provided --dirs in the project root into a \`${OUTPUT_FILE}\` file.`)
 	.option('--dirs [dirs...]', 'The directories containing the blocks.', ['./blocks'])
-	.option('--no-output', `Do not output \`${OUTPUT_FILE}\` file.`)
+	.option('--no-output', `Do not output a \`${OUTPUT_FILE}\` file.`)
 	.option('--verbose', 'Include debug logs.', false)
 	.action(async (opts) => {
 		const options = parse(schema, opts);
