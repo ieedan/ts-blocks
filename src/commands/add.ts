@@ -66,7 +66,7 @@ const _add = async (blockNames: string[], options: Options) => {
 
 	if (!options.allow && options.repo) {
 		const result = await confirm({
-			message: `Allow ${color.cyan('ts-blocks')} to download the manifest and other files from ${color.cyan(
+			message: `Allow ${color.cyan('ts-blocks')} to download and run code from ${color.cyan(
 				options.repo
 			)}?`,
 			initialValue: true,
@@ -183,8 +183,6 @@ const _add = async (blockNames: string[], options: Options) => {
 			for (const dep of block.localDependencies) {
 				if (installingBlocks.find(({ name }) => name === dep)) continue;
 
-				// this resolves remote blocks correctly as well because they will reference a local path
-				// the blocks in the blocks map already know where they come from
 				const block = blocksMap.get(dep);
 
 				if (!block) {
