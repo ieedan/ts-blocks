@@ -7,10 +7,8 @@ const CONFIG_NAME = 'blocks.json';
 
 const schema = object({
 	$schema: string(),
-	repoPath: optional(string()),
-	trustRepoPath: optional(boolean(), false),
-	blocksPath: optional(string(), './blocks'),
-	listLocal: optional(boolean(), true),
+	repo: optional(string(), 'https://github.com/ieedan/ts-blocks'),
+	trustRepo: optional(boolean(), false),
 	includeIndexFile: boolean(),
 	includeTests: boolean(),
 	path: pipe(string(), minLength(1)),
