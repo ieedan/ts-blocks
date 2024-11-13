@@ -19,11 +19,9 @@ type Options = InferInput<typeof schema>;
 const init = new Command('init')
 	.description('Initializes the configuration file')
 	.option('--path <path>', 'Path to install the blocks')
-	.option(
-		'--repos [repos...]',
-		'Repository to install the blocks from',
-		['https://github.com/ieedan/ts-blocks/tree/next']
-	)
+	.option('--repos [repos...]', 'Repository to install the blocks from', [
+		'https://github.com/ieedan/ts-blocks/tree/next',
+	])
 	.option(
 		'--no-index-file',
 		'Will create an index.ts file at the root of the folder to re-export functions from.'

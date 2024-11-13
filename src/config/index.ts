@@ -1,7 +1,18 @@
 import fs from 'node:fs';
 import color from 'chalk';
 import { program } from 'commander';
-import { array, boolean, literal, minLength, object, optional, parse, pipe, string, union } from 'valibot';
+import {
+	array,
+	boolean,
+	literal,
+	minLength,
+	object,
+	optional,
+	parse,
+	pipe,
+	string,
+	union,
+} from 'valibot';
 
 const CONFIG_NAME = 'blocks.json';
 
