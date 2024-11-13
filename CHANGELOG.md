@@ -1,5 +1,11 @@
 # ts-blocks
 
+## 1.0.0-next.6
+
+### Patch Changes
+
+- f1631fd: `build` command now adds dependencies with a version based on the nearest package.json file.
+
 ## 1.0.0-next.5
 
 ### Patch Changes
