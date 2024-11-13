@@ -1,8 +1,8 @@
-import path from "node:path";
-import fs from "node:fs";
+import fs from 'node:fs';
+import path from 'node:path';
 
 const findNearestPackageJson = (startDir: string, until: string): string | undefined => {
-	const packagePath = path.join(startDir, "package.json");
+	const packagePath = path.join(startDir, 'package.json');
 
 	if (fs.existsSync(packagePath)) return packagePath;
 
@@ -10,7 +10,7 @@ const findNearestPackageJson = (startDir: string, until: string): string | undef
 
 	const segments = startDir.split(/[\/\\]/);
 
-	return findNearestPackageJson(segments.slice(0, segments.length - 1).join("/"), until);
+	return findNearestPackageJson(segments.slice(0, segments.length - 1).join('/'), until);
 };
 
 export { findNearestPackageJson };

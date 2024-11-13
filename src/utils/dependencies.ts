@@ -1,8 +1,8 @@
-import path from "node:path";
-import { Project } from "ts-morph";
-import fs from "node:fs";
-import { findNearestPackageJson } from "./package";
-import { builtinModules } from "node:module";
+import fs from 'node:fs';
+import { builtinModules } from 'node:module';
+import path from 'node:path';
+import { Project } from 'ts-morph';
+import { findNearestPackageJson } from './package';
 
 type ResolvedDependencies = {
 	local: string[];
@@ -25,12 +25,14 @@ const findDependencies = (
 
 	const imports = blockFile.getImportDeclarations();
 
-	const relativeImports = imports.filter((declaration) => declaration.getModuleSpecifierValue().startsWith("."));
+	const relativeImports = imports.filter((declaration) =>
+		declaration.getModuleSpecifierValue().startsWith('.')
+	);
 
 	const localDeps: string[] = [];
 
 	const removeExtension = (p: string) => {
-		const index = p.lastIndexOf(".");
+		const index = p.lastIndexOf('.');
 
 		if (index === -1) return p;
 
@@ -43,17 +45,17 @@ const findDependencies = (
 	for (const relativeImport of relativeImports) {
 		const mod = relativeImport.getModuleSpecifierValue();
 
-		if (!isSubDir && mod.startsWith("./")) {
+		if (!isSubDir && mod.startsWith('./')) {
 			localDeps.push(`${category}/${removeExtension(path.basename(mod))}`);
 			continue;
 		}
 
-		if (isSubDir && mod.startsWith("../") && !mod.startsWith("../.")) {
+		if (isSubDir && mod.startsWith('../') && !mod.startsWith('../.')) {
 			localDeps.push(`${category}/${removeExtension(path.basename(mod))}`);
 			continue;
 		}
 
-		const segments = mod.replaceAll("../", "").split("/");
+		const segments = mod.replaceAll('../', '').split('/');
 
 		// invalid path
 		if (segments.length !== 2) continue;
@@ -63,20 +65,19 @@ const findDependencies = (
 
 	const remoteImports = imports.filter(
 		(declaration) =>
-			!declaration.getModuleSpecifierValue().startsWith(".") &&
+			!declaration.getModuleSpecifierValue().startsWith('.') &&
 			!builtinModules.includes(declaration.getModuleSpecifierValue()) &&
-			!declaration.getModuleSpecifierValue().startsWith("node:")
+			!declaration.getModuleSpecifierValue().startsWith('node:')
 	);
 
-	const pkgPath = findNearestPackageJson(path.dirname(filePath), "");
+	const pkgPath = findNearestPackageJson(path.dirname(filePath), '');
 
 	const dependencies: string[] = [];
 	const devDependencies: string[] = [];
 
 	if (pkgPath) {
-		const { devDependencies: packageDevDependencies, dependencies: packageDependencies } = JSON.parse(
-			fs.readFileSync(pkgPath, "utf-8")
-		);
+		const { devDependencies: packageDevDependencies, dependencies: packageDependencies } =
+			JSON.parse(fs.readFileSync(pkgPath, 'utf-8'));
 
 		for (const imp of remoteImports) {
 			let version = packageDependencies[imp.getModuleSpecifierValue()];
