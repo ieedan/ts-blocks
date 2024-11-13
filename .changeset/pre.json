@@ -1,11 +1,8 @@
 {
-  "mode": "pre",
-  "tag": "next",
-  "initialVersions": {
-    "ts-blocks": "0.11.0"
-  },
-  "changesets": [
-    "healthy-flies-argue",
-    "olive-cars-relax"
-  ]
+	"mode": "pre",
+	"tag": "next",
+	"initialVersions": {
+		"ts-blocks": "0.11.0"
+	},
+	"changesets": ["healthy-flies-argue", "olive-cars-relax"]
 }

@@ -2,15 +2,13 @@
 	"$schema": "http://json-schema.org/draft-07/schema#",
 	"type": "object",
 	"properties": {
-		"repo": {
-			"description": "Repository that hosts the blocks. (Defaults to local)",
-			"type": "string",
+		"repos": {
+			"description": "Repositories that host the blocks.",
+			"type": "array",
+			"items": {
+				"type": "string"
+			},
 			"default": "https://github.com/ieedan/ts-blocks"
-		},
-		"trustRepo": {
-			"description": "When enabled ts-blocks won't ask before downloading code from the provided `repo`.",
-			"type": "boolean",
-			"default": "false"
 		},
 		"path": {
 			"description": "Where to place the blocks in your project.",
@@ -37,5 +35,5 @@
 			"default": "true"
 		}
 	},
-	"required": ["path", "includeIndexFile", "includeTests", "trustRepo", "repo"]
+	"required": ["path", "includeIndexFile", "includeTests", "repos"]
 }

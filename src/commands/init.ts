@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import { cancel, confirm, intro, isCancel, outro, text } from '@clack/prompts';
 import color from 'chalk';
 import { Command } from 'commander';
-import { type InferInput, boolean, object, optional, parse, string } from 'valibot';
+import { type InferInput, array, boolean, object, optional, parse, string } from 'valibot';
 import { context } from '..';
 import { CONFIG_NAME, type Config } from '../config';
 
@@ -10,7 +10,7 @@ const schema = object({
 	path: optional(string()),
 	indexFile: boolean(),
 	tests: boolean(),
-	repo: string(),
+	repos: array(string()),
 	watermark: boolean(),
 });
 
@@ -19,11 +19,9 @@ type Options = InferInput<typeof schema>;
 const init = new Command('init')
 	.description('Initializes the configuration file')
 	.option('--path <path>', 'Path to install the blocks')
-	.option(
-		'--repo <repo>',
-		'Repository to install the blocks from',
-		'https://github.com/ieedan/ts-blocks'
-	)
+	.option('--repos [repos...]', 'Repository to install the blocks from', [
+		'https://github.com/ieedan/ts-blocks/tree/next',
+	])
 	.option(
 		'--no-index-file',
 		'Will create an index.ts file at the root of the folder to re-export functions from.'
@@ -82,8 +80,7 @@ const _init = async (options: Options) => {
 
 	const config: Config = {
 		$schema: `https://unpkg.com/ts-blocks@${version}/schema.json`,
-		repo: options.repo,
-		trustRepo: true,
+		repos: options.repos,
 		path: options.path,
 		includeIndexFile: options.indexFile,
 		includeTests: options.tests,

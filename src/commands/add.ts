@@ -22,6 +22,7 @@ const schema = object({
 	yes: boolean(),
 	verbose: boolean(),
 	repo: optional(string()),
+	allow: boolean(),
 });
 
 type Options = InferInput<typeof schema>;
@@ -29,6 +30,7 @@ type Options = InferInput<typeof schema>;
 const add = new Command('add')
 	.addArgument(new Argument('[blocks...]', 'Whichever block you want to add to your project.'))
 	.option('-y, --yes', 'Add and install any required dependencies.', false)
+	.option('-A, --allow', 'Allow ts-blocks to download code from the provided repo.', false)
 	.option('--repo <repo>', 'Repository to download the blocks from')
 	.option('--verbose', 'Include debug logs.', false)
 	.action(async (blockNames, opts) => {
@@ -37,7 +39,7 @@ const add = new Command('add')
 		await _add(blockNames, options);
 	});
 
-type RemoteBlock = Block;
+type RemoteBlock = Block & { sourceRepo: gitProviders.Info };
 
 const _add = async (blockNames: string[], options: Options) => {
 	const verbose = (msg: string) => {
@@ -56,14 +58,15 @@ const _add = async (blockNames: string[], options: Options) => {
 
 	const blocksMap: Map<string, RemoteBlock> = new Map();
 
-	let repoPath = config.repo;
+	let repoPaths = config.repos;
 
-	if (options.repo) repoPath = options.repo;
+	// we just want to override all others if supplied via the CLI
+	if (options.repo) repoPaths = [options.repo];
 
-	if (!options.yes && !config.trustRepo) {
+	if (!options.allow && options.repo) {
 		const result = await confirm({
 			message: `Allow ${color.cyan('ts-blocks')} to download the manifest and other files from ${color.cyan(
-				repoPath
+				options.repo
 			)}?`,
 			initialValue: true,
 		});
@@ -74,45 +77,48 @@ const _add = async (blockNames: string[], options: Options) => {
 		}
 	}
 
-	let manifestUrl: URL;
-	let providerInfo: gitProviders.Info;
+	loading.start(`Fetching blocks from ${color.cyan(repoPaths.join(', '))}`);
 
-	if (gitProviders.github.matches(repoPath)) {
-		providerInfo = gitProviders.github.info(repoPath);
+	for (const repo of repoPaths) {
+		let manifestUrl: URL;
+		let providerInfo: gitProviders.Info;
 
-		manifestUrl = gitProviders.github.resolveRaw(providerInfo, OUTPUT_FILE);
-	} else {
-		// if you want to support your provider open a PR!
-		program.error(color.red('Only GitHub repositories are supported at this time!'));
-	}
+		if (gitProviders.github.matches(repo)) {
+			providerInfo = gitProviders.github.info(repo);
 
-	loading.start(`Fetching ${color.cyan(repoPath)} \`${OUTPUT_FILE}\``);
+			manifestUrl = gitProviders.github.resolveRaw(providerInfo, OUTPUT_FILE);
+		} else {
+			// if you want to support your provider open a PR!
+			program.error(color.red('Only GitHub repositories are supported at this time!'));
+		}
 
-	const response = await fetch(manifestUrl);
+		const response = await fetch(manifestUrl);
 
-	if (!response.ok) {
-		loading.stop(`Error fetching ${color.cyan(manifestUrl.href)}`);
-		program.error(
-			color.red(
-				`There was an error fetching the \`${OUTPUT_FILE}\` from the repository ${color.cyan(
-					config.repo
-				)} make sure the target repository has a \`${OUTPUT_FILE}\` in its root?`
-			)
-		);
-	}
+		if (!response.ok) {
+			loading.stop(`Error fetching ${color.cyan(manifestUrl.href)}`);
+			program.error(
+				color.red(
+					`There was an error fetching the \`${OUTPUT_FILE}\` from the repository ${color.cyan(
+						repo
+					)} make sure the target repository has a \`${OUTPUT_FILE}\` in its root?`
+				)
+			);
+		}
 
-	const categories = parse(array(categorySchema), await response.json());
+		const categories = parse(array(categorySchema), await response.json());
 
-	for (const category of categories) {
-		for (const block of category.blocks) {
-			// remote blocks will overwrite local blocks with the same name
-			blocksMap.set(`${category.name}/${block.name}`, {
-				...block,
-			});
+		for (const category of categories) {
+			for (const block of category.blocks) {
+				// blocks will override each other
+				blocksMap.set(`${category.name}/${block.name}`, {
+					...block,
+					sourceRepo: providerInfo,
+				});
+			}
 		}
 	}
 
-	loading.stop(`Retrieved blocks from ${config.repo}`);
+	loading.stop(`Retrieved blocks from ${color.cyan(repoPaths.join(','))}`);
 
 	const installedBlocks = getInstalledBlocks(blocksMap, config);
 
@@ -121,12 +127,21 @@ const _add = async (blockNames: string[], options: Options) => {
 	if (installingBlockNames.length === 0) {
 		const promptResult = await multiselect({
 			message: 'Select which blocks to add.',
-			options: Array.from(blocksMap.entries()).map(([key]) => {
+			options: Array.from(blocksMap.entries()).map(([key, value]) => {
 				const blockExists = installedBlocks.findIndex((block) => block === key) !== -1;
 
 				const [category, name] = key.split('/');
 
-				const label = `${color.cyan(category)}/${name}`;
+				let label: string;
+
+				// show the full repo if there are multiple repos
+				if (repoPaths.length > 1) {
+					label = `${color.cyan(
+						`${value.sourceRepo.name}/${value.sourceRepo.owner}/${value.sourceRepo.repoName}/${category}`
+					)}/${name}`;
+				} else {
+					label = `${color.cyan(category)}/${name}`;
+				}
 
 				return {
 					label: blockExists ? color.gray(label) : label,
@@ -149,7 +164,7 @@ const _add = async (blockNames: string[], options: Options) => {
 	const installingBlocks: {
 		name: string;
 		subDependency: boolean;
-		block: (Block & { sourceRepo: undefined }) | RemoteBlock;
+		block: RemoteBlock;
 	}[] = [];
 
 	installingBlockNames.map((blockSpecifier) => {
@@ -182,12 +197,14 @@ const _add = async (blockNames: string[], options: Options) => {
 		}
 	});
 
-	const watermark = getWatermark(context.package.version, config.repo);
-
 	const tasks: Task[] = [];
 
 	for (const { name: specifier, block } of installingBlocks) {
 		const [_, blockName] = specifier.split('/');
+
+		const watermark = getWatermark(context.package.version, block.sourceRepo.url);
+
+		const providerInfo = block.sourceRepo;
 
 		verbose(`Attempting to add ${specifier}`);
 

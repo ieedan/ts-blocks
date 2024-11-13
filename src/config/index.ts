@@ -1,14 +1,24 @@
 import fs from 'node:fs';
 import color from 'chalk';
 import { program } from 'commander';
-import { boolean, literal, minLength, object, optional, parse, pipe, string, union } from 'valibot';
+import {
+	array,
+	boolean,
+	literal,
+	minLength,
+	object,
+	optional,
+	parse,
+	pipe,
+	string,
+	union,
+} from 'valibot';
 
 const CONFIG_NAME = 'blocks.json';
 
 const schema = object({
 	$schema: string(),
-	repo: optional(string(), 'https://github.com/ieedan/ts-blocks'),
-	trustRepo: optional(boolean(), false),
+	repos: array(string()),
 	includeIndexFile: boolean(),
 	includeTests: boolean(),
 	path: pipe(string(), minLength(1)),
