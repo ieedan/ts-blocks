@@ -7,8 +7,7 @@
 			"type": "array",
 			"items": {
 				"type": "string"
-			},
-			"default": "https://github.com/ieedan/ts-blocks"
+			}
 		},
 		"path": {
 			"description": "Path to add blocks to in your project.",
