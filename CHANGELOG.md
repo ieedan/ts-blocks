@@ -1,5 +1,11 @@
 # ts-blocks
 
+## 1.0.0-next.9
+
+### Patch Changes
+
+- 6e19e98: Updates documentation
+
 ## 1.0.0-next.8
 
 ### Patch Changes
