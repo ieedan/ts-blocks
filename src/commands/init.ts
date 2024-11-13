@@ -29,7 +29,7 @@ const init = new Command('init')
 	});
 
 const _init = async (options: Options) => {
-	intro(`${color.bgBlueBright(" ts-blocks ")}${color.gray(` v${context.package.version} `)}`);
+	intro(`${color.bgBlueBright(' ts-blocks ')}${color.gray(` v${context.package.version} `)}`);
 
 	const { version } = JSON.parse(
 		fs.readFileSync(new URL('../package.json', import.meta.url), 'utf-8')
@@ -71,7 +71,7 @@ const _init = async (options: Options) => {
 
 	const config: Config = {
 		$schema: `https://unpkg.com/ts-blocks@${version}/schema.json`,
-		blocksPath: "./blocks",
+		blocksPath: './blocks',
 		trustRepoPath: false,
 		listLocal: true,
 		path: options.path,

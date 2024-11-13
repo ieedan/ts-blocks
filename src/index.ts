@@ -38,7 +38,7 @@ const context: CLIContext = {
 		name,
 		description,
 		version,
-		repository
+		repository,
 	},
 	categories,
 	blocks,

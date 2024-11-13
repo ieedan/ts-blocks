@@ -7,10 +7,7 @@
 				"category": "types",
 				"tests": true,
 				"directory": "blocks\\types",
-				"files": [
-					"result.ts",
-					"result.test.ts"
-				],
+				"files": ["result.ts", "result.test.ts"],
 				"localDependencies": []
 			}
 		]
@@ -23,10 +20,7 @@
 				"category": "utilities",
 				"tests": true,
 				"directory": "blocks\\utilities",
-				"files": [
-					"array-sum.ts",
-					"array-sum.test.ts"
-				],
+				"files": ["array-sum.ts", "array-sum.test.ts"],
 				"localDependencies": []
 			},
 			{
@@ -34,10 +28,7 @@
 				"category": "utilities",
 				"tests": true,
 				"directory": "blocks\\utilities",
-				"files": [
-					"array-to-map.ts",
-					"array-to-map.test.ts"
-				],
+				"files": ["array-to-map.ts", "array-to-map.test.ts"],
 				"localDependencies": []
 			},
 			{
@@ -45,10 +36,7 @@
 				"category": "utilities",
 				"tests": true,
 				"directory": "blocks\\utilities",
-				"files": [
-					"dispatcher.ts",
-					"dispatcher.test.ts"
-				],
+				"files": ["dispatcher.ts", "dispatcher.test.ts"],
 				"localDependencies": []
 			},
 			{
@@ -56,24 +44,15 @@
 				"category": "utilities",
 				"tests": true,
 				"directory": "blocks\\utilities\\ipv4-address",
-				"files": [
-					"ipv4-address.test.ts",
-					"ipv4-address.ts"
-				],
-				"localDependencies": [
-					"types/result",
-					"utilities/is-number"
-				]
+				"files": ["ipv4-address.test.ts", "ipv4-address.ts"],
+				"localDependencies": ["types/result", "utilities/is-number"]
 			},
 			{
 				"name": "is-number",
 				"category": "utilities",
 				"tests": true,
 				"directory": "blocks\\utilities\\is-number",
-				"files": [
-					"is-number.test.ts",
-					"is-number.ts"
-				],
+				"files": ["is-number.test.ts", "is-number.ts"],
 				"localDependencies": []
 			},
 			{
@@ -81,10 +60,7 @@
 				"category": "utilities",
 				"tests": true,
 				"directory": "blocks\\utilities",
-				"files": [
-					"map-to-array.ts",
-					"map-to-array.test.ts"
-				],
+				"files": ["map-to-array.ts", "map-to-array.test.ts"],
 				"localDependencies": []
 			},
 			{
@@ -92,10 +68,7 @@
 				"category": "utilities",
 				"tests": true,
 				"directory": "blocks\\utilities",
-				"files": [
-					"pad.ts",
-					"pad.test.ts"
-				],
+				"files": ["pad.ts", "pad.test.ts"],
 				"localDependencies": []
 			},
 			{
@@ -103,10 +76,7 @@
 				"category": "utilities",
 				"tests": true,
 				"directory": "blocks\\utilities",
-				"files": [
-					"sleep.ts",
-					"sleep.test.ts"
-				],
+				"files": ["sleep.ts", "sleep.test.ts"],
 				"localDependencies": []
 			},
 			{
@@ -114,10 +84,7 @@
 				"category": "utilities",
 				"tests": true,
 				"directory": "blocks\\utilities",
-				"files": [
-					"stopwatch.ts",
-					"stopwatch.test.ts"
-				],
+				"files": ["stopwatch.ts", "stopwatch.test.ts"],
 				"localDependencies": []
 			},
 			{
@@ -125,10 +92,7 @@
 				"category": "utilities",
 				"tests": true,
 				"directory": "blocks\\utilities",
-				"files": [
-					"truncate.ts",
-					"truncate.test.ts"
-				],
+				"files": ["truncate.ts", "truncate.test.ts"],
 				"localDependencies": []
 			}
 		]
