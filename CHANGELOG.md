@@ -1,5 +1,11 @@
 # ts-blocks
 
+## 1.0.0-next.3
+
+### Patch Changes
+
+- 71ea68e: Add blocks from remote repositories.
+
 ## 0.11.0
 
 ### Minor Changes

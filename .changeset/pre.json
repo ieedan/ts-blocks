@@ -1,7 +1,10 @@
 {
-	"mode": "pre",
-	"tag": "next",
-	"initialVersions": {
-		"ts-blocks": "0.11.0"
-	}
+  "mode": "pre",
+  "tag": "next",
+  "initialVersions": {
+    "ts-blocks": "0.11.0"
+  },
+  "changesets": [
+    "olive-cars-relax"
+  ]
 }
