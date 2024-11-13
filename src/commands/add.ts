@@ -29,7 +29,7 @@ type Options = InferInput<typeof schema>;
 const add = new Command('add')
 	.addArgument(new Argument('[blocks...]', 'Whichever block you want to add to your project.'))
 	.option('-y, --yes', 'Add and install any required dependencies.', false)
-	.option('--repo', 'Repository to download the blocks from')
+	.option('--repo <repo>', 'Repository to download the blocks from')
 	.option('--verbose', 'Include debug logs.', false)
 	.action(async (blockNames, opts) => {
 		const options = parse(schema, opts);
