@@ -13,7 +13,7 @@ const resolveRelativeToRoot = (p: string): string => {
 };
 
 // get version from package.json
-const { version, name, description } = JSON.parse(
+const { version, name, description, repository } = JSON.parse(
 	fs.readFileSync(resolveRelativeToRoot('package.json'), 'utf-8')
 );
 
@@ -38,6 +38,7 @@ const context: CLIContext = {
 		name,
 		description,
 		version,
+		repository
 	},
 	categories,
 	blocks,

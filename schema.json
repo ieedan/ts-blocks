@@ -2,8 +2,17 @@
 	"$schema": "http://json-schema.org/draft-07/schema#",
 	"type": "object",
 	"properties": {
+		"repoPath": {
+			"description": "Repository that hosts the blocks. (Defaults to local)",
+			"type": "string"
+		},
+		"trustRepoPath": {
+			"description": "When enabled ts-blocks won't ask before downloading code from the provided `repoPath`.",
+			"type": "boolean",
+			"default": "false"
+		},
 		"path": {
-			"description": "The path to place the blocks",
+			"description": "Where to place the blocks in your project.",
 			"type": "string"
 		},
 		"includeIndexFile": {
@@ -27,5 +36,5 @@
 			"default": "true"
 		}
 	},
-	"required": ["path", "includeIndexFile", "includeTests"]
+	"required": ["path", "includeIndexFile", "includeTests", "trustRepoPath"]
 }

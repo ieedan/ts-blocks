@@ -1,20 +1,29 @@
-import fs from 'node:fs';
-import path from 'node:path';
-import color from 'chalk';
-import { program } from 'commander';
-import { Project } from 'ts-morph';
+import fs from "node:fs";
+import path from "node:path";
+import color from "chalk";
+import { program } from "commander";
+import { Project } from "ts-morph";
+import * as v from "valibot";
+import { findDependencies } from "./dependencies";
 
-export type Category = {
-	name: string;
-	blocks: Block[];
-};
+export const blockSchema = v.object({
+	name: v.string(),
+	category: v.string(),
+	localDependencies: v.array(v.string()),
+	tests: v.boolean(),
+	/** Where to find the block relative to root */
+	directory: v.string(),
+	files: v.array(v.string()),
+});
 
-export type Block = {
-	name: string;
-	category: string;
-	localDependencies?: string[];
-	tests: boolean;
-};
+export const categorySchema = v.object({
+	name: v.string(),
+	blocks: v.array(blockSchema),
+});
+
+export type Category = v.InferInput<typeof categorySchema>;
+
+export type Block = v.InferInput<typeof blockSchema>;
 
 /** Using the provided path to the blocks folder builds the blocks into categories and also resolves localDependencies
  *
@@ -27,10 +36,12 @@ const buildBlocksDirectory = (blocksPath: string): Category[] => {
 	try {
 		paths = fs.readdirSync(blocksPath);
 	} catch {
-		program.error(color.red(`Couldn't read ${color.bold('/blocks')} directory.`));
+		program.error(color.red(`Couldn't read ${color.bold("/blocks")} directory.`));
 	}
 
 	const categories: Category[] = [];
+
+	const project = new Project();
 
 	for (const categoryPath of paths) {
 		const categoryDir = path.join(blocksPath, categoryPath);
@@ -46,63 +57,63 @@ const buildBlocksDirectory = (blocksPath: string): Category[] => {
 
 		const files = fs.readdirSync(categoryDir);
 
-		const project = new Project();
-
 		for (const file of files) {
-			if (!file.endsWith('.ts') || file.endsWith('.test.ts')) continue;
+			const blockDir = path.join(categoryDir, file);
 
-			const name = path.basename(file).replace('.ts', '');
+			if (fs.statSync(blockDir).isFile()) {
+				if (!file.endsWith(".ts") || file.endsWith(".test.ts")) continue;
 
-			const hasTests = files.findIndex((f) => f === `${name}.test.ts`) !== -1;
+				const name = path.basename(file).replace(".ts", "");
 
-			const blockFile = project.addSourceFileAtPath(path.join(categoryDir, file));
+				const hasTests = files.findIndex((f) => f === `${name}.test.ts`) !== -1;
 
-			const imports = blockFile.getImportDeclarations();
+				const localDeps = findDependencies(blockDir, categoryName, false, project);
 
-			const relativeImports = imports.filter((declaration) =>
-				declaration.getModuleSpecifierValue().startsWith('.')
-			);
+				const block: Block = {
+					name,
+					category: categoryName,
+					tests: hasTests,
+					directory: categoryDir,
+					files: [file],
+					localDependencies: localDeps,
+				};
 
-			const localDeps: string[] = [];
-
-			const removeExtension = (p: string) => {
-				const index = p.lastIndexOf('.');
-
-				if (index === -1) return p;
-
-				return p.slice(0, index + 1);
-			};
-
-			// Attempts to resolve local dependencies
-			// Can only resolve dependencies that are within the blocks folder so `./` or `../` paths.
-
-			for (const relativeImport of relativeImports) {
-				const mod = relativeImport.getModuleSpecifierValue();
-
-				if (mod.startsWith('./')) {
-					localDeps.push(`${categoryName}/${removeExtension(path.basename(mod))}`);
-					continue;
+				if (block.tests) {
+					block.files.push(`${name}.test.ts`);
 				}
 
-				// path cannot be resolved
-				if (!mod.startsWith('../') || mod.startsWith('../.')) continue;
+				category.blocks.push(block);
+			} else {
+				const blockName = file;
 
-				const segments = mod.replaceAll('../', '').split('/');
+				const blockFiles = fs.readdirSync(blockDir);
 
-				// invalid path
-				if (segments.length !== 2) continue;
+				const hasTests = blockFiles.findIndex((f) => f.endsWith("test.ts")) !== -1;
 
-				localDeps.push(`${segments[0]}/${segments[1]}`);
+				const localDepsSet = new Set<string>();
+
+				// if it is a directory
+				for (const f of blockFiles) {
+					if (!f.endsWith(".ts") || f.endsWith(".test.ts")) continue;
+
+					const localDeps = findDependencies(path.join(blockDir, f), categoryName, true, project);
+
+					for (const dep of localDeps) {
+						localDepsSet.add(dep);
+					}
+				}
+
+				const block: Block = {
+					name: blockName,
+					category: categoryName,
+					tests: hasTests,
+					directory: blockDir,
+					files: [...blockFiles],
+					localDependencies: Array.from(localDepsSet.keys()),
+				};
+
+				category.blocks.push(block);
 			}
-
-			const block: Block = {
-				name,
-				category: categoryName,
-				localDependencies: localDeps,
-				tests: hasTests,
-			};
-
-			category.blocks.push(block);
 		}
 
 		categories.push(category);
@@ -112,6 +123,6 @@ const buildBlocksDirectory = (blocksPath: string): Category[] => {
 };
 
 const readCategories = (outputFilePath: string): Category[] =>
-	JSON.parse(fs.readFileSync(outputFilePath).toString());
+	v.parse(v.array(categorySchema), JSON.parse(fs.readFileSync(outputFilePath).toString()));
 
 export { buildBlocksDirectory, readCategories };

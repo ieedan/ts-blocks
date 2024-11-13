@@ -1,7 +1,8 @@
-const getWatermark = (version: string): string => {
+const getWatermark = (version: string, repoUrl: string): string => {
 	return `/* 
 	ts-blocks ${version} 
-	https://github.com/ieedan/ts-blocks
+	Installed from ${repoUrl}
+	${new Date().toLocaleDateString().replaceAll('/', '-')}
 */
 
 `;
