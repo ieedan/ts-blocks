@@ -17,6 +17,7 @@ import * as gitProviders from '../utils/git-providers';
 import { INFO, WARN } from '../utils/index';
 import { type Task, runTasks } from '../utils/prompts';
 import { OUTPUT_FILE } from './build';
+import type { ResolvedCommand } from 'package-manager-detector';
 
 const schema = object({
 	yes: boolean(),
@@ -197,7 +198,12 @@ const _add = async (blockNames: string[], options: Options) => {
 		}
 	});
 
+	const pm = (await detect({ cwd: process.cwd() }))?.agent ?? 'npm';
+
 	const tasks: Task[] = [];
+
+	const devDeps: Set<string> = new Set<string>();
+	const deps: Set<string> = new Set<string>();
 
 	for (const { name: specifier, block } of installingBlocks) {
 		const [_, blockName] = specifier.split('/');
@@ -323,47 +329,75 @@ const _add = async (blockNames: string[], options: Options) => {
 					);
 
 					if (devDependencies.vitest === undefined) {
-						loading.message(`Installing ${color.cyan('vitest')}`);
-
-						const pm = await detect({ cwd: process.cwd() });
-
-						if (pm == null) {
-							program.error(color.red('Could not detect package manager'));
-						}
-
-						const resolved = resolveCommand(pm.agent, 'install', [
-							'vitest',
-							'--save-dev',
-						]);
-
-						if (resolved == null) {
-							program.error(
-								color.red(`Could not resolve add command for '${pm.agent}'.`)
-							);
-						}
-
-						const { command, args } = resolved;
-
-						const installCommand = `${command} ${args.join(' ')}`;
-
-						try {
-							await execa({ cwd: process.cwd() })`${installCommand}`;
-						} catch {
-							program.error(
-								color.red(
-									`Failed to install ${color.bold('vitest')}! Failed while running '${color.bold(
-										installCommand
-									)}'`
-								)
-							);
-						}
+						devDeps.add('vitest');
 					}
+				}
+
+				for (const dep of block.devDependencies) {
+					devDeps.add(dep);
+				}
+
+				for (const dep of block.dependencies) {
+					deps.add(dep);
 				}
 			},
 		});
 	}
 
 	await runTasks(tasks, { verbose: options.verbose });
+
+	const installDependencies = async (deps: string[], dev: boolean) => {
+		loading.start(`Installing dependencies with ${color.cyan(pm)}`);
+
+		let add: ResolvedCommand | null;
+		if (dev) {
+			add = resolveCommand(pm, 'install', [...deps, '-D']);
+		} else {
+			add = resolveCommand(pm, 'install', [...deps]);
+		}
+
+		if (add == null) {
+			program.error(color.red(`Could not resolve add command for '${pm}'.`));
+		}
+
+		try {
+			await execa(add.command, [...add.args], { cwd: process.cwd() });
+		} catch {
+			program.error(
+				color.red(
+					`Failed to install ${color.bold('vitest')}! Failed while running '${color.bold(
+						`${add.command} ${add.args.join(' ')}`
+					)}'`
+				)
+			);
+		}
+
+		loading.stop(`Installed ${color.cyan(deps.join(', '))}`);
+	};
+
+	const hasDependencies = deps.size > 0 || devDeps.size > 0;
+
+	if (hasDependencies) {
+		if (!options.yes) {
+			const result = await confirm({
+				message: 'Would you like to install dependencies?',
+				initialValue: true,
+			});
+
+			if (isCancel(result) || !result) {
+				cancel('Canceled!');
+				process.exit(0);
+			}
+		}
+
+		if (deps.size > 0) {
+			await installDependencies(Array.from(deps), false);
+		}
+
+		if (devDeps.size > 0) {
+			await installDependencies(Array.from(devDeps), true);
+		}
+	}
 
 	outro(color.green('All done!'));
 };
