@@ -1,5 +1,11 @@
 # ts-blocks
 
+## 1.0.0-next.10
+
+### Patch Changes
+
+- a1e6271: chore: Remove officially supported blocks in favor of BYOR.
+
 ## 1.0.0-next.9
 
 ### Patch Changes
