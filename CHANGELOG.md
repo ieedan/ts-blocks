@@ -1,5 +1,11 @@
 # ts-blocks
 
+## 1.0.0-next.4
+
+### Patch Changes
+
+- 88925bc: Fixes --repo option of add command.
+
 ## 1.0.0-next.3
 
 ### Patch Changes
