@@ -10,6 +10,8 @@ export const blockSchema = v.object({
 	name: v.string(),
 	category: v.string(),
 	localDependencies: v.array(v.string()),
+	dependencies: v.array(v.string()),
+	devDependencies: v.array(v.string()),
 	tests: v.boolean(),
 	/** Where to find the block relative to root */
 	directory: v.string(),
@@ -68,16 +70,23 @@ const buildBlocksDirectory = (blocksPath: string): Category[] => {
 
 				const hasTests = files.findIndex((f) => f === `${name}.test.ts`) !== -1;
 
-				const localDeps = findDependencies(blockDir, categoryName, false, project);
+				const { dependencies, devDependencies, local } = findDependencies(
+					blockDir,
+					categoryName,
+					false,
+					project
+				);
 
 				const block: Block = {
-					directory: categoryDir,
 					name,
+					directory: categoryDir,
 					category: categoryName,
 					tests: hasTests,
 					subdirectory: false,
 					files: [file],
-					localDependencies: localDeps,
+					localDependencies: local,
+					dependencies,
+					devDependencies,
 				};
 
 				if (block.tests) {
@@ -93,31 +102,43 @@ const buildBlocksDirectory = (blocksPath: string): Category[] => {
 				const hasTests = blockFiles.findIndex((f) => f.endsWith('test.ts')) !== -1;
 
 				const localDepsSet = new Set<string>();
+				const depsSet = new Set<string>();
+				const devDepsSet = new Set<string>();
 
 				// if it is a directory
 				for (const f of blockFiles) {
 					if (!f.endsWith('.ts') || f.endsWith('.test.ts')) continue;
 
-					const localDeps = findDependencies(
+					const { local, dependencies, devDependencies } = findDependencies(
 						path.join(blockDir, f),
 						categoryName,
 						true,
 						project
 					);
 
-					for (const dep of localDeps) {
+					for (const dep of local) {
 						localDepsSet.add(dep);
+					}
+
+					for (const dep of dependencies) {
+						depsSet.add(dep);
+					}
+
+					for (const dep of devDependencies) {
+						devDepsSet.add(dep);
 					}
 				}
 
 				const block: Block = {
-					directory: blockDir,
 					name: blockName,
+					directory: blockDir,
 					category: categoryName,
 					tests: hasTests,
 					subdirectory: true,
 					files: [...blockFiles],
 					localDependencies: Array.from(localDepsSet.keys()),
+					dependencies: Array.from(depsSet.keys()),
+					devDependencies: Array.from(devDepsSet.keys()),
 				};
 
 				category.blocks.push(block);
