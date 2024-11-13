@@ -74,24 +74,24 @@ const _add = async (blockNames: string[], options: Options) => {
 		}
 	}
 
-	let rawUrl: URL;
+	let manifestUrl: URL;
 	let providerInfo: gitProviders.Info;
 
 	if (gitProviders.github.matches(repoPath)) {
 		providerInfo = gitProviders.github.info(repoPath);
 
-		rawUrl = gitProviders.github.resolveRaw(providerInfo, OUTPUT_FILE);
+		manifestUrl = gitProviders.github.resolveRaw(providerInfo, OUTPUT_FILE);
 	} else {
 		// if you want to support your provider open a PR!
 		program.error(color.red("Only GitHub repositories are supported at this time!"));
 	}
 
-	loading.start(`Fetching ${color.cyan(rawUrl.href)}`);
+	loading.start(`Fetching ${color.cyan(repoPath)} \`${OUTPUT_FILE}\``);
 
-	const response = await fetch(rawUrl);
+	const response = await fetch(manifestUrl);
 
 	if (!response.ok) {
-		loading.stop(`Error fetching ${color.cyan(rawUrl.href)}`);
+		loading.stop(`Error fetching ${color.cyan(manifestUrl.href)}`);
 		program.error(
 			color.red(
 				`There was an error fetching the \`${OUTPUT_FILE}\` from the repository ${color.cyan(
@@ -232,17 +232,18 @@ const _add = async (blockNames: string[], options: Options) => {
 				for (const sourceFile of block.files) {
 					if (!config.includeTests && sourceFile.endsWith("test.ts")) continue;
 
-					let sourcePath: string;
+					const sourcePath = path.join(block.directory, sourceFile);
+
 					let destPath: string;
 					if (block.subdirectory) {
-						sourcePath = path.join(block.directory, block.name, sourceFile);
 						destPath = path.join(config.path, block.category, block.name, sourceFile);
 					} else {
-						sourcePath = path.join(block.directory, sourceFile);
 						destPath = path.join(config.path, block.category, sourceFile);
 					}
 
 					const content = await getSourceFile(sourcePath);
+
+					fs.mkdirSync(destPath.slice(0, destPath.length - sourceFile.length), { recursive: true });
 
 					files.push({ content, destPath });
 				}
