@@ -4,7 +4,7 @@ import color from 'chalk';
 import { Command } from 'commander';
 import { type InferInput, array, boolean, object, parse, string } from 'valibot';
 import { context } from '..';
-import { buildBlocksDirectory, type Category } from '../utils/build';
+import { type Category, buildBlocksDirectory } from '../utils/build';
 
 export const OUTPUT_FILE = 'blocks-manifest.json';
 

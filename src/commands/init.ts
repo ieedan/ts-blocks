@@ -3,8 +3,8 @@ import { cancel, confirm, intro, isCancel, outro, text } from '@clack/prompts';
 import color from 'chalk';
 import { Command } from 'commander';
 import { type InferInput, boolean, object, optional, parse, string } from 'valibot';
-import { CONFIG_NAME, type Config } from '../config';
 import { context } from '..';
+import { CONFIG_NAME, type Config } from '../config';
 
 const schema = object({
 	path: optional(string()),
@@ -19,7 +19,11 @@ type Options = InferInput<typeof schema>;
 const init = new Command('init')
 	.description('Initializes the configuration file')
 	.option('--path <path>', 'Path to install the blocks')
-	.option('--repo <repo>', 'Repository to install the blocks from', "https://github.com/ieedan/ts-blocks")
+	.option(
+		'--repo <repo>',
+		'Repository to install the blocks from',
+		'https://github.com/ieedan/ts-blocks'
+	)
 	.option(
 		'--no-index-file',
 		'Will create an index.ts file at the root of the folder to re-export functions from.'
