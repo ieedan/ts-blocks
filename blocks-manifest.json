@@ -3,11 +3,15 @@
 		"name": "types",
 		"blocks": [
 			{
+				"directory": "blocks\\types",
 				"name": "result",
 				"category": "types",
 				"tests": true,
-				"directory": "blocks\\types",
-				"files": ["result.ts", "result.test.ts"],
+				"subdirectory": false,
+				"files": [
+					"result.ts",
+					"result.test.ts"
+				],
 				"localDependencies": []
 			}
 		]
@@ -16,83 +20,126 @@
 		"name": "utilities",
 		"blocks": [
 			{
+				"directory": "blocks\\utilities",
 				"name": "array-sum",
 				"category": "utilities",
 				"tests": true,
-				"directory": "blocks\\utilities",
-				"files": ["array-sum.ts", "array-sum.test.ts"],
+				"subdirectory": false,
+				"files": [
+					"array-sum.ts",
+					"array-sum.test.ts"
+				],
 				"localDependencies": []
 			},
 			{
+				"directory": "blocks\\utilities",
 				"name": "array-to-map",
 				"category": "utilities",
 				"tests": true,
-				"directory": "blocks\\utilities",
-				"files": ["array-to-map.ts", "array-to-map.test.ts"],
+				"subdirectory": false,
+				"files": [
+					"array-to-map.ts",
+					"array-to-map.test.ts"
+				],
 				"localDependencies": []
 			},
 			{
+				"directory": "blocks\\utilities",
 				"name": "dispatcher",
 				"category": "utilities",
 				"tests": true,
-				"directory": "blocks\\utilities",
-				"files": ["dispatcher.ts", "dispatcher.test.ts"],
+				"subdirectory": false,
+				"files": [
+					"dispatcher.ts",
+					"dispatcher.test.ts"
+				],
 				"localDependencies": []
 			},
 			{
+				"directory": "blocks\\utilities\\ipv4-address",
 				"name": "ipv4-address",
 				"category": "utilities",
 				"tests": true,
-				"directory": "blocks\\utilities\\ipv4-address",
-				"files": ["ipv4-address.test.ts", "ipv4-address.ts"],
-				"localDependencies": ["types/result", "utilities/is-number"]
+				"subdirectory": false,
+				"files": [
+					"ipv4-address.test.ts",
+					"ipv4-address.ts"
+				],
+				"localDependencies": [
+					"types/result",
+					"utilities/is-number"
+				]
 			},
 			{
+				"directory": "blocks\\utilities\\is-number",
 				"name": "is-number",
 				"category": "utilities",
 				"tests": true,
-				"directory": "blocks\\utilities\\is-number",
-				"files": ["is-number.test.ts", "is-number.ts"],
+				"subdirectory": false,
+				"files": [
+					"is-number.test.ts",
+					"is-number.ts"
+				],
 				"localDependencies": []
 			},
 			{
+				"directory": "blocks\\utilities",
 				"name": "map-to-array",
 				"category": "utilities",
 				"tests": true,
-				"directory": "blocks\\utilities",
-				"files": ["map-to-array.ts", "map-to-array.test.ts"],
+				"subdirectory": false,
+				"files": [
+					"map-to-array.ts",
+					"map-to-array.test.ts"
+				],
 				"localDependencies": []
 			},
 			{
+				"directory": "blocks\\utilities",
 				"name": "pad",
 				"category": "utilities",
 				"tests": true,
-				"directory": "blocks\\utilities",
-				"files": ["pad.ts", "pad.test.ts"],
+				"subdirectory": false,
+				"files": [
+					"pad.ts",
+					"pad.test.ts"
+				],
 				"localDependencies": []
 			},
 			{
+				"directory": "blocks\\utilities",
 				"name": "sleep",
 				"category": "utilities",
 				"tests": true,
-				"directory": "blocks\\utilities",
-				"files": ["sleep.ts", "sleep.test.ts"],
+				"subdirectory": false,
+				"files": [
+					"sleep.ts",
+					"sleep.test.ts"
+				],
 				"localDependencies": []
 			},
 			{
+				"directory": "blocks\\utilities",
 				"name": "stopwatch",
 				"category": "utilities",
 				"tests": true,
-				"directory": "blocks\\utilities",
-				"files": ["stopwatch.ts", "stopwatch.test.ts"],
+				"subdirectory": false,
+				"files": [
+					"stopwatch.ts",
+					"stopwatch.test.ts"
+				],
 				"localDependencies": []
 			},
 			{
+				"directory": "blocks\\utilities",
 				"name": "truncate",
 				"category": "utilities",
 				"tests": true,
-				"directory": "blocks\\utilities",
-				"files": ["truncate.ts", "truncate.test.ts"],
+				"subdirectory": false,
+				"files": [
+					"truncate.ts",
+					"truncate.test.ts"
+				],
 				"localDependencies": []
 			}
 		]
