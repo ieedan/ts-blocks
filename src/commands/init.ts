@@ -10,7 +10,7 @@ const schema = object({
 	path: optional(string()),
 	indexFile: boolean(),
 	tests: boolean(),
-	repos: array(string()),
+	repos: optional(array(string())),
 	watermark: boolean(),
 });
 
@@ -19,9 +19,7 @@ type Options = InferInput<typeof schema>;
 const init = new Command('init')
 	.description('Initializes the configuration file')
 	.option('--path <path>', 'Path to install the blocks')
-	.option('--repos [repos...]', 'Repository to install the blocks from', [
-		'https://github.com/ieedan/ts-blocks/tree/next',
-	])
+	.option('--repos [repos...]', 'Repository to install the blocks from')
 	.option(
 		'--no-index-file',
 		'Will create an index.ts file at the root of the folder to re-export functions from.'
@@ -59,6 +57,25 @@ const _init = async (options: Options) => {
 		}
 
 		options.path = result;
+	}
+
+	if (!options.repos) {
+		const result = await text({
+			message: 'Where should we download the blocks from?',
+			initialValue: 'https://github.com/ieedan/std',
+			validate: (val) => {
+				if (!val.startsWith('https://github.com')) {
+					return `Must be a ${color.bold('GitHub')} repository!`;
+				}
+			},
+		});
+
+		if (isCancel(result)) {
+			cancel('Canceled!');
+			process.exit(0);
+		}
+
+		options.repos = [result];
 	}
 
 	// checks if this is a Deno project

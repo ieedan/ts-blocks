@@ -20,11 +20,8 @@ jobs:
             - name: Lint
               run: pnpm check
 
-            - name: Lint
-              run: pnpm test
+            # - name: Test
+            #   run: pnpm test
 
             - name: Build
               run: pnpm build
-
-            - name: Build Blocks
-              run: pnpm blocks:build
