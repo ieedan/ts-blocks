@@ -1,5 +1,12 @@
 # ts-blocks
 
+## 1.0.0-next.5
+
+### Patch Changes
+
+- 7bcdaa5: Config repos are now always trusted.
+- 7bcdaa5: Add the ability to supply multiple repositories to the config so that you can run tests and list all of them at once.
+
 ## 1.0.0-next.4
 
 ### Patch Changes
