@@ -6,7 +6,7 @@
 				"name": "result",
 				"category": "types",
 				"tests": true,
-				"subdirectory": false,
+				"directory": "blocks\\types",
 				"files": [
 					"result.ts",
 					"result.test.ts"
@@ -22,7 +22,7 @@
 				"name": "array-sum",
 				"category": "utilities",
 				"tests": true,
-				"subdirectory": false,
+				"directory": "blocks\\utilities",
 				"files": [
 					"array-sum.ts",
 					"array-sum.test.ts"
@@ -33,7 +33,7 @@
 				"name": "array-to-map",
 				"category": "utilities",
 				"tests": true,
-				"subdirectory": false,
+				"directory": "blocks\\utilities",
 				"files": [
 					"array-to-map.ts",
 					"array-to-map.test.ts"
@@ -44,7 +44,7 @@
 				"name": "dispatcher",
 				"category": "utilities",
 				"tests": true,
-				"subdirectory": false,
+				"directory": "blocks\\utilities",
 				"files": [
 					"dispatcher.ts",
 					"dispatcher.test.ts"
@@ -55,7 +55,7 @@
 				"name": "ipv4-address",
 				"category": "utilities",
 				"tests": true,
-				"subdirectory": true,
+				"directory": "blocks\\utilities\\ipv4-address",
 				"files": [
 					"ipv4-address.test.ts",
 					"ipv4-address.ts"
@@ -69,7 +69,7 @@
 				"name": "is-number",
 				"category": "utilities",
 				"tests": true,
-				"subdirectory": true,
+				"directory": "blocks\\utilities\\is-number",
 				"files": [
 					"is-number.test.ts",
 					"is-number.ts"
@@ -80,7 +80,7 @@
 				"name": "map-to-array",
 				"category": "utilities",
 				"tests": true,
-				"subdirectory": false,
+				"directory": "blocks\\utilities",
 				"files": [
 					"map-to-array.ts",
 					"map-to-array.test.ts"
@@ -91,7 +91,7 @@
 				"name": "pad",
 				"category": "utilities",
 				"tests": true,
-				"subdirectory": false,
+				"directory": "blocks\\utilities",
 				"files": [
 					"pad.ts",
 					"pad.test.ts"
@@ -102,7 +102,7 @@
 				"name": "sleep",
 				"category": "utilities",
 				"tests": true,
-				"subdirectory": false,
+				"directory": "blocks\\utilities",
 				"files": [
 					"sleep.ts",
 					"sleep.test.ts"
@@ -113,7 +113,7 @@
 				"name": "stopwatch",
 				"category": "utilities",
 				"tests": true,
-				"subdirectory": false,
+				"directory": "blocks\\utilities",
 				"files": [
 					"stopwatch.ts",
 					"stopwatch.test.ts"
@@ -124,7 +124,7 @@
 				"name": "truncate",
 				"category": "utilities",
 				"tests": true,
-				"subdirectory": false,
+				"directory": "blocks\\utilities",
 				"files": [
 					"truncate.ts",
 					"truncate.test.ts"

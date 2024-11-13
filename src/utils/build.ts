@@ -11,7 +11,8 @@ export const blockSchema = v.object({
 	category: v.string(),
 	localDependencies: v.array(v.string()),
 	tests: v.boolean(),
-	subdirectory: v.boolean(),
+	/** Where to find the block relative to root */
+	directory: v.string(),
 	files: v.array(v.string()),
 });
 
@@ -72,7 +73,7 @@ const buildBlocksDirectory = (blocksPath: string): Category[] => {
 					name,
 					category: categoryName,
 					tests: hasTests,
-					subdirectory: false,
+					directory: categoryDir,
 					files: [file],
 					localDependencies: localDeps,
 				};
@@ -106,7 +107,7 @@ const buildBlocksDirectory = (blocksPath: string): Category[] => {
 					name: blockName,
 					category: categoryName,
 					tests: hasTests,
-					subdirectory: true,
+					directory: blockDir,
 					files: [...blockFiles],
 					localDependencies: Array.from(localDepsSet.keys()),
 				};
