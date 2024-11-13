@@ -1,5 +1,11 @@
 # ts-blocks
 
+## 1.0.0-next.7
+
+### Patch Changes
+
+- 2dfa723: Add the ability to add blocks with dependencies
+
 ## 1.0.0-next.6
 
 ### Patch Changes
