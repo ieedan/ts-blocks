@@ -1,22 +1,24 @@
 {
-	"mode": "pre",
-	"tag": "next",
-	"initialVersions": {
-		"ts-blocks": "0.11.0"
-	},
-	"changesets": [
-		"brown-phones-know",
-		"empty-camels-smoke",
-		"friendly-timers-repeat",
-		"good-bulldogs-mate",
-		"healthy-flies-argue",
-		"hip-rivers-swim",
-		"kind-eels-rescue",
-		"lazy-humans-compete",
-		"mean-owls-arrive",
-		"neat-rockets-build",
-		"olive-cars-relax",
-		"polite-ligers-float",
-		"shiny-dodos-battle"
-	]
+  "mode": "pre",
+  "tag": "next",
+  "initialVersions": {
+    "ts-blocks": "0.11.0"
+  },
+  "changesets": [
+    "brown-phones-know",
+    "empty-camels-smoke",
+    "friendly-timers-repeat",
+    "good-bulldogs-mate",
+    "healthy-flies-argue",
+    "hip-rivers-swim",
+    "kind-eels-rescue",
+    "lazy-humans-compete",
+    "mean-owls-arrive",
+    "neat-rockets-build",
+    "olive-cars-relax",
+    "polite-ligers-float",
+    "shiny-dodos-battle",
+    "thick-eggs-roll",
+    "tidy-queens-suffer"
+  ]
 }
