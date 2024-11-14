@@ -80,12 +80,12 @@ const _add = async (blockNames: string[], options: Options) => {
 	if (!options.verbose) loading.start(`Fetching blocks from ${color.cyan(repoPaths.join(', '))}`);
 
 	for (const repo of repoPaths) {
-		const providerInfo: gitProviders.Info = gitProviders.getProviderInfo(repo).match(
+		const providerInfo: gitProviders.Info = (await gitProviders.getProviderInfo(repo)).match(
 			(info) => info,
 			(err) => program.error(color.red(err))
 		);
 
-		const manifestUrl = providerInfo.provider.resolveRaw(providerInfo, OUTPUT_FILE);
+		const manifestUrl = await providerInfo.provider.resolveRaw(providerInfo, OUTPUT_FILE);
 
 		verbose(`Got info for provider ${color.cyan(providerInfo.name)}`);
 
@@ -248,7 +248,7 @@ const _add = async (blockNames: string[], options: Options) => {
 				const files: { content: string; destPath: string }[] = [];
 
 				const getSourceFile = async (filePath: string) => {
-					const rawUrl = providerInfo.provider.resolveRaw(providerInfo, filePath);
+					const rawUrl = await providerInfo.provider.resolveRaw(providerInfo, filePath);
 
 					const response = await fetch(rawUrl);
 

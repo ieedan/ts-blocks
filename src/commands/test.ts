@@ -79,12 +79,12 @@ const _test = async (blockNames: string[], options: Options) => {
 	if (!options.verbose) loading.start(`Fetching blocks from ${color.cyan(repoPaths.join(', '))}`);
 
 	for (const repo of repoPaths) {
-		const providerInfo: gitProviders.Info = gitProviders.getProviderInfo(repo).match(
+		const providerInfo: gitProviders.Info = (await gitProviders.getProviderInfo(repo)).match(
 			(info) => info,
 			(err) => program.error(color.red(err))
 		);
 
-		const manifestUrl = providerInfo.provider.resolveRaw(providerInfo, OUTPUT_FILE);
+		const manifestUrl = await providerInfo.provider.resolveRaw(providerInfo, OUTPUT_FILE);
 
 		verbose(`Got info for provider ${color.cyan(providerInfo.name)}`);
 
@@ -145,14 +145,16 @@ const _test = async (blockNames: string[], options: Options) => {
 		program.error(color.red('There were no blocks found in your project!'));
 	}
 
-	const testingBlocksMapped = testingBlocks.map((blockName) => {
+	const testingBlocksMapped: { name: string; block: RemoteBlock }[] = [];
+
+	for (const blockName of testingBlocks) {
 		let block: RemoteBlock | undefined = undefined;
 
 		// if the block starts with github (or another provider) we know it has been resolved
 		if (!blockName.startsWith('github')) {
 			for (const repo of repoPaths) {
 				// we unwrap because we already checked this
-				const providerInfo = gitProviders.getProviderInfo(repo).unwrap();
+				const providerInfo = (await gitProviders.getProviderInfo(repo)).unwrap();
 
 				const tempBlock = blocksMap.get(
 					`${providerInfo.name}/${providerInfo.owner}/${providerInfo.repoName}/${blockName}`
@@ -172,8 +174,8 @@ const _test = async (blockNames: string[], options: Options) => {
 			program.error(color.red(`Invalid block! ${color.bold(blockName)} does not exist!`));
 		}
 
-		return { name: blockName, block };
-	});
+		testingBlocksMapped.push({ name: blockName, block });
+	}
 
 	for (const { name: specifier, block } of testingBlocksMapped) {
 		const providerInfo = block.sourceRepo;
@@ -188,7 +190,7 @@ const _test = async (blockNames: string[], options: Options) => {
 		}
 
 		const getSourceFile = async (filePath: string) => {
-			const rawUrl = providerInfo.provider.resolveRaw(providerInfo, filePath);
+			const rawUrl = await providerInfo.provider.resolveRaw(providerInfo, filePath);
 
 			const response = await fetch(rawUrl);
 
