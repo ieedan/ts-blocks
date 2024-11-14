@@ -1,7 +1,7 @@
-import { Err, Ok, type Result } from '../blocks/types/result';
 import { Octokit } from 'octokit';
-import { categorySchema, type Category } from './build';
 import * as v from 'valibot';
+import { Err, Ok, type Result } from '../blocks/types/result';
+import { type Category, categorySchema } from './build';
 import { OUTPUT_FILE } from './index';
 
 const octokit = new Octokit({});

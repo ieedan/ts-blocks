@@ -15,8 +15,8 @@ import { getInstalledBlocks } from '../utils/get-installed-blocks';
 import { getWatermark } from '../utils/get-watermark';
 import * as gitProviders from '../utils/git-providers';
 import { INFO } from '../utils/index';
-import { type Task, runTasks } from '../utils/prompts';
 import { OUTPUT_FILE } from '../utils/index';
+import { type Task, runTasks } from '../utils/prompts';
 
 const schema = v.object({
 	yes: v.boolean(),
