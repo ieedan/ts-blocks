@@ -2,19 +2,19 @@ import fs from 'node:fs';
 import { intro, outro, spinner } from '@clack/prompts';
 import color from 'chalk';
 import { Command } from 'commander';
-import { type InferInput, array, boolean, object, parse, string } from 'valibot';
+import * as v from 'valibot';
 import { context } from '..';
 import { type Category, buildBlocksDirectory } from '../utils/build';
 
 export const OUTPUT_FILE = 'blocks-manifest.json';
 
-const schema = object({
-	verbose: boolean(),
-	output: boolean(),
-	dirs: array(string()),
+const schema = v.object({
+	verbose: v.boolean(),
+	output: v.boolean(),
+	dirs: v.array(v.string()),
 });
 
-type Options = InferInput<typeof schema>;
+type Options = v.InferInput<typeof schema>;
 
 const build = new Command('build')
 	.description(`Builds the provided --dirs in the project root into a \`${OUTPUT_FILE}\` file.`)
@@ -22,7 +22,7 @@ const build = new Command('build')
 	.option('--no-output', `Do not output a \`${OUTPUT_FILE}\` file.`)
 	.option('--verbose', 'Include debug logs.', false)
 	.action(async (opts) => {
-		const options = parse(schema, opts);
+		const options = v.parse(schema, opts);
 
 		await _build(options);
 	});

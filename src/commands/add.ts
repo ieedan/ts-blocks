@@ -2,13 +2,13 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { cancel, confirm, intro, isCancel, multiselect, outro, spinner } from '@clack/prompts';
 import color from 'chalk';
-import { Argument, Command, program } from 'commander';
+import { Command, program } from 'commander';
 import { execa } from 'execa';
 import type { ResolvedCommand } from 'package-manager-detector';
 import { resolveCommand } from 'package-manager-detector/commands';
 import { detect } from 'package-manager-detector/detect';
 import { Project, type SourceFile } from 'ts-morph';
-import { type InferInput, array, boolean, object, optional, parse, string } from 'valibot';
+import * as v from 'valibot';
 import { context } from '..';
 import { getConfig } from '../config';
 import { type Block, categorySchema } from '../utils/build';
@@ -19,23 +19,23 @@ import { INFO, WARN } from '../utils/index';
 import { type Task, runTasks } from '../utils/prompts';
 import { OUTPUT_FILE } from './build';
 
-const schema = object({
-	yes: boolean(),
-	verbose: boolean(),
-	repo: optional(string()),
-	allow: boolean(),
+const schema = v.object({
+	yes: v.boolean(),
+	verbose: v.boolean(),
+	repo: v.optional(v.string()),
+	allow: v.boolean(),
 });
 
-type Options = InferInput<typeof schema>;
+type Options = v.InferInput<typeof schema>;
 
 const add = new Command('add')
-	.addArgument(new Argument('[blocks...]', 'Whichever block you want to add to your project.'))
+	.argument('[blocks...]', 'Whichever block you want to add to your project.')
 	.option('-y, --yes', 'Add and install any required dependencies.', false)
 	.option('-A, --allow', 'Allow ts-blocks to download code from the provided repo.', false)
 	.option('--repo <repo>', 'Repository to download the blocks from')
 	.option('--verbose', 'Include debug logs.', false)
 	.action(async (blockNames, opts) => {
-		const options = parse(schema, opts);
+		const options = v.parse(schema, opts);
 
 		await _add(blockNames, options);
 	});
@@ -66,9 +66,7 @@ const _add = async (blockNames: string[], options: Options) => {
 
 	if (!options.allow && options.repo) {
 		const result = await confirm({
-			message: `Allow ${color.cyan('ts-blocks')} to download and run code from ${color.cyan(
-				options.repo
-			)}?`,
+			message: `Allow ${color.cyan('ts-blocks')} to download and run code from ${color.cyan(options.repo)}?`,
 			initialValue: true,
 		});
 
@@ -106,7 +104,7 @@ const _add = async (blockNames: string[], options: Options) => {
 			);
 		}
 
-		const categories = parse(array(categorySchema), await response.json());
+		const categories = v.parse(v.array(categorySchema), await response.json());
 
 		for (const category of categories) {
 			for (const block of category.blocks) {
