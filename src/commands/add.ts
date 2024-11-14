@@ -16,7 +16,7 @@ import { getWatermark } from '../utils/get-watermark';
 import * as gitProviders from '../utils/git-providers';
 import { INFO } from '../utils/index';
 import { type Task, runTasks } from '../utils/prompts';
-import { OUTPUT_FILE } from './build';
+import { OUTPUT_FILE } from '../utils/index';
 
 const schema = v.object({
 	yes: v.boolean(),
@@ -89,24 +89,13 @@ const _add = async (blockNames: string[], options: Options) => {
 
 		verbose(`Got info for provider ${color.cyan(providerInfo.name)}`);
 
-		const response = await fetch(manifestUrl);
-
-		if (!response.ok) {
-			if (!options.verbose) loading.stop(`Error fetching ${color.cyan(manifestUrl.href)}`);
-			program.error(
-				color.red(
-					`There was an error fetching the \`${OUTPUT_FILE}\` from the repository ${color.cyan(
-						repo
-					)} make sure the target repository has a \`${OUTPUT_FILE}\` in its root?`
-				)
-			);
-		}
-
-		const categories = v.parse(v.array(categorySchema), await response.json());
+		const categories = (await gitProviders.getManifest(manifestUrl)).match(
+			(val) => val,
+			(err) => program.error(color.red(err))
+		);
 
 		for (const category of categories) {
 			for (const block of category.blocks) {
-				// blocks will override each other
 				blocksMap.set(
 					`${providerInfo.name}/${providerInfo.owner}/${providerInfo.repoName}/${category.name}/${block.name}`,
 					{
@@ -174,8 +163,77 @@ const _add = async (blockNames: string[], options: Options) => {
 
 	if (options.verbose) console.log('Blocks map: ', blocksMap);
 
-	installingBlockNames.map((blockSpecifier) => {
-		const block = blocksMap.get(blockSpecifier);
+	for (const blockSpecifier of installingBlockNames) {
+		let block: RemoteBlock | undefined = undefined;
+
+		// if the block starts with github (or another provider) we know it has been resolved
+		if (!blockSpecifier.startsWith('github')) {
+			if (repoPaths.length === 0) {
+				program.error(
+					color.red(
+						`If your config doesn't repos then you must provide the repo in the block specifier ex: \`${color.bold(
+							`github/<owner>/<name>/${blockSpecifier}`
+						)}\`!`
+					)
+				);
+			}
+
+			for (const repo of repoPaths) {
+				// we unwrap because we already checked this
+				const providerInfo = (await gitProviders.getProviderInfo(repo)).unwrap();
+
+				const tempBlock = blocksMap.get(
+					`${providerInfo.name}/${providerInfo.owner}/${providerInfo.repoName}/${blockSpecifier}`
+				);
+
+				if (tempBlock === undefined) continue;
+
+				block = tempBlock;
+
+				break;
+			}
+		} else {
+			if (repoPaths.length === 0) {
+				const [providerName, owner, repoName, ...rest] = blockSpecifier.split('/');
+
+				let repo: string;
+				// if rest is greater than 2 it isn't the block specifier so it is part of the path
+				if (rest.length > 2) {
+					repo = `${providerName}/${owner}/${repoName}/${rest.join('/')}`;
+				} else {
+					repo = `${providerName}/${owner}/${repoName}`;
+				}
+
+				const providerInfo = (await gitProviders.getProviderInfo(repo)).match(
+					(val) => val,
+					(err) => program.error(color.red(err))
+				);
+
+				const manifestUrl = await providerInfo.provider.resolveRaw(
+					providerInfo,
+					OUTPUT_FILE
+				);
+
+				const categories = (await gitProviders.getManifest(manifestUrl)).match(
+					(val) => val,
+					(err) => program.error(color.red(err))
+				);
+
+				for (const category of categories) {
+					for (const block of category.blocks) {
+						blocksMap.set(
+							`${providerInfo.name}/${providerInfo.owner}/${providerInfo.repoName}/${category.name}/${block.name}`,
+							{
+								...block,
+								sourceRepo: providerInfo,
+							}
+						);
+					}
+				}
+			}
+
+			block = blocksMap.get(blockSpecifier);
+		}
 
 		if (!block) {
 			program.error(
@@ -202,7 +260,7 @@ const _add = async (blockNames: string[], options: Options) => {
 				installingBlocks.push({ name: dep, subDependency: true, block });
 			}
 		}
-	});
+	}
 
 	const pm = (await detect({ cwd: process.cwd() }))?.agent ?? 'npm';
 

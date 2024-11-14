@@ -14,7 +14,7 @@ import { INFO } from '../utils';
 import { type Block, categorySchema } from '../utils/build';
 import { getInstalledBlocks } from '../utils/get-installed-blocks';
 import * as gitProviders from '../utils/git-providers';
-import { OUTPUT_FILE } from './build';
+import { OUTPUT_FILE } from '../utils/index';
 
 const schema = v.object({
 	debug: v.boolean(),
@@ -147,17 +147,17 @@ const _test = async (blockNames: string[], options: Options) => {
 
 	const testingBlocksMapped: { name: string; block: RemoteBlock }[] = [];
 
-	for (const blockName of testingBlocks) {
+	for (const blockSpecifier of testingBlocks) {
 		let block: RemoteBlock | undefined = undefined;
 
 		// if the block starts with github (or another provider) we know it has been resolved
-		if (!blockName.startsWith('github')) {
+		if (!blockSpecifier.startsWith('github')) {
 			for (const repo of repoPaths) {
 				// we unwrap because we already checked this
 				const providerInfo = (await gitProviders.getProviderInfo(repo)).unwrap();
 
 				const tempBlock = blocksMap.get(
-					`${providerInfo.name}/${providerInfo.owner}/${providerInfo.repoName}/${blockName}`
+					`${providerInfo.name}/${providerInfo.owner}/${providerInfo.repoName}/${blockSpecifier}`
 				);
 
 				if (tempBlock === undefined) continue;
@@ -167,14 +167,55 @@ const _test = async (blockNames: string[], options: Options) => {
 				break;
 			}
 		} else {
-			block = blocksMap.get(blockName);
+			if (repoPaths.length === 0) {
+				const [providerName, owner, repoName, ...rest] = blockSpecifier.split('/');
+
+				let repo: string;
+				// if rest is greater than 2 it isn't the block specifier so it is part of the path
+				if (rest.length > 2) {
+					repo = `${providerName}/${owner}/${repoName}/${rest.join('/')}`;
+				} else {
+					repo = `${providerName}/${owner}/${repoName}`;
+				}
+
+				const providerInfo = (await gitProviders.getProviderInfo(repo)).match(
+					(val) => val,
+					(err) => program.error(color.red(err))
+				);
+
+				const manifestUrl = await providerInfo.provider.resolveRaw(
+					providerInfo,
+					OUTPUT_FILE
+				);
+
+				const categories = (await gitProviders.getManifest(manifestUrl)).match(
+					(val) => val,
+					(err) => program.error(color.red(err))
+				);
+
+				for (const category of categories) {
+					for (const block of category.blocks) {
+						blocksMap.set(
+							`${providerInfo.name}/${providerInfo.owner}/${providerInfo.repoName}/${category.name}/${block.name}`,
+							{
+								...block,
+								sourceRepo: providerInfo,
+							}
+						);
+					}
+				}
+			}
+
+			block = blocksMap.get(blockSpecifier);
 		}
 
 		if (!block) {
-			program.error(color.red(`Invalid block! ${color.bold(blockName)} does not exist!`));
+			program.error(
+				color.red(`Invalid block! ${color.bold(blockSpecifier)} does not exist!`)
+			);
 		}
 
-		testingBlocksMapped.push({ name: blockName, block });
+		testingBlocksMapped.push({ name: blockSpecifier, block });
 	}
 
 	for (const { name: specifier, block } of testingBlocksMapped) {

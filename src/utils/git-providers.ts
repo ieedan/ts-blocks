@@ -1,5 +1,8 @@
 import { Err, Ok, type Result } from '../blocks/types/result';
 import { Octokit } from 'octokit';
+import { categorySchema, type Category } from './build';
+import * as v from 'valibot';
+import { OUTPUT_FILE } from './index';
 
 const octokit = new Octokit({});
 
@@ -62,7 +65,7 @@ const github: Provider = {
 		);
 	},
 	info: async (repoPath) => {
-		const repo = repoPath.replaceAll(/(https:\/\/github.com\/)|(github)/g, '');
+		const repo = repoPath.replaceAll(/(https:\/\/github.com\/)|(github\/)/g, '');
 
 		const [owner, repoName, ...rest] = repo.split('/');
 
@@ -111,4 +114,24 @@ const getProviderInfo = async (repo: string): Promise<Result<Info, string>> => {
 	return Err('Only GitHub repositories are supported at this time!');
 };
 
-export { github, getProviderInfo };
+const getManifest = async (url: URL): Promise<Result<Category[], string>> => {
+	try {
+		const response = await fetch(url);
+
+		if (!response.ok) {
+			return Err(
+				`There was an error fetching the \`${OUTPUT_FILE}\` from the repository \`${url.href}\` make sure the target repository has a \`${OUTPUT_FILE}\` in its root?`
+			);
+		}
+
+		const categories = v.parse(v.array(categorySchema), await response.json());
+
+		return Ok(categories);
+	} catch {
+		return Err(
+			`There was an error fetching the \`${OUTPUT_FILE}\` from the repository \`${url.href}\` make sure the target repository has a \`${OUTPUT_FILE}\` in its root?`
+		);
+	}
+};
+
+export { github, getProviderInfo, getManifest };
