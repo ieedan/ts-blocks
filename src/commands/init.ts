@@ -4,7 +4,7 @@ import color from 'chalk';
 import { Command } from 'commander';
 import * as v from 'valibot';
 import { context } from '..';
-import { CONFIG_NAME, getConfig, type Config } from '../config';
+import { CONFIG_NAME, type Config, getConfig } from '../config';
 
 const schema = v.object({
 	path: v.optional(v.string()),
