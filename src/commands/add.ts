@@ -80,17 +80,12 @@ const _add = async (blockNames: string[], options: Options) => {
 	if (!options.verbose) loading.start(`Fetching blocks from ${color.cyan(repoPaths.join(', '))}`);
 
 	for (const repo of repoPaths) {
-		let manifestUrl: URL;
-		let providerInfo: gitProviders.Info;
+		const providerInfo: gitProviders.Info = gitProviders.getProviderInfo(repo).match(
+			(info) => info,
+			(err) => program.error(color.red(err))
+		);
 
-		if (gitProviders.github.matches(repo)) {
-			providerInfo = gitProviders.github.info(repo);
-
-			manifestUrl = gitProviders.github.resolveRaw(providerInfo, OUTPUT_FILE);
-		} else {
-			// if you want to support your provider open a PR!
-			program.error(color.red('Only GitHub repositories are supported at this time!'));
-		}
+		const manifestUrl = providerInfo.provider.resolveRaw(providerInfo, OUTPUT_FILE);
 
 		verbose(`Got info for provider ${color.cyan(providerInfo.name)}`);
 
@@ -123,7 +118,9 @@ const _add = async (blockNames: string[], options: Options) => {
 		}
 	}
 
-	if (!options.verbose) loading.stop(`Retrieved blocks from ${color.cyan(repoPaths.join(','))}`);
+	verbose(`Retrieved blocks from ${color.cyan(repoPaths.join(', '))}`);
+
+	if (!options.verbose) loading.stop(`Retrieved blocks from ${color.cyan(repoPaths.join(', '))}`);
 
 	const installedBlocks = getInstalledBlocks(blocksMap, config);
 

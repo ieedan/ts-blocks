@@ -3,7 +3,7 @@ import path from 'node:path';
 import type { Config } from '../config';
 import type { Block } from './build';
 
-/** Finds installed blocks and returns them as <category>/<name>
+/** Finds installed blocks and returns them as `<category>/<name>`
  *
  * @param blocks
  * @param config

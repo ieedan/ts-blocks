@@ -1,3 +1,5 @@
+import { Err, Ok, type Result } from '../blocks/types/result';
+
 export type Info = {
 	url: string;
 	name: string;
@@ -80,4 +82,12 @@ const github: Provider = {
 		repoPath.toLowerCase().startsWith('github'),
 };
 
-export { github };
+const getProviderInfo = (repo: string): Result<Info, string> => {
+	if (github.matches(repo)) {
+		return Ok(github.info(repo));
+	}
+
+	return Err('Only GitHub repositories are supported at this time!');
+};
+
+export { github, getProviderInfo };

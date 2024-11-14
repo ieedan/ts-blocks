@@ -74,25 +74,24 @@ const _test = async (blockNames: string[], options: Options) => {
 		}
 	}
 
-	loading.start(`Fetching blocks from ${color.cyan(repoPaths.join(', '))}`);
+	verbose(`Fetching blocks from ${color.cyan(repoPaths.join(', '))}`);
+
+	if (!options.verbose) loading.start(`Fetching blocks from ${color.cyan(repoPaths.join(', '))}`);
 
 	for (const repo of repoPaths) {
-		let manifestUrl: URL;
-		let providerInfo: gitProviders.Info;
+		const providerInfo: gitProviders.Info = gitProviders.getProviderInfo(repo).match(
+			(info) => info,
+			(err) => program.error(color.red(err))
+		);
 
-		if (gitProviders.github.matches(repo)) {
-			providerInfo = gitProviders.github.info(repo);
+		const manifestUrl = providerInfo.provider.resolveRaw(providerInfo, OUTPUT_FILE);
 
-			manifestUrl = gitProviders.github.resolveRaw(providerInfo, OUTPUT_FILE);
-		} else {
-			// if you want to support your provider open a PR!
-			program.error(color.red('Only GitHub repositories are supported at this time!'));
-		}
+		verbose(`Got info for provider ${color.cyan(providerInfo.name)}`);
 
 		const response = await fetch(manifestUrl);
 
 		if (!response.ok) {
-			loading.stop(`Error fetching ${color.cyan(manifestUrl.href)}`);
+			if (!options.verbose) loading.stop(`Error fetching ${color.cyan(manifestUrl.href)}`);
 			program.error(
 				color.red(
 					`There was an error fetching the \`${OUTPUT_FILE}\` from the repository ${color.cyan(
@@ -107,15 +106,20 @@ const _test = async (blockNames: string[], options: Options) => {
 		for (const category of categories) {
 			for (const block of category.blocks) {
 				// blocks will override each other
-				blocksMap.set(`${category.name}/${block.name}`, {
-					...block,
-					sourceRepo: providerInfo,
-				});
+				blocksMap.set(
+					`${providerInfo.name}/${providerInfo.owner}/${providerInfo.repoName}/${category.name}/${block.name}`,
+					{
+						...block,
+						sourceRepo: providerInfo,
+					}
+				);
 			}
 		}
 	}
 
-	loading.stop(`Retrieved blocks from ${color.cyan(repoPaths.join(','))}`);
+	verbose(`Retrieved blocks from ${color.cyan(repoPaths.join(', '))}`);
+
+	if (!options.verbose) loading.stop(`Retrieved blocks from ${color.cyan(repoPaths.join(', '))}`);
 
 	const tempTestDirectory = `blocks-tests-temp-${Date.now()}`;
 
@@ -142,7 +146,27 @@ const _test = async (blockNames: string[], options: Options) => {
 	}
 
 	const testingBlocksMapped = testingBlocks.map((blockName) => {
-		const block = blocksMap.get(blockName);
+		let block: RemoteBlock | undefined = undefined;
+
+		// if the block starts with github (or another provider) we know it has been resolved
+		if (!blockName.startsWith('github')) {
+			for (const repo of repoPaths) {
+				// we unwrap because we already checked this
+				const providerInfo = gitProviders.getProviderInfo(repo).unwrap();
+
+				const tempBlock = blocksMap.get(
+					`${providerInfo.name}/${providerInfo.owner}/${providerInfo.repoName}/${blockName}`
+				);
+
+				if (tempBlock === undefined) continue;
+
+				block = tempBlock;
+
+				break;
+			}
+		} else {
+			block = blocksMap.get(blockName);
+		}
 
 		if (!block) {
 			program.error(color.red(`Invalid block! ${color.bold(blockName)} does not exist!`));
@@ -152,8 +176,6 @@ const _test = async (blockNames: string[], options: Options) => {
 	});
 
 	for (const { name: specifier, block } of testingBlocksMapped) {
-		const [_, blockName] = specifier.split('/');
-
 		const providerInfo = block.sourceRepo;
 
 		if (!options.verbose) {
@@ -193,7 +215,7 @@ const _test = async (blockNames: string[], options: Options) => {
 		}
 
 		const directory = path.join(config.path, block.category);
-		let blockFilePath = path.join(directory, `${blockName}`);
+		let blockFilePath = path.join(directory, `${block.name}`);
 
 		blockFilePath = blockFilePath.replaceAll('\\', '/');
 
@@ -210,9 +232,9 @@ const _test = async (blockNames: string[], options: Options) => {
 			for (const importDeclaration of tempFile.getImportDeclarations()) {
 				const moduleSpecifier = importDeclaration.getModuleSpecifierValue();
 
-				if (moduleSpecifier.startsWith(`./${blockName}`)) {
+				if (moduleSpecifier.startsWith(`./${block.name}`)) {
 					const newModuleSpecifier = moduleSpecifier.replace(
-						`${blockName}`,
+						`${block.name}`,
 						blockFilePath
 					);
 					importDeclaration.setModuleSpecifier(newModuleSpecifier);
