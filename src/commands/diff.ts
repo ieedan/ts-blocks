@@ -1,16 +1,16 @@
-import fs from "node:fs";
-import { cancel, intro, isCancel, outro, spinner, confirm } from "@clack/prompts";
-import color from "chalk";
-import { Command, program } from "commander";
-import * as v from "valibot";
-import { context } from "..";
-import { OUTPUT_FILE } from "../utils";
-import { type Block, type Category, buildBlocksDirectory } from "../utils/build";
-import { getConfig } from "../config";
-import * as gitProviders from "../utils/git-providers";
-import { getInstalledBlocks } from "../utils/get-installed-blocks";
-import { diffLines, type Change } from "diff";
-import path from "node:path";
+import fs from 'node:fs';
+import { cancel, intro, isCancel, outro, spinner, confirm } from '@clack/prompts';
+import color from 'chalk';
+import { Command, program } from 'commander';
+import * as v from 'valibot';
+import { context } from '..';
+import { OUTPUT_FILE } from '../utils';
+import { type Block, type Category, buildBlocksDirectory } from '../utils/build';
+import { getConfig } from '../config';
+import * as gitProviders from '../utils/git-providers';
+import { getInstalledBlocks } from '../utils/get-installed-blocks';
+import { diffLines, type Change } from 'diff';
+import path from 'node:path';
 
 const schema = v.object({
 	allow: v.boolean(),
@@ -20,13 +20,13 @@ const schema = v.object({
 
 type Options = v.InferInput<typeof schema>;
 
-const diff = new Command("diff")
-	.description("Compares local blocks to the blocks in the provided repository.")
-	.option("-A, --allow", "Allow ts-blocks to download code from the provided repo.", false)
-	.option("-E, --expand", "Expands the diff so you see everything.", false)
+const diff = new Command('diff')
+	.description('Compares local blocks to the blocks in the provided repository.')
+	.option('-A, --allow', 'Allow ts-blocks to download code from the provided repo.', false)
+	.option('-E, --expand', 'Expands the diff so you see everything.', false)
 	.option(
-		"--max-unchanged <lines>",
-		"Maximum unchanged lines that will show without being collapsed.",
+		'--max-unchanged <lines>',
+		'Maximum unchanged lines that will show without being collapsed.',
 		Number.parseInt,
 		10
 	)
@@ -39,7 +39,7 @@ const diff = new Command("diff")
 type RemoteBlock = Block & { sourceRepo: gitProviders.Info };
 
 const _diff = async (options: Options) => {
-	intro(`${color.bgBlueBright(" ts-blocks ")}${color.gray(` v${context.package.version} `)}`);
+	intro(`${color.bgBlueBright(' ts-blocks ')}${color.gray(` v${context.package.version} `)}`);
 
 	const loading = spinner();
 
@@ -52,7 +52,7 @@ const _diff = async (options: Options) => {
 
 	const repoPaths = config.repos;
 
-	loading.start(`Fetching blocks from ${color.cyan(repoPaths.join(", "))}`);
+	loading.start(`Fetching blocks from ${color.cyan(repoPaths.join(', '))}`);
 
 	for (const repo of repoPaths) {
 		const providerInfo: gitProviders.Info = (await gitProviders.getProviderInfo(repo)).match(
@@ -80,7 +80,7 @@ const _diff = async (options: Options) => {
 		}
 	}
 
-	loading.stop(`Retrieved blocks from ${color.cyan(repoPaths.join(", "))}`);
+	loading.stop(`Retrieved blocks from ${color.cyan(repoPaths.join(', '))}`);
 
 	const installedBlocks = getInstalledBlocks(blocksMap, config);
 
@@ -115,24 +115,32 @@ const _diff = async (options: Options) => {
 		}
 	}
 
-	outro(color.green("All done!"));
+	outro(color.green('All done!'));
 };
 
 const printDiff = (specifier: string, localPath: string, changes: Change[], options: Options) => {
 	if (changes.length === 1 && !changes[0].added && !changes[0].removed) {
-		process.stdout.write(`\n${color.cyan(specifier)} → ${color.gray(localPath)}\n\n${color.gray("no change")}\n\n`);
+		process.stdout.write(
+			`\n${color.cyan(specifier)} → ${color.gray(localPath)}\n\n${color.gray('no change')}\n\n`
+		);
 		return;
 	}
+
+    process.stdout.write(`\n${color.cyan(specifier)} → ${color.gray(localPath)}\n\n`);
 
 	for (const change of changes) {
 		if (!change.added && !change.removed) {
 			// show collapsed
-            if (!options.expand && change.count !== undefined && change.count > options.maxUnchanged) {
-                process.stdout.write(color.gray(`\n⌃\n${change.count} more unchanged\n⌄\n\n`));
-                continue;
-            }
+			if (
+				!options.expand &&
+				change.count !== undefined &&
+				change.count > options.maxUnchanged
+			) {
+				process.stdout.write(color.gray(`\n⌃\n${change.count} more unchanged\n⌄\n\n`));
+				continue;
+			}
 
-            process.stdout.write(change.value);
+			process.stdout.write(change.value);
 
 			continue;
 		}

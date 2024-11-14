@@ -1,7 +1,7 @@
-import fs from "node:fs";
-import path from "node:path";
-import type { Config } from "../config";
-import type { Block } from "./build";
+import fs from 'node:fs';
+import path from 'node:path';
+import type { Config } from '../config';
+import type { Block } from './build';
 
 type InstalledBlock = {
 	specifier: `${string}/${string}`;
