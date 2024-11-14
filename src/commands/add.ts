@@ -48,9 +48,9 @@ const _add = async (blockNames: string[], options: Options) => {
 		}
 	};
 
-	verbose(`Attempting to add ${JSON.stringify(blockNames)}`);
-
 	intro(`${color.bgBlueBright(' ts-blocks ')}${color.gray(` v${context.package.version} `)}`);
+
+	verbose(`Attempting to add ${JSON.stringify(blockNames)}`);
 
 	const loading = spinner();
 
@@ -75,7 +75,9 @@ const _add = async (blockNames: string[], options: Options) => {
 		}
 	}
 
-	loading.start(`Fetching blocks from ${color.cyan(repoPaths.join(', '))}`);
+	verbose(`Fetching blocks from ${color.cyan(repoPaths.join(', '))}`);
+
+	if (!options.verbose) loading.start(`Fetching blocks from ${color.cyan(repoPaths.join(', '))}`);
 
 	for (const repo of repoPaths) {
 		let manifestUrl: URL;
@@ -90,10 +92,12 @@ const _add = async (blockNames: string[], options: Options) => {
 			program.error(color.red('Only GitHub repositories are supported at this time!'));
 		}
 
+		verbose(`Got info for provider ${color.cyan(providerInfo.name)}`);
+
 		const response = await fetch(manifestUrl);
 
 		if (!response.ok) {
-			loading.stop(`Error fetching ${color.cyan(manifestUrl.href)}`);
+			if (!options.verbose) loading.stop(`Error fetching ${color.cyan(manifestUrl.href)}`);
 			program.error(
 				color.red(
 					`There was an error fetching the \`${OUTPUT_FILE}\` from the repository ${color.cyan(
@@ -108,15 +112,18 @@ const _add = async (blockNames: string[], options: Options) => {
 		for (const category of categories) {
 			for (const block of category.blocks) {
 				// blocks will override each other
-				blocksMap.set(`${category.name}/${block.name}`, {
-					...block,
-					sourceRepo: providerInfo,
-				});
+				blocksMap.set(
+					`${providerInfo.name}/${providerInfo.owner}/${providerInfo.repoName}/${category.name}/${block.name}`,
+					{
+						...block,
+						sourceRepo: providerInfo,
+					}
+				);
 			}
 		}
 	}
 
-	loading.stop(`Retrieved blocks from ${color.cyan(repoPaths.join(','))}`);
+	if (!options.verbose) loading.stop(`Retrieved blocks from ${color.cyan(repoPaths.join(','))}`);
 
 	const installedBlocks = getInstalledBlocks(blocksMap, config);
 
@@ -126,19 +133,20 @@ const _add = async (blockNames: string[], options: Options) => {
 		const promptResult = await multiselect({
 			message: 'Select which blocks to add.',
 			options: Array.from(blocksMap.entries()).map(([key, value]) => {
-				const blockExists = installedBlocks.findIndex((block) => block === key) !== -1;
+				const shortName = `${value.category}/${value.name}`;
 
-				const [category, name] = key.split('/');
+				const blockExists =
+					installedBlocks.findIndex((block) => block === shortName) !== -1;
 
 				let label: string;
 
 				// show the full repo if there are multiple repos
 				if (repoPaths.length > 1) {
 					label = `${color.cyan(
-						`${value.sourceRepo.name}/${value.sourceRepo.owner}/${value.sourceRepo.repoName}/${category}`
-					)}/${name}`;
+						`${value.sourceRepo.name}/${value.sourceRepo.owner}/${value.sourceRepo.repoName}/${value.category}`
+					)}/${value.name}`;
 				} else {
-					label = `${color.cyan(category)}/${name}`;
+					label = `${color.cyan(value.category)}/${value.name}`;
 				}
 
 				return {
@@ -165,6 +173,10 @@ const _add = async (blockNames: string[], options: Options) => {
 		block: RemoteBlock;
 	}[] = [];
 
+	verbose(`Installing blocks ${color.cyan(installingBlockNames.join(', '))}`);
+
+	if (options.verbose) console.log('Blocks map: ', blocksMap);
+
 	installingBlockNames.map((blockSpecifier) => {
 		const block = blocksMap.get(blockSpecifier);
 
@@ -174,18 +186,20 @@ const _add = async (blockNames: string[], options: Options) => {
 			);
 		}
 
+		const providerInfo = block.sourceRepo;
+
 		installingBlocks.push({ name: blockSpecifier, subDependency: false, block });
 
 		if (block.localDependencies && block.localDependencies.length > 0) {
 			for (const dep of block.localDependencies) {
 				if (installingBlocks.find(({ name }) => name === dep)) continue;
 
-				const block = blocksMap.get(dep);
+				const block = blocksMap.get(
+					`${providerInfo.name}/${providerInfo.owner}/${providerInfo.repoName}/${dep}`
+				);
 
 				if (!block) {
-					program.error(
-						color.red(`Invalid block! ${color.bold(blockSpecifier)} does not exist!`)
-					);
+					program.error(color.red(`Invalid block! ${color.bold(dep)} does not exist!`));
 				}
 
 				installingBlocks.push({ name: dep, subDependency: true, block });
@@ -201,8 +215,6 @@ const _add = async (blockNames: string[], options: Options) => {
 	const deps: Set<string> = new Set<string>();
 
 	for (const { name: specifier, block } of installingBlocks) {
-		const [_, blockName] = specifier.split('/');
-
 		const watermark = getWatermark(context.package.version, block.sourceRepo.url);
 
 		const providerInfo = block.sourceRepo;
@@ -214,12 +226,12 @@ const _add = async (blockNames: string[], options: Options) => {
 		verbose(`Creating directory ${color.bold(directory)}`);
 
 		const blockExists =
-			(!block.subdirectory && fs.existsSync(path.join(directory, `${blockName}.ts`))) ||
-			(block.subdirectory && fs.existsSync(path.join(directory, blockName)));
+			(!block.subdirectory && fs.existsSync(path.join(directory, `${block.name}.ts`))) ||
+			(block.subdirectory && fs.existsSync(path.join(directory, block.name)));
 
 		if (blockExists && !options.yes) {
 			const result = await confirm({
-				message: `${color.bold(blockName)} already exists in your project would you like to overwrite it?`,
+				message: `${color.bold(block.name)} already exists in your project would you like to overwrite it?`,
 				initialValue: false,
 			});
 
@@ -308,7 +320,7 @@ const _add = async (blockNames: string[], options: Options) => {
 	await runTasks(tasks, { verbose: options.verbose });
 
 	const installDependencies = async (deps: string[], dev: boolean) => {
-		loading.start(`Installing dependencies with ${color.cyan(pm)}`);
+		if (!options.verbose) loading.start(`Installing dependencies with ${color.cyan(pm)}`);
 
 		let add: ResolvedCommand | null;
 		if (dev) {
@@ -333,7 +345,7 @@ const _add = async (blockNames: string[], options: Options) => {
 			);
 		}
 
-		loading.stop(`Installed ${color.cyan(deps.join(', '))}`);
+		if (!options.verbose) loading.stop(`Installed ${color.cyan(deps.join(', '))}`);
 	};
 
 	const hasDependencies = deps.size > 0 || devDeps.size > 0;

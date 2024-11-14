@@ -56,7 +56,7 @@ const github: Provider = {
 		);
 	},
 	info: (repoPath) => {
-		const repo = repoPath.replaceAll(/(https:\/\/github.com\/)|(github)/, '');
+		const repo = repoPath.replaceAll(/(https:\/\/github.com\/)|(github)/g, '');
 
 		const [owner, repoName, ...rest] = repo.split('/');
 
