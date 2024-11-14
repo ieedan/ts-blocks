@@ -1,5 +1,12 @@
 # ts-blocks
 
+## 1.0.0-next.12
+
+### Patch Changes
+
+- 64d4386: `init` now allows you to provide multiple repos.
+- 64d4386: `init` now remembers your config when prompting you.
+
 ## 1.0.0-next.11
 
 ### Patch Changes
