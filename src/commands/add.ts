@@ -54,7 +54,10 @@ const _add = async (blockNames: string[], options: Options) => {
 
 	const loading = spinner();
 
-	const config = getConfig();
+	const config = getConfig().match(
+		(val) => val,
+		(err) => program.error(color.red(err))
+	);
 
 	const blocksMap: Map<string, RemoteBlock> = new Map();
 
