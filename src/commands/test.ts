@@ -7,7 +7,7 @@ import { execa } from 'execa';
 import { resolveCommand } from 'package-manager-detector/commands';
 import { detect } from 'package-manager-detector/detect';
 import { Project } from 'ts-morph';
-import { type InferInput, array, boolean, object, optional, parse, string } from 'valibot';
+import * as v from 'valibot';
 import { context } from '..';
 import { getConfig } from '../config';
 import { INFO } from '../utils';
@@ -16,14 +16,14 @@ import { getInstalledBlocks } from '../utils/get-installed-blocks';
 import * as gitProviders from '../utils/git-providers';
 import { OUTPUT_FILE } from './build';
 
-const schema = object({
-	debug: boolean(),
-	verbose: boolean(),
-	repo: optional(string()),
-	allow: boolean(),
+const schema = v.object({
+	debug: v.boolean(),
+	verbose: v.boolean(),
+	repo: v.optional(v.string()),
+	allow: v.boolean(),
 });
 
-type Options = InferInput<typeof schema>;
+type Options = v.InferInput<typeof schema>;
 
 const test = new Command('test')
 	.description('Tests blocks against most recent tests')
@@ -33,7 +33,7 @@ const test = new Command('test')
 	.option('--repo <repo>', 'Repository to download the blocks from')
 	.option('--debug', 'Leaves the temp test file around for debugging upon failure.', false)
 	.action(async (blockNames, opts) => {
-		const options = parse(schema, opts);
+		const options = v.parse(schema, opts);
 
 		await _test(blockNames, options);
 	});
@@ -102,7 +102,7 @@ const _test = async (blockNames: string[], options: Options) => {
 			);
 		}
 
-		const categories = parse(array(categorySchema), await response.json());
+		const categories = v.parse(v.array(categorySchema), await response.json());
 
 		for (const category of categories) {
 			for (const block of category.blocks) {
@@ -192,16 +192,8 @@ const _test = async (blockNames: string[], options: Options) => {
 			testFiles.push(destPath);
 		}
 
-		let blockFilePath: string;
-		let directory: string;
-
-		directory = path.join(config.path, block.category);
-
-		if (config.includeIndexFile) {
-			blockFilePath = path.join(directory, 'index');
-		} else {
-			blockFilePath = path.join(directory, `${blockName}`);
-		}
+		const directory = path.join(config.path, block.category);
+		let blockFilePath = path.join(directory, `${blockName}`);
 
 		blockFilePath = blockFilePath.replaceAll('\\', '/');
 

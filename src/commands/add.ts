@@ -285,40 +285,6 @@ const _add = async (blockNames: string[], options: Options) => {
 					fs.writeFileSync(file.destPath, content);
 				}
 
-				if (config.includeIndexFile) {
-					verbose('Trying to include index file');
-
-					const indexPath = path.join(directory, 'index.ts');
-
-					try {
-						let index: SourceFile;
-
-						const project = new Project();
-
-						if (fs.existsSync(indexPath)) {
-							index = project.addSourceFileAtPath(indexPath);
-						} else {
-							index = project.createSourceFile(indexPath);
-						}
-
-						if (config.imports === 'node') {
-							index.addExportDeclaration({
-								moduleSpecifier: `./${blockName}`,
-								isTypeOnly: false,
-							});
-						} else if (config.imports === 'deno') {
-							index.addExportDeclaration({
-								moduleSpecifier: `./${blockName}.ts`,
-								isTypeOnly: false,
-							});
-						}
-
-						index.saveSync();
-					} catch {
-						console.warn(`${WARN} Failed to modify ${indexPath}!`);
-					}
-				}
-
 				if (config.includeTests) {
 					verbose('Trying to include tests');
 
