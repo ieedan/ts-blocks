@@ -1,15 +1,14 @@
 import fs from 'node:fs';
-import { cancel, confirm, intro, isCancel, outro, text } from '@clack/prompts';
+import { cancel, confirm, intro, isCancel, outro, spinner, text } from '@clack/prompts';
 import color from 'chalk';
 import { Command } from 'commander';
 import * as v from 'valibot';
 import { context } from '..';
-import { CONFIG_NAME, type Config } from '../config';
+import { CONFIG_NAME, type Config, getConfig } from '../config';
 
 const schema = v.object({
 	path: v.optional(v.string()),
-	indexFile: v.boolean(),
-	tests: v.boolean(),
+	tests: v.optional(v.boolean()),
 	repos: v.optional(v.array(v.string())),
 	watermark: v.boolean(),
 });
@@ -21,14 +20,10 @@ const init = new Command('init')
 	.option('--path <path>', 'Path to install the blocks')
 	.option('--repos [repos...]', 'Repository to install the blocks from')
 	.option(
-		'--no-index-file',
-		'Will create an index.ts file at the root of the folder to re-export functions from.'
-	)
-	.option(
 		'--no-watermark',
 		'Will not add a watermark to each file upon adding it to your project.'
 	)
-	.option('--tests', 'Will include tests along with the functions.', false)
+	.option('--tests', 'Will include tests along with the functions.')
 	.action(async (opts) => {
 		const options = v.parse(schema, opts);
 
@@ -38,9 +33,9 @@ const init = new Command('init')
 const _init = async (options: Options) => {
 	intro(`${color.bgBlueBright(' ts-blocks ')}${color.gray(` v${context.package.version} `)}`);
 
-	const { version } = JSON.parse(
-		fs.readFileSync(new URL('../package.json', import.meta.url), 'utf-8')
-	);
+	const initialConfig = getConfig();
+
+	const loading = spinner();
 
 	if (!options.path) {
 		const result = await text({
@@ -48,7 +43,7 @@ const _init = async (options: Options) => {
 			validate(value) {
 				if (value.trim() === '') return 'Please provide a value';
 			},
-			initialValue: 'src/blocks',
+			initialValue: initialConfig.isOk() ? initialConfig.unwrap().path : 'src/blocks',
 		});
 
 		if (isCancel(result)) {
@@ -60,53 +55,85 @@ const _init = async (options: Options) => {
 	}
 
 	if (!options.repos) {
-		const result = await text({
-			message: 'Where should we download the blocks from?',
-			initialValue: 'https://github.com/ieedan/std',
-			validate: (val) => {
-				if (!val.startsWith('https://github.com')) {
-					return `Must be a ${color.bold('GitHub')} repository!`;
+		options.repos = initialConfig.isOk() ? initialConfig.unwrap().repos : [];
+
+		while (true) {
+			if (options.repos.length > 0) {
+				const confirmResult = await confirm({
+					message: 'Add another repo?',
+					initialValue: false,
+				});
+
+				if (isCancel(confirmResult)) {
+					cancel('Canceled!');
+					process.exit(0);
 				}
-			},
-		});
 
-		if (isCancel(result)) {
-			cancel('Canceled!');
-			process.exit(0);
+				if (!confirmResult) break;
+			}
+
+			const result = await text({
+				message: 'Where should we download the blocks from?',
+				placeholder: 'github/ieedan/std',
+				validate: (val) => {
+					if (!val.startsWith('https://github.com') && !val.startsWith('github/')) {
+						return `Must be a ${color.bold('GitHub')} repository!`;
+					}
+				},
+			});
+
+			if (isCancel(result)) {
+				cancel('Canceled!');
+				process.exit(0);
+			}
+
+			options.repos.push(result);
 		}
-
-		options.repos = [result];
 	}
 
-	// checks if this is a Deno project
-	let isDeno = fs.existsSync('deno.json');
+	let isDeno = false;
 
-	if (!isDeno && fs.existsSync('jsr.json')) {
-		const result = await confirm({
-			message: `${color.cyan('jsr.json')} detected. Are you using Deno?`,
-			initialValue: true,
-		});
+	// only check for deno the first time
+	if (initialConfig.isErr()) {
+		// checks if this is a Deno project
+		let isDeno = fs.existsSync('deno.json');
 
-		if (isCancel(result)) {
-			cancel('Canceled!');
-			process.exit(0);
+		if (!isDeno && fs.existsSync('jsr.json')) {
+			const result = await confirm({
+				message: `${color.cyan('jsr.json')} detected. Are you using Deno?`,
+				initialValue: true,
+			});
+
+			if (isCancel(result)) {
+				cancel('Canceled!');
+				process.exit(0);
+			}
+
+			isDeno = result;
 		}
-
-		isDeno = result;
+	} else {
+		isDeno = initialConfig.unwrap().imports === 'deno';
 	}
 
 	const config: Config = {
-		$schema: `https://unpkg.com/ts-blocks@${version}/schema.json`,
+		$schema: `https://unpkg.com/ts-blocks@${context.package.version}/schema.json`,
 		repos: options.repos,
 		path: options.path,
-		includeTests: options.tests,
+		includeTests:
+			initialConfig.isOk() && options.tests === undefined
+				? initialConfig.unwrap().includeTests
+				: (options.tests ?? false),
 		imports: isDeno ? 'deno' : 'node',
 		watermark: options.watermark,
 	};
 
+	loading.start(`Writing config to \`${CONFIG_NAME}\``);
+
 	fs.writeFileSync(CONFIG_NAME, `${JSON.stringify(config, null, '\t')}\n`);
 
 	fs.mkdirSync(config.path, { recursive: true });
+
+	loading.stop(`Wrote config to \`${CONFIG_NAME}\`.`);
 
 	outro(color.green('All done!'));
 };

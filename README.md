@@ -103,12 +103,11 @@ This finds any currently installed blocks and tests them against the tests in th
 	"repos": [
 		"https://github.com/ieedan/ts-blocks/tree/next"
 	],
-	"path": "testing/blocks",
-	// include an `index.ts` file at the category root
-	"includeIndexFile": true,
+	// path where the blocks will be installed
+	"path": "src/blocks",
 	// include tests when installing the blocks
 	"includeTests": false,
-	// sets the `.ts` prefix for Deno environments
+	// sets the `.ts` postfix for Deno environments
 	"imports": "node",
 	// whether or not to include meta data at the top of added blocks
 	"watermark": true
@@ -116,3 +115,15 @@ This finds any currently installed blocks and tests them against the tests in th
 ```
 
 You'll notice that you can list multiple repos to download your blocks from using the `repos` key.
+
+## Best Practices
+
+### Tags
+
+If you are using a repository that you don't control it may be beneficial to point your repos to a tagged release:
+
+```
+github/ieedan/std/tree/v1.0.3
+```
+
+While not completely immutable pointing to a tag in a well maintained and non-malicious repository can prevent breaking changes to remote tests.

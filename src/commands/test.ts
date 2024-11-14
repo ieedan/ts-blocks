@@ -51,7 +51,10 @@ const _test = async (blockNames: string[], options: Options) => {
 
 	verbose(`Attempting to test ${JSON.stringify(blockNames)}`);
 
-	const config = getConfig();
+	const config = getConfig().match(
+		(val) => val,
+		(err) => program.error(color.red(err))
+	);
 
 	const loading = spinner();
 
