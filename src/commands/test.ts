@@ -328,7 +328,7 @@ const _test = async (blockNames: string[], options: Options) => {
 		cleanUp();
 
 		outro(color.green('All done!'));
-	} catch {
+	} catch (err) {
 		if (options.debug) {
 			console.info(
 				`${color.bold('--debug')} flag provided. Skipping cleanup. Run '${color.bold(
@@ -339,7 +339,7 @@ const _test = async (blockNames: string[], options: Options) => {
 			cleanUp();
 		}
 
-		program.error(color.red('Tests failed!'));
+		program.error(color.red(`Tests failed! Error ${err}`));
 	}
 };
 
