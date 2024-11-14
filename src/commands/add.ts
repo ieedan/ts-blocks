@@ -7,7 +7,6 @@ import { execa } from 'execa';
 import type { ResolvedCommand } from 'package-manager-detector';
 import { resolveCommand } from 'package-manager-detector/commands';
 import { detect } from 'package-manager-detector/detect';
-import { Project, type SourceFile } from 'ts-morph';
 import * as v from 'valibot';
 import { context } from '..';
 import { getConfig } from '../config';
@@ -15,7 +14,7 @@ import { type Block, categorySchema } from '../utils/build';
 import { getInstalledBlocks } from '../utils/get-installed-blocks';
 import { getWatermark } from '../utils/get-watermark';
 import * as gitProviders from '../utils/git-providers';
-import { INFO, WARN } from '../utils/index';
+import { INFO } from '../utils/index';
 import { type Task, runTasks } from '../utils/prompts';
 import { OUTPUT_FILE } from './build';
 

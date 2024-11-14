@@ -34,6 +34,12 @@ export interface Provider {
 	matches: (repoPath: string) => boolean;
 }
 
+/** Valid paths
+ *
+ *  `https://github.com/<owner>/<repo>/[tree]/[branch]`
+ *
+ *  `github/<owner>/<repo>/[tree]/[branch]`
+ */
 const github: Provider = {
 	name: () => 'github',
 	resolveRaw: (repoPath, resourcePath) => {
@@ -50,7 +56,7 @@ const github: Provider = {
 		);
 	},
 	info: (repoPath) => {
-		const repo = repoPath.replaceAll('https://github.com/', '');
+		const repo = repoPath.replaceAll(/(https:\/\/github.com\/)|(github)/, '');
 
 		const [owner, repoName, ...rest] = repo.split('/');
 
@@ -69,7 +75,9 @@ const github: Provider = {
 			provider: github,
 		};
 	},
-	matches: (repoPath) => repoPath.startsWith('https://github.com'),
+	matches: (repoPath) =>
+		repoPath.toLowerCase().startsWith('https://github.com') ||
+		repoPath.toLowerCase().startsWith('github'),
 };
 
 export { github };
