@@ -1,5 +1,14 @@
 # ts-blocks
 
+## 1.0.0-next.11
+
+### Patch Changes
+
+- a81f99e: Deprecate `index.ts` generation.
+- a81f99e: Support tags in github repos like `github/<owner>/<name>/tree/v0.0.1`
+- a81f99e: Allow shorthand adding of blocks from repos like `github/<owner>/<name>/<category>/<block>`
+- a81f99e: Support multiple repos having the same category and block names.
+
 ## 1.0.0-next.10
 
 ### Patch Changes
