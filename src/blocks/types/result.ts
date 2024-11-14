@@ -1,9 +1,3 @@
-/* 
-	ts-blocks 1.0.0-next.10 
-	Installed from https://github.com/ieedan/std
-	11-14-2024
-*/
-
 /** This is just a helper type used only within this file */
 type _Result<T, E> = { ok: true; val: T } | { ok: false; err: E };
 
