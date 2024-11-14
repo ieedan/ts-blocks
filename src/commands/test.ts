@@ -7,23 +7,23 @@ import { execa } from 'execa';
 import { resolveCommand } from 'package-manager-detector/commands';
 import { detect } from 'package-manager-detector/detect';
 import { Project } from 'ts-morph';
-import { type InferInput, array, boolean, object, optional, parse, string } from 'valibot';
+import * as v from 'valibot';
 import { context } from '..';
 import { getConfig } from '../config';
 import { INFO } from '../utils';
 import { type Block, categorySchema } from '../utils/build';
 import { getInstalledBlocks } from '../utils/get-installed-blocks';
 import * as gitProviders from '../utils/git-providers';
-import { OUTPUT_FILE } from './build';
+import { OUTPUT_FILE } from '../utils/index';
 
-const schema = object({
-	debug: boolean(),
-	verbose: boolean(),
-	repo: optional(string()),
-	allow: boolean(),
+const schema = v.object({
+	debug: v.boolean(),
+	verbose: v.boolean(),
+	repo: v.optional(v.string()),
+	allow: v.boolean(),
 });
 
-type Options = InferInput<typeof schema>;
+type Options = v.InferInput<typeof schema>;
 
 const test = new Command('test')
 	.description('Tests blocks against most recent tests')
@@ -33,7 +33,7 @@ const test = new Command('test')
 	.option('--repo <repo>', 'Repository to download the blocks from')
 	.option('--debug', 'Leaves the temp test file around for debugging upon failure.', false)
 	.action(async (blockNames, opts) => {
-		const options = parse(schema, opts);
+		const options = v.parse(schema, opts);
 
 		await _test(blockNames, options);
 	});
@@ -74,25 +74,24 @@ const _test = async (blockNames: string[], options: Options) => {
 		}
 	}
 
-	loading.start(`Fetching blocks from ${color.cyan(repoPaths.join(', '))}`);
+	verbose(`Fetching blocks from ${color.cyan(repoPaths.join(', '))}`);
+
+	if (!options.verbose) loading.start(`Fetching blocks from ${color.cyan(repoPaths.join(', '))}`);
 
 	for (const repo of repoPaths) {
-		let manifestUrl: URL;
-		let providerInfo: gitProviders.Info;
+		const providerInfo: gitProviders.Info = (await gitProviders.getProviderInfo(repo)).match(
+			(info) => info,
+			(err) => program.error(color.red(err))
+		);
 
-		if (gitProviders.github.matches(repo)) {
-			providerInfo = gitProviders.github.info(repo);
+		const manifestUrl = await providerInfo.provider.resolveRaw(providerInfo, OUTPUT_FILE);
 
-			manifestUrl = gitProviders.github.resolveRaw(providerInfo, OUTPUT_FILE);
-		} else {
-			// if you want to support your provider open a PR!
-			program.error(color.red('Only GitHub repositories are supported at this time!'));
-		}
+		verbose(`Got info for provider ${color.cyan(providerInfo.name)}`);
 
 		const response = await fetch(manifestUrl);
 
 		if (!response.ok) {
-			loading.stop(`Error fetching ${color.cyan(manifestUrl.href)}`);
+			if (!options.verbose) loading.stop(`Error fetching ${color.cyan(manifestUrl.href)}`);
 			program.error(
 				color.red(
 					`There was an error fetching the \`${OUTPUT_FILE}\` from the repository ${color.cyan(
@@ -102,20 +101,25 @@ const _test = async (blockNames: string[], options: Options) => {
 			);
 		}
 
-		const categories = parse(array(categorySchema), await response.json());
+		const categories = v.parse(v.array(categorySchema), await response.json());
 
 		for (const category of categories) {
 			for (const block of category.blocks) {
 				// blocks will override each other
-				blocksMap.set(`${category.name}/${block.name}`, {
-					...block,
-					sourceRepo: providerInfo,
-				});
+				blocksMap.set(
+					`${providerInfo.name}/${providerInfo.owner}/${providerInfo.repoName}/${category.name}/${block.name}`,
+					{
+						...block,
+						sourceRepo: providerInfo,
+					}
+				);
 			}
 		}
 	}
 
-	loading.stop(`Retrieved blocks from ${color.cyan(repoPaths.join(','))}`);
+	verbose(`Retrieved blocks from ${color.cyan(repoPaths.join(', '))}`);
+
+	if (!options.verbose) loading.stop(`Retrieved blocks from ${color.cyan(repoPaths.join(', '))}`);
 
 	const tempTestDirectory = `blocks-tests-temp-${Date.now()}`;
 
@@ -141,19 +145,80 @@ const _test = async (blockNames: string[], options: Options) => {
 		program.error(color.red('There were no blocks found in your project!'));
 	}
 
-	const testingBlocksMapped = testingBlocks.map((blockName) => {
-		const block = blocksMap.get(blockName);
+	const testingBlocksMapped: { name: string; block: RemoteBlock }[] = [];
 
-		if (!block) {
-			program.error(color.red(`Invalid block! ${color.bold(blockName)} does not exist!`));
+	for (const blockSpecifier of testingBlocks) {
+		let block: RemoteBlock | undefined = undefined;
+
+		// if the block starts with github (or another provider) we know it has been resolved
+		if (!blockSpecifier.startsWith('github')) {
+			for (const repo of repoPaths) {
+				// we unwrap because we already checked this
+				const providerInfo = (await gitProviders.getProviderInfo(repo)).unwrap();
+
+				const tempBlock = blocksMap.get(
+					`${providerInfo.name}/${providerInfo.owner}/${providerInfo.repoName}/${blockSpecifier}`
+				);
+
+				if (tempBlock === undefined) continue;
+
+				block = tempBlock;
+
+				break;
+			}
+		} else {
+			if (repoPaths.length === 0) {
+				const [providerName, owner, repoName, ...rest] = blockSpecifier.split('/');
+
+				let repo: string;
+				// if rest is greater than 2 it isn't the block specifier so it is part of the path
+				if (rest.length > 2) {
+					repo = `${providerName}/${owner}/${repoName}/${rest.join('/')}`;
+				} else {
+					repo = `${providerName}/${owner}/${repoName}`;
+				}
+
+				const providerInfo = (await gitProviders.getProviderInfo(repo)).match(
+					(val) => val,
+					(err) => program.error(color.red(err))
+				);
+
+				const manifestUrl = await providerInfo.provider.resolveRaw(
+					providerInfo,
+					OUTPUT_FILE
+				);
+
+				const categories = (await gitProviders.getManifest(manifestUrl)).match(
+					(val) => val,
+					(err) => program.error(color.red(err))
+				);
+
+				for (const category of categories) {
+					for (const block of category.blocks) {
+						blocksMap.set(
+							`${providerInfo.name}/${providerInfo.owner}/${providerInfo.repoName}/${category.name}/${block.name}`,
+							{
+								...block,
+								sourceRepo: providerInfo,
+							}
+						);
+					}
+				}
+			}
+
+			block = blocksMap.get(blockSpecifier);
 		}
 
-		return { name: blockName, block };
-	});
+		if (!block) {
+			program.error(
+				color.red(`Invalid block! ${color.bold(blockSpecifier)} does not exist!`)
+			);
+		}
+
+		testingBlocksMapped.push({ name: blockSpecifier, block });
+	}
 
 	for (const { name: specifier, block } of testingBlocksMapped) {
-		const [_, blockName] = specifier.split('/');
-
 		const providerInfo = block.sourceRepo;
 
 		if (!options.verbose) {
@@ -166,7 +231,7 @@ const _test = async (blockNames: string[], options: Options) => {
 		}
 
 		const getSourceFile = async (filePath: string) => {
-			const rawUrl = providerInfo.provider.resolveRaw(providerInfo, filePath);
+			const rawUrl = await providerInfo.provider.resolveRaw(providerInfo, filePath);
 
 			const response = await fetch(rawUrl);
 
@@ -192,16 +257,8 @@ const _test = async (blockNames: string[], options: Options) => {
 			testFiles.push(destPath);
 		}
 
-		let blockFilePath: string;
-		let directory: string;
-
-		directory = path.join(config.path, block.category);
-
-		if (config.includeIndexFile) {
-			blockFilePath = path.join(directory, 'index');
-		} else {
-			blockFilePath = path.join(directory, `${blockName}`);
-		}
+		const directory = path.join(config.path, block.category);
+		let blockFilePath = path.join(directory, `${block.name}`);
 
 		blockFilePath = blockFilePath.replaceAll('\\', '/');
 
@@ -218,9 +275,9 @@ const _test = async (blockNames: string[], options: Options) => {
 			for (const importDeclaration of tempFile.getImportDeclarations()) {
 				const moduleSpecifier = importDeclaration.getModuleSpecifierValue();
 
-				if (moduleSpecifier.startsWith(`./${blockName}`)) {
+				if (moduleSpecifier.startsWith(`./${block.name}`)) {
 					const newModuleSpecifier = moduleSpecifier.replace(
-						`${blockName}`,
+						`${block.name}`,
 						blockFilePath
 					);
 					importDeclaration.setModuleSpecifier(newModuleSpecifier);
@@ -271,7 +328,7 @@ const _test = async (blockNames: string[], options: Options) => {
 		cleanUp();
 
 		outro(color.green('All done!'));
-	} catch {
+	} catch (err) {
 		if (options.debug) {
 			console.info(
 				`${color.bold('--debug')} flag provided. Skipping cleanup. Run '${color.bold(
@@ -282,7 +339,7 @@ const _test = async (blockNames: string[], options: Options) => {
 			cleanUp();
 		}
 
-		program.error(color.red('Tests failed!'));
+		program.error(color.red(`Tests failed! Error ${err}`));
 	}
 };
 

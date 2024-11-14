@@ -19,7 +19,7 @@ const runTasks = async (tasks: Task[], { verbose = false }) => {
 			console.error(err);
 		}
 
-		loading.stop(task.completedMessage);
+		if (!verbose) loading.stop(task.completedMessage);
 	}
 };
 

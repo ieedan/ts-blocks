@@ -13,18 +13,13 @@
 			"description": "Path to add blocks to in your project.",
 			"type": "string"
 		},
-		"includeIndexFile": {
-			"description": "When true creates an `index.ts` at the root of the category folder and exports all blocks from it.",
-			"type": "boolean",
-			"default": "true"
-		},
 		"includeTests": {
 			"description": "When true includes the test files for each block in the same directory.",
 			"type": "boolean",
 			"default": "true"
 		},
 		"imports": {
-			"description": "Controls the suffix when re-exporting from `index.ts`.",
+			"description": "Controls the `.ts` suffix of relative imports.",
 			"enum": ["deno", "node"],
 			"default": "node"
 		},
@@ -34,5 +29,5 @@
 			"default": "true"
 		}
 	},
-	"required": ["path", "includeIndexFile", "includeTests", "repos"]
+	"required": ["path", "includeTests"]
 }

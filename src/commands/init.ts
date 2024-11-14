@@ -2,19 +2,19 @@ import fs from 'node:fs';
 import { cancel, confirm, intro, isCancel, outro, text } from '@clack/prompts';
 import color from 'chalk';
 import { Command } from 'commander';
-import { type InferInput, array, boolean, object, optional, parse, string } from 'valibot';
+import * as v from 'valibot';
 import { context } from '..';
 import { CONFIG_NAME, type Config } from '../config';
 
-const schema = object({
-	path: optional(string()),
-	indexFile: boolean(),
-	tests: boolean(),
-	repos: optional(array(string())),
-	watermark: boolean(),
+const schema = v.object({
+	path: v.optional(v.string()),
+	indexFile: v.boolean(),
+	tests: v.boolean(),
+	repos: v.optional(v.array(v.string())),
+	watermark: v.boolean(),
 });
 
-type Options = InferInput<typeof schema>;
+type Options = v.InferInput<typeof schema>;
 
 const init = new Command('init')
 	.description('Initializes the configuration file')
@@ -30,7 +30,7 @@ const init = new Command('init')
 	)
 	.option('--tests', 'Will include tests along with the functions.', false)
 	.action(async (opts) => {
-		const options = parse(schema, opts);
+		const options = v.parse(schema, opts);
 
 		await _init(options);
 	});
@@ -99,7 +99,6 @@ const _init = async (options: Options) => {
 		$schema: `https://unpkg.com/ts-blocks@${version}/schema.json`,
 		repos: options.repos,
 		path: options.path,
-		includeIndexFile: options.indexFile,
 		includeTests: options.tests,
 		imports: isDeno ? 'deno' : 'node',
 		watermark: options.watermark,

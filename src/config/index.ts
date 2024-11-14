@@ -1,29 +1,17 @@
 import fs from 'node:fs';
 import color from 'chalk';
 import { program } from 'commander';
-import {
-	array,
-	boolean,
-	literal,
-	minLength,
-	object,
-	optional,
-	parse,
-	pipe,
-	string,
-	union,
-} from 'valibot';
+import * as v from 'valibot';
 
 const CONFIG_NAME = 'blocks.json';
 
-const schema = object({
-	$schema: string(),
-	repos: array(string()),
-	includeIndexFile: boolean(),
-	includeTests: boolean(),
-	path: pipe(string(), minLength(1)),
-	imports: optional(union([literal('deno'), literal('node')]), 'node'),
-	watermark: optional(boolean(), true),
+const schema = v.object({
+	$schema: v.string(),
+	repos: v.optional(v.array(v.string()), []),
+	includeTests: v.boolean(),
+	path: v.pipe(v.string(), v.minLength(1)),
+	imports: v.optional(v.union([v.literal('deno'), v.literal('node')]), 'node'),
+	watermark: v.optional(v.boolean(), true),
 });
 
 const getConfig = () => {
@@ -35,7 +23,7 @@ const getConfig = () => {
 		);
 	}
 
-	const config = parse(schema, JSON.parse(fs.readFileSync(CONFIG_NAME).toString()), {
+	const config = v.parse(schema, JSON.parse(fs.readFileSync(CONFIG_NAME).toString()), {
 		message: color.red('Invalid config file!'),
 	});
 
