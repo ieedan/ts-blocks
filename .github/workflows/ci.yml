@@ -20,8 +20,9 @@ jobs:
             - name: Lint
               run: pnpm check
 
-            # - name: Test
-            #   run: pnpm test
+            - name: Test
+              run: pnpm test
 
-            - name: Build
-              run: pnpm build
+            # test dogfed blocks
+            - name: Test
+              run: pnpm start test
