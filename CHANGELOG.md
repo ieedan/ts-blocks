@@ -1,5 +1,11 @@
 # ts-blocks
 
+## 1.0.0-next.15
+
+### Patch Changes
+
+- 6567014: Fixes issue where diff command wouldn't look into subdirectories.
+
 ## 1.0.0-next.14
 
 ### Patch Changes
