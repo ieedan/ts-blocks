@@ -6,7 +6,7 @@ import * as v from "valibot";
 import { context } from "..";
 import { OUTPUT_FILE } from "../utils";
 import { type Block, type Category, buildBlocksDirectory } from "../utils/build";
-import { Config, getConfig } from "../config";
+import { type Config, getConfig } from "../config";
 import * as gitProviders from "../utils/git-providers";
 import { getInstalledBlocks } from "../utils/get-installed-blocks";
 import { diffLines, type Change } from "diff";
@@ -193,6 +193,7 @@ const printDiff = (specifier: string, localPath: string, changes: Change[], opti
 							prefix: (line) => color.gray(`│ ${leftPadMin(`${line + 1 + lineOffset} `, length)} `),
 						})}\n`
 					);
+					lineOffset += options.maxUnchanged;
 				}
 
 				if (ls.length > shownLines) {
@@ -212,6 +213,7 @@ const printDiff = (specifier: string, localPath: string, changes: Change[], opti
 						})}\n`
 					);
 				}
+				
 				lineOffset += change.count;
 				continue;
 			}
