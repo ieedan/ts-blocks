@@ -7,12 +7,7 @@
 		"type": "git",
 		"url": "git+https://github.com/ieedan/ts-blocks"
 	},
-	"keywords": [
-		"blocks",
-		"typescript",
-		"tested",
-		"documented"
-	],
+	"keywords": ["blocks", "typescript", "tested", "documented"],
 	"author": "Aidan Bleser",
 	"license": "MIT",
 	"bugs": {
