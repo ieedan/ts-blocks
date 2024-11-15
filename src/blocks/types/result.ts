@@ -5,7 +5,7 @@
 */
 
 /** This is just a helper type used only within this file */
-type _Result<T, E> = { ok: true; val: T } | { ok: false; err: E };
+type _Result<T, > = { ok: true; val: T } | { ok: false; err: E };
 
 /** Result allows you to show to a consumer that a function might throw and force them to handle it.
  *
@@ -30,10 +30,10 @@ type _Result<T, E> = { ok: true; val: T } | { ok: false; err: E };
  * ```
  */
 class Result<T, E> {
-	private readonly _result: _Result<T, E>;
+	private readonly _rresult: _Result<T, E>;
 
 	constructor(result: _Result<T, E>) {
-		this._result = result;
+		this._rresult = result;
 	}
 
 	/** Allows you to run callbacks based on the result.
@@ -71,11 +71,11 @@ class Result<T, E> {
 	 * ```
 	 */
 	match<A, B = A>(success: (val: T) => A, failure: (err: E) => B): A | B {
-		if (!this._result.ok) {
-			return failure(this._result.err);
+		if (!this._rresult.ok) {
+			return failure(this._rresult.err);
 		}
 
-		return success(this._result.val);
+		return success(this._rresult.val);
 	}
 
 	/** Maps `Result<T, E>` to `Result<A, E>` using the passed mapping function

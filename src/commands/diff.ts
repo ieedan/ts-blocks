@@ -120,25 +120,9 @@ const _diff = async (options: Options) => {
 
 			const remoteContent = await response.text();
 
-			let changes = diffLines(blockSpecifier.content, remoteContent);
+			const changes = diffLines(blockSpecifier.content, remoteContent);
 
-			// if theres a watermark we know that there will be a change every time so we just get rid of it
-			if (config.watermark) {
-				changes = changes.slice(1);
-			}
-
-			if (changes.length === 1 && !changes[0].added && !changes[0].removed) {
-				if (!options.hideUnchanged) {
-					process.stdout.write(
-						`${L}  ${color.cyan(fullSpecifier)} → ${color.gray(blockSpecifier.path)} ${color.gray(
-							"(unchanged)"
-						)}\n`
-					);
-				}
-				break;
-			}
-
-			printDiff(fullSpecifier, blockSpecifier.path, changes, options);
+			printDiff(fullSpecifier, blockSpecifier.path, changes, options, config);
 
 			break;
 		}
@@ -151,17 +135,36 @@ const _diff = async (options: Options) => {
 	outro(color.green("All done!"));
 };
 
-const printDiff = (specifier: string, localPath: string, changes: Change[], options: Options) => {
-	process.stdout.write(`${L}\n${L}  ${color.cyan(specifier)} → ${color.gray(localPath)}\n${L}\n`);
+const printDiff = (specifier: string, localPath: string, changes: Change[], options: Options, config: Config) => {
+	let finalChanges = changes;
+	const length = arraySum(finalChanges, (change) => change.count ?? 0).toString().length + 1;
 
 	let lineOffset = 0;
-	const length = arraySum(changes, (change) => change.count ?? 0).toString().length + 1;
+	
+	// if theres a watermark we know that there will be a change every time so we just get rid of it
+	if (config.watermark) {
+		lineOffset = finalChanges[0].count ?? 0;
+		finalChanges = finalChanges.slice(1);
+	}
 
-	for (let i = 0; i < changes.length; i++) {
-		const change = changes[i];
+	if (finalChanges.length === 1 && !finalChanges[0].added && !finalChanges[0].removed) {
+		if (!options.hideUnchanged) {
+			process.stdout.write(
+				`${L}  ${color.cyan(specifier)} → ${color.gray(localPath)} ${color.gray(
+					"(unchanged)"
+				)}\n`
+			);
+		}
+		return;
+	}
 
-		const hasPreviousChange = changes[i - 1]?.added || changes[i - 1]?.removed;
-		const hasNextChange = changes[i + 1]?.added || changes[i + 1]?.removed;
+	process.stdout.write(`${L}\n${L}  ${color.cyan(specifier)} → ${color.gray(localPath)}\n${L}\n`);
+
+	for (let i = 0; i < finalChanges.length; i++) {
+		const change = finalChanges[i];
+
+		const hasPreviousChange = finalChanges[i - 1]?.added || finalChanges[i - 1]?.removed;
+		const hasNextChange = finalChanges[i + 1]?.added || finalChanges[i + 1]?.removed;
 
 		if (!change.added && !change.removed) {
 			// show collapsed
@@ -171,7 +174,7 @@ const printDiff = (specifier: string, localPath: string, changes: Change[], opti
 				let shownLines = 0;
 
 				if (hasNextChange) shownLines += options.maxUnchanged;
-				if (hasNextChange) shownLines += options.maxUnchanged;
+				if (hasPreviousChange) shownLines += options.maxUnchanged;
 
 				// just show all
 				if (shownLines >= ls.length) {
@@ -229,7 +232,9 @@ const printDiff = (specifier: string, localPath: string, changes: Change[], opti
 			})}\n`
 		);
 
-		lineOffset += change.count ?? 0;
+		if (!change.removed) {
+			lineOffset += change.count ?? 0;
+		}
 	}
 };
 
