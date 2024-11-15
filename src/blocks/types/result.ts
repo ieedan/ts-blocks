@@ -1,11 +1,11 @@
 /* 
-	ts-blocks 1.0.0-next.10 
-	Installed from https://github.com/ieedan/std
-	11-14-2024
+	ts-blocks 1.0.0-next.12 
+	Installed from github/ieedan/std
+	11-15-2024
 */
 
 /** This is just a helper type used only within this file */
-type _Result<T, > = { ok: true; val: T } | { ok: false; err: E };
+type _Result<T, E> = { ok: true; val: T } | { ok: false; err: E };
 
 /** Result allows you to show to a consumer that a function might throw and force them to handle it.
  *
@@ -30,10 +30,10 @@ type _Result<T, > = { ok: true; val: T } | { ok: false; err: E };
  * ```
  */
 class Result<T, E> {
-	private readonly _rresult: _Result<T, E>;
+	private readonly _result: _Result<T, E>;
 
 	constructor(result: _Result<T, E>) {
-		this._rresult = result;
+		this._result = result;
 	}
 
 	/** Allows you to run callbacks based on the result.
@@ -71,11 +71,11 @@ class Result<T, E> {
 	 * ```
 	 */
 	match<A, B = A>(success: (val: T) => A, failure: (err: E) => B): A | B {
-		if (!this._rresult.ok) {
-			return failure(this._rresult.err);
+		if (!this._result.ok) {
+			return failure(this._result.err);
 		}
 
-		return success(this._rresult.val);
+		return success(this._result.val);
 	}
 
 	/** Maps `Result<T, E>` to `Result<A, E>` using the passed mapping function

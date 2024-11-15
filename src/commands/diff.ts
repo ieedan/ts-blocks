@@ -140,7 +140,7 @@ const printDiff = (specifier: string, localPath: string, changes: Change[], opti
 	const length = arraySum(finalChanges, (change) => change.count ?? 0).toString().length + 1;
 
 	let lineOffset = 0;
-	
+
 	// if theres a watermark we know that there will be a change every time so we just get rid of it
 	if (config.watermark) {
 		lineOffset = finalChanges[0].count ?? 0;
@@ -150,15 +150,20 @@ const printDiff = (specifier: string, localPath: string, changes: Change[], opti
 	if (finalChanges.length === 1 && !finalChanges[0].added && !finalChanges[0].removed) {
 		if (!options.hideUnchanged) {
 			process.stdout.write(
-				`${L}  ${color.cyan(specifier)} → ${color.gray(localPath)} ${color.gray(
-					"(unchanged)"
-				)}\n`
+				`${L}  ${color.cyan(specifier)} → ${color.gray(localPath)} ${color.gray("(unchanged)")}\n`
 			);
 		}
 		return;
 	}
 
-	process.stdout.write(`${L}\n${L}  ${color.cyan(specifier)} → ${color.gray(localPath)}\n${L}\n`);
+	process.stdout.write(
+		`${L}\n${L}  ${color.cyan(specifier)} → ${color.gray(localPath)} (${
+			finalChanges.filter((a) => a.added).length
+		} changes)\n${L}\n`
+	);
+
+	/** Provides the line number prefix */
+	const linePrefix = (line: number): string => color.gray(`│ ${leftPadMin(`${line + 1 + lineOffset} `, length)} `);
 
 	for (let i = 0; i < finalChanges.length; i++) {
 		const change = finalChanges[i];
@@ -169,31 +174,33 @@ const printDiff = (specifier: string, localPath: string, changes: Change[], opti
 		if (!change.added && !change.removed) {
 			// show collapsed
 			if (!options.expand && change.count !== undefined && change.count > options.maxUnchanged) {
-				const ls = lines.get(change.value.trim());
+				const prevLineOffset = lineOffset;
+				const ls = lines.get(change.value.trimEnd());
 
 				let shownLines = 0;
 
 				if (hasNextChange) shownLines += options.maxUnchanged;
 				if (hasPreviousChange) shownLines += options.maxUnchanged;
 
-				// just show all
+				// just show all if we are going to show more than we have
 				if (shownLines >= ls.length) {
 					process.stdout.write(
 						`${lines.join(ls, {
-							prefix: (line) => color.gray(`│ ${leftPadMin(`${line + 1 + lineOffset} `, length)} `),
+							prefix: linePrefix,
 						})}\n`
 					);
-					lineOffset += change.count;
+					lineOffset += ls.length;
 					continue;
 				}
 
+				// this writes the top few lines
 				if (hasPreviousChange) {
 					process.stdout.write(
 						`${lines.join(ls.slice(0, options.maxUnchanged), {
-							prefix: (line) => color.gray(`│ ${leftPadMin(`${line + 1 + lineOffset} `, length)} `),
+							prefix: linePrefix,
 						})}\n`
 					);
-					lineOffset += options.maxUnchanged;
+					// lineOffset += options.maxUnchanged;
 				}
 
 				if (ls.length > shownLines) {
@@ -206,21 +213,24 @@ const printDiff = (specifier: string, localPath: string, changes: Change[], opti
 				}
 
 				if (hasNextChange) {
-					lineOffset = lineOffset + ls.length - options.maxUnchanged
+					lineOffset = lineOffset + ls.length - options.maxUnchanged;
 					process.stdout.write(
 						`${lines.join(ls.slice(ls.length - options.maxUnchanged), {
-							prefix: (line) => color.gray(`│ ${leftPadMin(`${line + 1 + lineOffset} `, length)} `),
+							prefix: linePrefix,
 						})}\n`
 					);
 				}
-				
-				lineOffset += change.count;
+
+				// resets the line offset
+				lineOffset = prevLineOffset + change.count;
 				continue;
 			}
 
+			// show expanded
+
 			process.stdout.write(
 				`${lines.join(lines.get(change.value.trimEnd()), {
-					prefix: (line) => color.gray(`│ ${leftPadMin(`${line + 1 + lineOffset} `, length)} `),
+					prefix: linePrefix,
 				})}\n`
 			);
 			lineOffset += change.count ?? 0;
@@ -230,7 +240,7 @@ const printDiff = (specifier: string, localPath: string, changes: Change[], opti
 
 		process.stdout.write(
 			`${lines.join(lines.get(colorChange({ ...change, value: change.value.trimEnd() })), {
-				prefix: (line) => color.gray(`│ ${leftPadMin(`${line + 1 + lineOffset} `, length)} `),
+				prefix: linePrefix,
 			})}\n`
 		);
 
