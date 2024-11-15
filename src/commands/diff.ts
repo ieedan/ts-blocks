@@ -14,6 +14,7 @@ import * as lines from "../blocks/utilities/lines";
 import path from "node:path";
 import { arraySum } from "../blocks/utilities/array-sum";
 import { leftPadMin } from "../blocks/utilities/pad";
+import { getWatermark } from "../utils/get-watermark";
 
 const L = color.gray("│");
 
@@ -118,11 +119,13 @@ const _diff = async (options: Options) => {
 				program.error(color.red(`There was an error trying to get ${fullSpecifier}`));
 			}
 
+			const watermark = getWatermark(context.package.version, repo);
+
 			const remoteContent = await response.text();
 
-			const changes = diffLines(blockSpecifier.content, remoteContent);
+			const changes = diffLines(blockSpecifier.content, `${watermark}${remoteContent}`);
 
-			printDiff(fullSpecifier, blockSpecifier.path, changes, options, config);
+			printDiff(fullSpecifier, blockSpecifier.path, changes, options);
 
 			break;
 		}
@@ -135,19 +138,12 @@ const _diff = async (options: Options) => {
 	outro(color.green("All done!"));
 };
 
-const printDiff = (specifier: string, localPath: string, changes: Change[], options: Options, config: Config) => {
-	let finalChanges = changes;
-	const length = arraySum(finalChanges, (change) => change.count ?? 0).toString().length + 1;
+const printDiff = (specifier: string, localPath: string, changes: Change[], options: Options) => {
+	const length = arraySum(changes, (change) => change.count ?? 0).toString().length + 1;
 
 	let lineOffset = 0;
 
-	// if theres a watermark we know that there will be a change every time so we just get rid of it
-	if (config.watermark) {
-		lineOffset = finalChanges[0].count ?? 0;
-		finalChanges = finalChanges.slice(1);
-	}
-
-	if (finalChanges.length === 1 && !finalChanges[0].added && !finalChanges[0].removed) {
+	if (changes.length === 1 && !changes[0].added && !changes[0].removed) {
 		if (!options.hideUnchanged) {
 			process.stdout.write(
 				`${L}  ${color.cyan(specifier)} → ${color.gray(localPath)} ${color.gray("(unchanged)")}\n`
@@ -156,20 +152,22 @@ const printDiff = (specifier: string, localPath: string, changes: Change[], opti
 		return;
 	}
 
+	const totalChanges = changes.filter((a) => a.added).length;
+
 	process.stdout.write(
-		`${L}\n${L}  ${color.cyan(specifier)} → ${color.gray(localPath)} (${
-			finalChanges.filter((a) => a.added).length
-		} changes)\n${L}\n`
+		`${L}\n${L}  ${color.cyan(specifier)} → ${color.gray(localPath)} (${totalChanges} change${
+			totalChanges === 1 ? "" : "s"
+		})\n${L}\n`
 	);
 
 	/** Provides the line number prefix */
 	const linePrefix = (line: number): string => color.gray(`│ ${leftPadMin(`${line + 1 + lineOffset} `, length)} `);
 
-	for (let i = 0; i < finalChanges.length; i++) {
-		const change = finalChanges[i];
+	for (let i = 0; i < changes.length; i++) {
+		const change = changes[i];
 
-		const hasPreviousChange = finalChanges[i - 1]?.added || finalChanges[i - 1]?.removed;
-		const hasNextChange = finalChanges[i + 1]?.added || finalChanges[i + 1]?.removed;
+		const hasPreviousChange = changes[i - 1]?.added || changes[i - 1]?.removed;
+		const hasNextChange = changes[i + 1]?.added || changes[i + 1]?.removed;
 
 		if (!change.added && !change.removed) {
 			// show collapsed
