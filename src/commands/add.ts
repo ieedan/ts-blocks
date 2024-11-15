@@ -10,7 +10,7 @@ import { detect } from 'package-manager-detector/detect';
 import * as v from 'valibot';
 import { context } from '..';
 import { getConfig } from '../config';
-import { type Block, categorySchema } from '../utils/build';
+import type { Block } from '../utils/build';
 import { getInstalledBlocks } from '../utils/get-installed-blocks';
 import { getWatermark } from '../utils/get-watermark';
 import * as gitProviders from '../utils/git-providers';
@@ -114,7 +114,7 @@ const _add = async (blockNames: string[], options: Options) => {
 
 	if (!options.verbose) loading.stop(`Retrieved blocks from ${color.cyan(repoPaths.join(', '))}`);
 
-	const installedBlocks = getInstalledBlocks(blocksMap, config);
+	const installedBlocks = getInstalledBlocks(blocksMap, config).map((val) => val.specifier);
 
 	let installingBlockNames = blockNames;
 

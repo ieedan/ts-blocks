@@ -77,18 +77,21 @@ const github: Provider = {
 
 		// checks if the type of the ref is tags or heads
 		let refs: 'heads' | 'tags' = 'heads';
-		try {
-			const { data: tags } = await octokit.rest.git.listMatchingRefs({
-				owner,
-				repo: repoName,
-				ref: 'tags',
-			});
+		// no need to check if ref is main
+		if (ref !== 'main') {
+			try {
+				const { data: tags } = await octokit.rest.git.listMatchingRefs({
+					owner,
+					repo: repoName,
+					ref: 'tags',
+				});
 
-			if (tags.some((tag) => tag.ref === `refs/tags/${ref}`)) {
-				refs = 'tags';
+				if (tags.some((tag) => tag.ref === `refs/tags/${ref}`)) {
+					refs = 'tags';
+				}
+			} catch {
+				refs = 'heads';
 			}
-		} catch {
-			refs = 'heads';
 		}
 
 		return {

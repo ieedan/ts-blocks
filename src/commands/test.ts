@@ -134,7 +134,7 @@ const _test = async (blockNames: string[], options: Options) => {
 		fs.rmSync(tempTestDirectory, { recursive: true, force: true });
 	};
 
-	const installedBlocks = getInstalledBlocks(blocksMap, config);
+	const installedBlocks = getInstalledBlocks(blocksMap, config).map((val) => val.specifier);
 
 	let testingBlocks = blockNames;
 
