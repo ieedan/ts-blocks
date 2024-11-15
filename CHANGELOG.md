@@ -1,5 +1,11 @@
 # ts-blocks
 
+## 1.0.0-next.14
+
+### Patch Changes
+
+- cede8e1: ensure `build` doesn't include files within the same folder of a subdir as local dependencies.
+
 ## 1.0.0-next.13
 
 ### Patch Changes
