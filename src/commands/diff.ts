@@ -1,3 +1,4 @@
+import fs from 'node:fs';
 import path from 'node:path';
 import { cancel, confirm, intro, isCancel, outro, spinner } from '@clack/prompts';
 import color from 'chalk';
@@ -115,31 +116,62 @@ const _diff = async (options: Options) => {
 
 			const fullSpecifier = `${providerInfo.name}/${providerInfo.owner}/${providerInfo.repoName}/${blockSpecifier.specifier}`;
 
-			const tempBlock = blocksMap.get(fullSpecifier);
+			const block = blocksMap.get(fullSpecifier);
 
-			if (tempBlock === undefined) continue;
-
-			process.stdout.write(`${L}\n`);
+			if (block === undefined) continue;
 
 			found = true;
 
-			const sourcePath = path.join(tempBlock.directory, `${tempBlock.name}.ts`);
+			process.stdout.write(`${L}\n`);
 
-			const rawUrl = await providerInfo.provider.resolveRaw(providerInfo, sourcePath);
+			process.stdout.write(`${L}  ${fullSpecifier}\n`);
 
-			const response = await fetch(rawUrl);
+			fullSpecifier;
 
-			if (!response.ok) {
-				program.error(color.red(`There was an error trying to get ${fullSpecifier}`));
+			for (const file of block.files) {
+				// skip test files if not included
+				if (!config.includeTests && file.endsWith('test.ts')) continue;
+
+				process.stdout.write(`${L}\n`);
+
+				const sourcePath = path.join(block.directory, file);
+
+				const rawUrl = await providerInfo.provider.resolveRaw(providerInfo, sourcePath);
+
+				const response = await fetch(rawUrl);
+
+				if (!response.ok) {
+					program.error(color.red(`There was an error trying to get ${fullSpecifier}`));
+				}
+
+				const watermark = getWatermark(context.package.version, repo);
+
+				const remoteContent = await response.text();
+
+				let localPath = path.join(config.path, block.category, file);
+				if (block.subdirectory) {
+					localPath = path.join(config.path, block.category, block.name, file);
+				}
+
+				let fileContent = '';
+				if (fs.existsSync(localPath)) {
+					fileContent = fs.readFileSync(localPath).toString();
+				}
+
+				const changes = diffLines(fileContent, `${watermark}${remoteContent}`);
+
+				printDiff(
+					path
+						.join(
+							`${providerInfo.name}/${providerInfo.owner}/${providerInfo.repoName}`,
+							sourcePath
+						)
+						.replaceAll('\\', '/'),
+					localPath.replaceAll('\\', '/'),
+					changes,
+					options
+				);
 			}
-
-			const watermark = getWatermark(context.package.version, repo);
-
-			const remoteContent = await response.text();
-
-			const changes = diffLines(blockSpecifier.content, `${watermark}${remoteContent}`);
-
-			printDiff(fullSpecifier, blockSpecifier.path, changes, options);
 
 			break;
 		}
