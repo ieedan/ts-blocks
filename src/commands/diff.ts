@@ -22,7 +22,6 @@ const schema = v.object({
 	allow: v.boolean(),
 	expand: v.boolean(),
 	maxUnchanged: v.number(),
-	hideUnchanged: v.boolean(),
 });
 
 type Options = v.InferInput<typeof schema>;
@@ -31,11 +30,10 @@ const diff = new Command("diff")
 	.description("Compares local blocks to the blocks in the provided repository.")
 	.option("-A, --allow", "Allow ts-blocks to download code from the provided repo.", false)
 	.option("-E, --expand", "Expands the diff so you see everything.", false)
-	.option("--hide-unchanged", "Won't show files that didn't change.", false)
 	.option(
-		"--max-unchanged <lines>",
+		"--max-unchanged <number>",
 		"Maximum unchanged lines that will show without being collapsed.",
-		Number.parseInt,
+		(val) => Number.parseInt(val), // this is such a dumb api thing
 		3
 	)
 	.action(async (opts) => {
@@ -144,11 +142,9 @@ const printDiff = (specifier: string, localPath: string, changes: Change[], opti
 	let lineOffset = 0;
 
 	if (changes.length === 1 && !changes[0].added && !changes[0].removed) {
-		if (!options.hideUnchanged) {
-			process.stdout.write(
-				`${L}  ${color.cyan(specifier)} → ${color.gray(localPath)} ${color.gray("(unchanged)")}\n`
-			);
-		}
+		process.stdout.write(
+			`${L}  ${color.cyan(specifier)} → ${color.gray(localPath)} ${color.gray("(unchanged)")}\n`
+		);
 		return;
 	}
 
@@ -198,15 +194,17 @@ const printDiff = (specifier: string, localPath: string, changes: Change[], opti
 							prefix: linePrefix,
 						})}\n`
 					);
-					// lineOffset += options.maxUnchanged;
 				}
 
 				if (ls.length > shownLines) {
 					const count = ls.length - shownLines;
 					process.stdout.write(
-						`${lines.join(lines.get(color.gray(`+ ${count} more unchanged`)), {
-							prefix: () => `${L} ${leftPadMin("", length)} `,
-						})}\n`
+						`${lines.join(
+							lines.get(color.gray(`+ ${count} more unchanged (${color.italic("-E to expand")})`)),
+							{
+								prefix: () => `${L} ${leftPadMin("", length)} `,
+							}
+						)}\n`
 					);
 				}
 
