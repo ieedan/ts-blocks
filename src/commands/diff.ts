@@ -1,16 +1,21 @@
-import fs from 'node:fs';
-import { cancel, intro, isCancel, outro, spinner, confirm } from '@clack/prompts';
-import color from 'chalk';
-import { Command, program } from 'commander';
-import * as v from 'valibot';
-import { context } from '..';
-import { OUTPUT_FILE } from '../utils';
-import { type Block, type Category, buildBlocksDirectory } from '../utils/build';
-import { Config, getConfig } from '../config';
-import * as gitProviders from '../utils/git-providers';
-import { getInstalledBlocks } from '../utils/get-installed-blocks';
-import { diffLines, type Change } from 'diff';
-import path from 'node:path';
+import fs from "node:fs";
+import { cancel, intro, isCancel, outro, spinner, confirm } from "@clack/prompts";
+import color from "chalk";
+import { Command, program } from "commander";
+import * as v from "valibot";
+import { context } from "..";
+import { OUTPUT_FILE } from "../utils";
+import { type Block, type Category, buildBlocksDirectory } from "../utils/build";
+import { Config, getConfig } from "../config";
+import * as gitProviders from "../utils/git-providers";
+import { getInstalledBlocks } from "../utils/get-installed-blocks";
+import { diffLines, type Change } from "diff";
+import * as lines from "../blocks/utilities/lines";
+import path from "node:path";
+import { arraySum } from "../blocks/utilities/array-sum";
+import { leftPadMin } from "../blocks/utilities/pad";
+
+const L = color.gray("│");
 
 const schema = v.object({
 	allow: v.boolean(),
@@ -21,16 +26,16 @@ const schema = v.object({
 
 type Options = v.InferInput<typeof schema>;
 
-const diff = new Command('diff')
-	.description('Compares local blocks to the blocks in the provided repository.')
-	.option('-A, --allow', 'Allow ts-blocks to download code from the provided repo.', false)
-	.option('-E, --expand', 'Expands the diff so you see everything.', false)
-	.option('--hide-unchanged', "Won't show files that didn't change.", false)
+const diff = new Command("diff")
+	.description("Compares local blocks to the blocks in the provided repository.")
+	.option("-A, --allow", "Allow ts-blocks to download code from the provided repo.", false)
+	.option("-E, --expand", "Expands the diff so you see everything.", false)
+	.option("--hide-unchanged", "Won't show files that didn't change.", false)
 	.option(
-		'--max-unchanged <lines>',
-		'Maximum unchanged lines that will show without being collapsed.',
+		"--max-unchanged <lines>",
+		"Maximum unchanged lines that will show without being collapsed.",
 		Number.parseInt,
-		10
+		3
 	)
 	.action(async (opts) => {
 		const options = v.parse(schema, opts);
@@ -41,7 +46,7 @@ const diff = new Command('diff')
 type RemoteBlock = Block & { sourceRepo: gitProviders.Info };
 
 const _diff = async (options: Options) => {
-	intro(`${color.bgBlueBright(' ts-blocks ')}${color.gray(` v${context.package.version} `)}`);
+	intro(`${color.bgBlueBright(" ts-blocks ")}${color.gray(` v${context.package.version} `)}`);
 
 	const loading = spinner();
 
@@ -54,7 +59,7 @@ const _diff = async (options: Options) => {
 
 	const repoPaths = config.repos;
 
-	loading.start(`Fetching blocks from ${color.cyan(repoPaths.join(', '))}`);
+	loading.start(`Fetching blocks from ${color.cyan(repoPaths.join(", "))}`);
 
 	for (const repo of repoPaths) {
 		const providerInfo: gitProviders.Info = (await gitProviders.getProviderInfo(repo)).match(
@@ -82,11 +87,9 @@ const _diff = async (options: Options) => {
 		}
 	}
 
-	loading.stop(`Retrieved blocks from ${color.cyan(repoPaths.join(', '))}`);
+	loading.stop(`Retrieved blocks from ${color.cyan(repoPaths.join(", "))}`);
 
 	const installedBlocks = getInstalledBlocks(blocksMap, config);
-
-	let hasChanges = false;
 
 	for (const blockSpecifier of installedBlocks) {
 		let found = false;
@@ -100,6 +103,8 @@ const _diff = async (options: Options) => {
 			const tempBlock = blocksMap.get(fullSpecifier);
 
 			if (tempBlock === undefined) continue;
+
+			process.stdout.write(`${L}\n`);
 
 			found = true;
 
@@ -125,15 +130,13 @@ const _diff = async (options: Options) => {
 			if (changes.length === 1 && !changes[0].added && !changes[0].removed) {
 				if (!options.hideUnchanged) {
 					process.stdout.write(
-						`\n${color.cyan(fullSpecifier)} → ${color.gray(blockSpecifier.path)} ${color.gray(
-							'(unchanged)'
-						)}\n\n`
+						`${L}  ${color.cyan(fullSpecifier)} → ${color.gray(blockSpecifier.path)} ${color.gray(
+							"(unchanged)"
+						)}\n`
 					);
 				}
 				break;
 			}
-
-			hasChanges = true;
 
 			printDiff(fullSpecifier, blockSpecifier.path, changes, options);
 
@@ -141,40 +144,92 @@ const _diff = async (options: Options) => {
 		}
 
 		if (!found) {
-			program.error(
-				color.red(`Invalid block! ${color.bold(blockSpecifier)} does not exist!`)
-			);
+			program.error(color.red(`Invalid block! ${color.bold(blockSpecifier)} does not exist!`));
 		}
 	}
 
-	if (!hasChanges) {
-		process.stdout.write('\nUp to date!\n\n');
-	}
-
-	outro(color.green('All done!'));
+	outro(color.green("All done!"));
 };
 
 const printDiff = (specifier: string, localPath: string, changes: Change[], options: Options) => {
-	process.stdout.write(`\n${color.cyan(specifier)} → ${color.gray(localPath)}\n\n`);
+	process.stdout.write(`${L}\n${L}  ${color.cyan(specifier)} → ${color.gray(localPath)}\n${L}\n`);
 
-	for (const change of changes) {
+	let lineOffset = 0;
+	const length = arraySum(changes, (change) => change.count ?? 0).toString().length + 1;
+
+	for (let i = 0; i < changes.length; i++) {
+		const change = changes[i];
+
+		const hasPreviousChange = changes[i - 1]?.added || changes[i - 1]?.removed;
+		const hasNextChange = changes[i + 1]?.added || changes[i + 1]?.removed;
+
 		if (!change.added && !change.removed) {
 			// show collapsed
-			if (
-				!options.expand &&
-				change.count !== undefined &&
-				change.count > options.maxUnchanged
-			) {
-				process.stdout.write(color.gray(`\n⌃\n${change.count} more unchanged\n⌄\n\n`));
+			if (!options.expand && change.count !== undefined && change.count > options.maxUnchanged) {
+				const ls = lines.get(change.value.trim());
+
+				let shownLines = 0;
+
+				if (hasNextChange) shownLines += options.maxUnchanged;
+				if (hasNextChange) shownLines += options.maxUnchanged;
+
+				// just show all
+				if (shownLines >= ls.length) {
+					process.stdout.write(
+						`${lines.join(ls, {
+							prefix: (line) => color.gray(`│ ${leftPadMin(`${line + 1 + lineOffset} `, length)} `),
+						})}\n`
+					);
+					lineOffset += change.count;
+					continue;
+				}
+
+				if (hasPreviousChange) {
+					process.stdout.write(
+						`${lines.join(ls.slice(0, options.maxUnchanged), {
+							prefix: (line) => color.gray(`│ ${leftPadMin(`${line + 1 + lineOffset} `, length)} `),
+						})}\n`
+					);
+				}
+
+				if (ls.length > shownLines) {
+					const count = ls.length - shownLines;
+					process.stdout.write(
+						`${lines.join(lines.get(color.gray(`+ ${count} more unchanged`)), {
+							prefix: () => `${L} ${leftPadMin("", length)} `,
+						})}\n`
+					);
+				}
+
+				if (hasNextChange) {
+					lineOffset = lineOffset + ls.length - options.maxUnchanged
+					process.stdout.write(
+						`${lines.join(ls.slice(ls.length - options.maxUnchanged), {
+							prefix: (line) => color.gray(`│ ${leftPadMin(`${line + 1 + lineOffset} `, length)} `),
+						})}\n`
+					);
+				}
+				lineOffset += change.count;
 				continue;
 			}
 
-			process.stdout.write(change.value);
+			process.stdout.write(
+				`${lines.join(lines.get(change.value.trimEnd()), {
+					prefix: (line) => color.gray(`│ ${leftPadMin(`${line + 1 + lineOffset} `, length)} `),
+				})}\n`
+			);
+			lineOffset += change.count ?? 0;
 
 			continue;
 		}
 
-		process.stdout.write(colorChange(change));
+		process.stdout.write(
+			`${lines.join(lines.get(colorChange({ ...change, value: change.value.trimEnd() })), {
+				prefix: (line) => color.gray(`│ ${leftPadMin(`${line + 1 + lineOffset} `, length)} `),
+			})}\n`
+		);
+
+		lineOffset += change.count ?? 0;
 	}
 };
 
