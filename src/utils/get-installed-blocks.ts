@@ -5,7 +5,6 @@ import type { Block } from './build';
 
 type InstalledBlock = {
 	specifier: `${string}/${string}`;
-	content: string;
 	path: string;
 };
 
@@ -21,12 +20,14 @@ const getInstalledBlocks = (blocks: Map<string, Block>, config: Config): Install
 	for (const [_, block] of blocks) {
 		const baseDir = path.join(config.path, block.category);
 
-		const blockPath = path.join(baseDir, `${block.name}.ts`);
+		let blockPath = path.join(baseDir, `${block.name}.ts`);
+		if (block.subdirectory) {
+			blockPath = path.join(baseDir, block.name);
+		}
 
 		if (fs.existsSync(blockPath))
 			installedBlocks.push({
 				specifier: `${block.category}/${block.name}`,
-				content: fs.readFileSync(blockPath).toString(),
 				path: blockPath,
 			});
 	}
