@@ -28,7 +28,7 @@ export type Category = v.InferInput<typeof categorySchema>;
 
 export type Block = v.InferInput<typeof blockSchema>;
 
-/** Using the provided path to the blocks folder builds the blocks into categories and also resolves localDependencies
+/** Using the provided path to the blocks folder builds the blocks into categories and also resolves dependencies
  *
  * @param blocksPath
  * @returns

@@ -45,7 +45,10 @@ const findDependencies = (
 	for (const relativeImport of relativeImports) {
 		const mod = relativeImport.getModuleSpecifierValue();
 
-		if (!isSubDir && mod.startsWith('./')) {
+		// do not add local deps that are within the same folder
+		if (isSubDir && mod.startsWith('./')) continue;
+
+		if (mod.startsWith('./')) {
 			localDeps.push(`${category}/${removeExtension(path.basename(mod))}`);
 			continue;
 		}
