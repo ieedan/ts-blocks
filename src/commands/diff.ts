@@ -6,7 +6,7 @@ import * as v from 'valibot';
 import { context } from '..';
 import { OUTPUT_FILE } from '../utils';
 import { type Block, type Category, buildBlocksDirectory } from '../utils/build';
-import { getConfig } from '../config';
+import { Config, getConfig } from '../config';
 import * as gitProviders from '../utils/git-providers';
 import { getInstalledBlocks } from '../utils/get-installed-blocks';
 import { diffLines, type Change } from 'diff';
@@ -16,6 +16,7 @@ const schema = v.object({
 	allow: v.boolean(),
 	expand: v.boolean(),
 	maxUnchanged: v.number(),
+	hideUnchanged: v.boolean(),
 });
 
 type Options = v.InferInput<typeof schema>;
@@ -24,6 +25,7 @@ const diff = new Command('diff')
 	.description('Compares local blocks to the blocks in the provided repository.')
 	.option('-A, --allow', 'Allow ts-blocks to download code from the provided repo.', false)
 	.option('-E, --expand', 'Expands the diff so you see everything.', false)
+	.option('--hide-unchanged', "Won't show files that didn't change.", false)
 	.option(
 		'--max-unchanged <lines>',
 		'Maximum unchanged lines that will show without being collapsed.',
@@ -84,7 +86,11 @@ const _diff = async (options: Options) => {
 
 	const installedBlocks = getInstalledBlocks(blocksMap, config);
 
+	let hasChanges = false;
+
 	for (const blockSpecifier of installedBlocks) {
+		let found = false;
+
 		for (const repo of repoPaths) {
 			// we unwrap because we already checked this
 			const providerInfo = (await gitProviders.getProviderInfo(repo)).unwrap();
@@ -94,6 +100,8 @@ const _diff = async (options: Options) => {
 			const tempBlock = blocksMap.get(fullSpecifier);
 
 			if (tempBlock === undefined) continue;
+
+			found = true;
 
 			const sourcePath = path.join(tempBlock.directory, `${tempBlock.name}.ts`);
 
@@ -107,26 +115,47 @@ const _diff = async (options: Options) => {
 
 			const remoteContent = await response.text();
 
-			const changes = diffLines(blockSpecifier.content, remoteContent);
+			let changes = diffLines(blockSpecifier.content, remoteContent);
+
+			// if theres a watermark we know that there will be a change every time so we just get rid of it
+			if (config.watermark) {
+				changes = changes.slice(1);
+			}
+
+			if (changes.length === 1 && !changes[0].added && !changes[0].removed) {
+				if (!options.hideUnchanged) {
+					process.stdout.write(
+						`\n${color.cyan(fullSpecifier)} → ${color.gray(blockSpecifier.path)} ${color.gray(
+							'(unchanged)'
+						)}\n\n`
+					);
+				}
+				break;
+			}
+
+			hasChanges = true;
 
 			printDiff(fullSpecifier, blockSpecifier.path, changes, options);
 
 			break;
 		}
+
+		if (!found) {
+			program.error(
+				color.red(`Invalid block! ${color.bold(blockSpecifier)} does not exist!`)
+			);
+		}
+	}
+
+	if (!hasChanges) {
+		process.stdout.write('\nUp to date!\n\n');
 	}
 
 	outro(color.green('All done!'));
 };
 
 const printDiff = (specifier: string, localPath: string, changes: Change[], options: Options) => {
-	if (changes.length === 1 && !changes[0].added && !changes[0].removed) {
-		process.stdout.write(
-			`\n${color.cyan(specifier)} → ${color.gray(localPath)}\n\n${color.gray('no change')}\n\n`
-		);
-		return;
-	}
-
-    process.stdout.write(`\n${color.cyan(specifier)} → ${color.gray(localPath)}\n\n`);
+	process.stdout.write(`\n${color.cyan(specifier)} → ${color.gray(localPath)}\n\n`);
 
 	for (const change of changes) {
 		if (!change.added && !change.removed) {
