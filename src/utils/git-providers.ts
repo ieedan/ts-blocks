@@ -1,13 +1,13 @@
-import { Octokit } from "octokit";
-import * as v from "valibot";
-import { Err, Ok, type Result } from "../blocks/types/result";
-import { type Category, categorySchema } from "./build";
-import { OUTPUT_FILE } from "./index";
+import { Octokit } from 'octokit';
+import * as v from 'valibot';
+import { Err, Ok, type Result } from '../blocks/types/result';
+import { type Category, categorySchema } from './build';
+import { OUTPUT_FILE } from './index';
 
 const octokit = new Octokit({});
 
 export type Info = {
-	refs: "tags" | "heads";
+	refs: 'tags' | 'heads';
 	url: string;
 	name: string;
 	repoName: string;
@@ -50,10 +50,10 @@ export interface Provider {
  *  `github/<owner>/<repo>/[tree]/[ref]`
  */
 const github: Provider = {
-	name: () => "github",
+	name: () => 'github',
 	resolveRaw: async (repoPath, resourcePath) => {
 		let info: Info;
-		if (typeof repoPath === "string") {
+		if (typeof repoPath === 'string') {
 			info = await github.info(repoPath);
 		} else {
 			info = repoPath;
@@ -65,32 +65,32 @@ const github: Provider = {
 		);
 	},
 	info: async (repoPath) => {
-		const repo = repoPath.replaceAll(/(https:\/\/github.com\/)|(github\/)/g, "");
+		const repo = repoPath.replaceAll(/(https:\/\/github.com\/)|(github\/)/g, '');
 
-		const [owner, repoName, ...rest] = repo.split("/");
+		const [owner, repoName, ...rest] = repo.split('/');
 
-		let ref = "main";
+		let ref = 'main';
 
-		if (rest[0] === "tree") {
+		if (rest[0] === 'tree') {
 			ref = rest[1];
 		}
 
 		// checks if the type of the ref is tags or heads
-		let refs: "heads" | "tags" = "heads";
+		let refs: 'heads' | 'tags' = 'heads';
 		// no need to check if ref is main
-		if (ref !== "main") {
+		if (ref !== 'main') {
 			try {
 				const { data: tags } = await octokit.rest.git.listMatchingRefs({
 					owner,
 					repo: repoName,
-					ref: "tags",
+					ref: 'tags',
 				});
 
 				if (tags.some((tag) => tag.ref === `refs/tags/${ref}`)) {
-					refs = "tags";
+					refs = 'tags';
 				}
 			} catch {
-				refs = "heads";
+				refs = 'heads';
 			}
 		}
 
@@ -105,7 +105,8 @@ const github: Provider = {
 		};
 	},
 	matches: (repoPath) =>
-		repoPath.toLowerCase().startsWith("https://github.com") || repoPath.toLowerCase().startsWith("github"),
+		repoPath.toLowerCase().startsWith('https://github.com') ||
+		repoPath.toLowerCase().startsWith('github'),
 };
 
 const getProviderInfo = async (repo: string): Promise<Result<Info, string>> => {
@@ -113,7 +114,7 @@ const getProviderInfo = async (repo: string): Promise<Result<Info, string>> => {
 		return Ok(await github.info(repo));
 	}
 
-	return Err("Only GitHub repositories are supported at this time!");
+	return Err('Only GitHub repositories are supported at this time!');
 };
 
 const getManifest = async (url: URL): Promise<Result<Category[], string>> => {

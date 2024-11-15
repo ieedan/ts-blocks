@@ -1,38 +1,39 @@
-import fs from "node:fs";
-import { cancel, intro, isCancel, outro, spinner, confirm } from "@clack/prompts";
-import color from "chalk";
-import { Command, program } from "commander";
-import * as v from "valibot";
-import { context } from "..";
-import { OUTPUT_FILE } from "../utils";
-import { type Block, type Category, buildBlocksDirectory } from "../utils/build";
-import { type Config, getConfig } from "../config";
-import * as gitProviders from "../utils/git-providers";
-import { getInstalledBlocks } from "../utils/get-installed-blocks";
-import { diffLines, type Change } from "diff";
-import * as lines from "../blocks/utilities/lines";
-import path from "node:path";
-import { arraySum } from "../blocks/utilities/array-sum";
-import { leftPadMin } from "../blocks/utilities/pad";
-import { getWatermark } from "../utils/get-watermark";
+import path from 'node:path';
+import { cancel, confirm, intro, isCancel, outro, spinner } from '@clack/prompts';
+import color from 'chalk';
+import { Command, program } from 'commander';
+import { type Change, diffLines } from 'diff';
+import * as v from 'valibot';
+import { context } from '..';
+import { arraySum } from '../blocks/utilities/array-sum';
+import * as lines from '../blocks/utilities/lines';
+import { leftPadMin } from '../blocks/utilities/pad';
+import { getConfig } from '../config';
+import { OUTPUT_FILE } from '../utils';
+import type { Block } from '../utils/build';
+import { getInstalledBlocks } from '../utils/get-installed-blocks';
+import { getWatermark } from '../utils/get-watermark';
+import * as gitProviders from '../utils/git-providers';
 
-const L = color.gray("│");
+const L = color.gray('│');
 
 const schema = v.object({
 	allow: v.boolean(),
 	expand: v.boolean(),
 	maxUnchanged: v.number(),
+	repo: v.optional(v.string()),
 });
 
 type Options = v.InferInput<typeof schema>;
 
-const diff = new Command("diff")
-	.description("Compares local blocks to the blocks in the provided repository.")
-	.option("-A, --allow", "Allow ts-blocks to download code from the provided repo.", false)
-	.option("-E, --expand", "Expands the diff so you see everything.", false)
+const diff = new Command('diff')
+	.description('Compares local blocks to the blocks in the provided repository.')
+	.option('-A, --allow', 'Allow ts-blocks to download code from the provided repo.', false)
+	.option('-E, --expand', 'Expands the diff so you see everything.', false)
+	.option('--repo <repo>', 'Repository to download the blocks from.')
 	.option(
-		"--max-unchanged <number>",
-		"Maximum unchanged lines that will show without being collapsed.",
+		'--max-unchanged <number>',
+		'Maximum unchanged lines that will show without being collapsed.',
 		(val) => Number.parseInt(val), // this is such a dumb api thing
 		3
 	)
@@ -45,7 +46,7 @@ const diff = new Command("diff")
 type RemoteBlock = Block & { sourceRepo: gitProviders.Info };
 
 const _diff = async (options: Options) => {
-	intro(`${color.bgBlueBright(" ts-blocks ")}${color.gray(` v${context.package.version} `)}`);
+	intro(`${color.bgBlueBright(' ts-blocks ')}${color.gray(` v${context.package.version} `)}`);
 
 	const loading = spinner();
 
@@ -56,9 +57,24 @@ const _diff = async (options: Options) => {
 
 	const blocksMap: Map<string, RemoteBlock> = new Map();
 
-	const repoPaths = config.repos;
+	let repoPaths = config.repos;
 
-	loading.start(`Fetching blocks from ${color.cyan(repoPaths.join(", "))}`);
+	// we just want to override all others if supplied via the CLI
+	if (options.repo) repoPaths = [options.repo];
+
+	if (!options.allow && options.repo) {
+		const result = await confirm({
+			message: `Allow ${color.cyan('ts-blocks')} to download and run code from ${color.cyan(options.repo)}?`,
+			initialValue: true,
+		});
+
+		if (isCancel(result) || !result) {
+			cancel('Canceled!');
+			process.exit(0);
+		}
+	}
+
+	loading.start(`Fetching blocks from ${color.cyan(repoPaths.join(', '))}`);
 
 	for (const repo of repoPaths) {
 		const providerInfo: gitProviders.Info = (await gitProviders.getProviderInfo(repo)).match(
@@ -86,7 +102,7 @@ const _diff = async (options: Options) => {
 		}
 	}
 
-	loading.stop(`Retrieved blocks from ${color.cyan(repoPaths.join(", "))}`);
+	loading.stop(`Retrieved blocks from ${color.cyan(repoPaths.join(', '))}`);
 
 	const installedBlocks = getInstalledBlocks(blocksMap, config);
 
@@ -129,11 +145,13 @@ const _diff = async (options: Options) => {
 		}
 
 		if (!found) {
-			program.error(color.red(`Invalid block! ${color.bold(blockSpecifier)} does not exist!`));
+			program.error(
+				color.red(`Invalid block! ${color.bold(blockSpecifier)} does not exist!`)
+			);
 		}
 	}
 
-	outro(color.green("All done!"));
+	outro(color.green('All done!'));
 };
 
 const printDiff = (specifier: string, localPath: string, changes: Change[], options: Options) => {
@@ -143,7 +161,7 @@ const printDiff = (specifier: string, localPath: string, changes: Change[], opti
 
 	if (changes.length === 1 && !changes[0].added && !changes[0].removed) {
 		process.stdout.write(
-			`${L}  ${color.cyan(specifier)} → ${color.gray(localPath)} ${color.gray("(unchanged)")}\n`
+			`${L}  ${color.cyan(specifier)} → ${color.gray(localPath)} ${color.gray('(unchanged)')}\n`
 		);
 		return;
 	}
@@ -151,13 +169,14 @@ const printDiff = (specifier: string, localPath: string, changes: Change[], opti
 	const totalChanges = changes.filter((a) => a.added).length;
 
 	process.stdout.write(
-		`${L}\n${L}  ${color.cyan(specifier)} → ${color.gray(localPath)} (${totalChanges} change${
-			totalChanges === 1 ? "" : "s"
+		`${L}  ${color.cyan(specifier)} → ${color.gray(localPath)} (${totalChanges} change${
+			totalChanges === 1 ? '' : 's'
 		})\n${L}\n`
 	);
 
 	/** Provides the line number prefix */
-	const linePrefix = (line: number): string => color.gray(`│ ${leftPadMin(`${line + 1 + lineOffset} `, length)} `);
+	const linePrefix = (line: number): string =>
+		color.gray(`│ ${leftPadMin(`${line + 1 + lineOffset} `, length)} `);
 
 	for (let i = 0; i < changes.length; i++) {
 		const change = changes[i];
@@ -167,7 +186,11 @@ const printDiff = (specifier: string, localPath: string, changes: Change[], opti
 
 		if (!change.added && !change.removed) {
 			// show collapsed
-			if (!options.expand && change.count !== undefined && change.count > options.maxUnchanged) {
+			if (
+				!options.expand &&
+				change.count !== undefined &&
+				change.count > options.maxUnchanged
+			) {
 				const prevLineOffset = lineOffset;
 				const ls = lines.get(change.value.trimEnd());
 
@@ -200,9 +223,13 @@ const printDiff = (specifier: string, localPath: string, changes: Change[], opti
 					const count = ls.length - shownLines;
 					process.stdout.write(
 						`${lines.join(
-							lines.get(color.gray(`+ ${count} more unchanged (${color.italic("-E to expand")})`)),
+							lines.get(
+								color.gray(
+									`+ ${count} more unchanged (${color.italic('-E to expand')})`
+								)
+							),
 							{
-								prefix: () => `${L} ${leftPadMin("", length)} `,
+								prefix: () => `${L} ${leftPadMin('', length)} `,
 							}
 						)}\n`
 					);
