@@ -1,5 +1,11 @@
 # ts-blocks
 
+## 1.0.0-next.16
+
+### Patch Changes
+
+- fdc0036: Fixes `test` command to work for subdirectories.
+
 ## 1.0.0-next.15
 
 ### Patch Changes
