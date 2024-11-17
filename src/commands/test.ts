@@ -278,12 +278,31 @@ const _test = async (blockNames: string[], options: Options) => {
 			for (const importDeclaration of tempFile.getImportDeclarations()) {
 				const moduleSpecifier = importDeclaration.getModuleSpecifierValue();
 
-				if (moduleSpecifier.startsWith(`./${block.name}`)) {
-					const newModuleSpecifier = moduleSpecifier.replace(
-						`${block.name}`,
-						blockFilePath
-					);
-					importDeclaration.setModuleSpecifier(newModuleSpecifier);
+				let newModuleSpecifier: string | undefined = undefined;
+
+				// if the module is relative resolve it relative to the new path of the tests
+				if (moduleSpecifier.startsWith('.')) {
+					if (block.subdirectory) {
+						newModuleSpecifier = path.join(
+							'../',
+							config.path,
+							block.category,
+							block.name,
+							moduleSpecifier
+						);
+					} else {
+						newModuleSpecifier = path.join(
+							'../',
+							config.path,
+							block.category,
+							moduleSpecifier
+						);
+					}
+				}
+
+				if (newModuleSpecifier) {
+					// we need to add the replace so that paths are correctly translated on windows
+					importDeclaration.setModuleSpecifier(newModuleSpecifier.replaceAll(/\\/g, '/'));
 				}
 			}
 		}
