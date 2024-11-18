@@ -91,30 +91,6 @@ const _init = async (options: Options) => {
 		}
 	}
 
-	let isDeno = false;
-
-	// only check for deno the first time
-	if (initialConfig.isErr()) {
-		// checks if this is a Deno project
-		let isDeno = fs.existsSync('deno.json');
-
-		if (!isDeno && fs.existsSync('jsr.json')) {
-			const result = await confirm({
-				message: `${color.cyan('jsr.json')} detected. Are you using Deno?`,
-				initialValue: true,
-			});
-
-			if (isCancel(result)) {
-				cancel('Canceled!');
-				process.exit(0);
-			}
-
-			isDeno = result;
-		}
-	} else {
-		isDeno = initialConfig.unwrap().imports === 'deno';
-	}
-
 	const config: Config = {
 		$schema: `https://unpkg.com/ts-blocks@${context.package.version}/schema.json`,
 		repos: options.repos,
@@ -123,7 +99,6 @@ const _init = async (options: Options) => {
 			initialConfig.isOk() && options.tests === undefined
 				? initialConfig.unwrap().includeTests
 				: (options.tests ?? false),
-		imports: isDeno ? 'deno' : 'node',
 		watermark: options.watermark,
 	};
 

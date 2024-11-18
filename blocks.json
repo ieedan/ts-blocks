@@ -3,6 +3,5 @@
 	"repos": ["github/ieedan/std"],
 	"path": "src/blocks",
 	"includeTests": false,
-	"imports": "node",
 	"watermark": true
 }

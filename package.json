@@ -7,12 +7,7 @@
 		"type": "git",
 		"url": "git+https://github.com/ieedan/ts-blocks"
 	},
-	"keywords": [
-		"blocks",
-		"typescript",
-		"tested",
-		"documented"
-	],
+	"keywords": ["blocks", "typescript", "tested", "documented"],
 	"author": "Aidan Bleser",
 	"license": "MIT",
 	"bugs": {
@@ -40,7 +35,8 @@
 		"check": "biome check",
 		"ci:release": "tsup && changeset publish",
 		"changeset": "changeset",
-		"test": "vitest"
+		"test": "vitest",
+		"check:types": "tsc"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "1.9.4",
