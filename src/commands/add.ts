@@ -319,6 +319,7 @@ const _add = async (blockNames: string[], options: Options) => {
 	const hasDependencies = deps.size > 0 || devDeps.size > 0;
 
 	if (hasDependencies) {
+		let install = options.yes;
 		if (!options.yes) {
 			const result = await confirm({
 				message: 'Would you like to install dependencies?',
@@ -330,46 +331,52 @@ const _add = async (blockNames: string[], options: Options) => {
 				process.exit(0);
 			}
 
-			if (!result) {
-				// next steps if they didn't install dependencies
-				let steps = [];
+			install = result;
+		}
 
-				if (deps.size > 0) {
-					const cmd = resolveCommand(pm, 'install', [...deps]);
+		if (install) {
+			if (deps.size > 0) {
+				await installDependencies(Array.from(deps), false);
+			}
 
-					steps.push(
-						`Install dependencies \`${color.cyan(`${cmd?.command} ${cmd?.args.join(' ')}`)}\``
-					);
-				}
-
-				if (devDeps.size > 0) {
-					const cmd = resolveCommand(pm, 'install', [...devDeps, '-D']);
-
-					steps.push(
-						`Install dev dependencies \`${color.cyan(`${cmd?.command} ${cmd?.args.join(' ')}`)}\``
-					);
-				}
-
-				// put steps with numbers above here
-				steps = steps.map((step, i) => `${i + 1}. ${step}`);
-
-				steps.push('');
-
-				steps.push(`Import the blocks from \`${color.cyan(config.path)}\``);
-
-				const next = nextSteps(steps);
-
-				process.stdout.write(next);
-			} else {
-				if (deps.size > 0) {
-					await installDependencies(Array.from(deps), false);
-				}
-
-				if (devDeps.size > 0) {
-					await installDependencies(Array.from(devDeps), true);
-				}
+			if (devDeps.size > 0) {
+				await installDependencies(Array.from(devDeps), true);
 			}
 		}
+
+		// next steps if they didn't install dependencies
+		let steps = [];
+
+		if (!install) {
+			if (deps.size > 0) {
+				const cmd = resolveCommand(pm, 'install', [...deps]);
+
+				steps.push(
+					`Install dependencies \`${color.cyan(`${cmd?.command} ${cmd?.args.join(' ')}`)}\``
+				);
+			}
+
+			if (devDeps.size > 0) {
+				const cmd = resolveCommand(pm, 'install', [...devDeps, '-D']);
+
+				steps.push(
+					`Install dev dependencies \`${color.cyan(`${cmd?.command} ${cmd?.args.join(' ')}`)}\``
+				);
+			}
+		}
+
+		// put steps with numbers above here
+		steps = steps.map((step, i) => `${i + 1}. ${step}`);
+
+		if (!install) {
+			steps.push('');
+		}
+
+		steps.push(`Import the blocks from \`${color.cyan(config.path)}\``);
+
+		const next = nextSteps(steps);
+
+		process.stdout.write(next);
 	}
 
 	outro(color.green('All done!'));
