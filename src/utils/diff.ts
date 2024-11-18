@@ -1,8 +1,8 @@
-import type { Change } from "diff";
-import { arraySum } from "../blocks/utilities/array-sum";
-import * as lines from "../blocks/utilities/lines";
-import { leftPadMin } from "../blocks/utilities/pad";
-import color from "chalk";
+import color from 'chalk';
+import type { Change } from 'diff';
+import { arraySum } from '../blocks/utilities/array-sum';
+import * as lines from '../blocks/utilities/lines';
+import { leftPadMin } from '../blocks/utilities/pad';
 
 type Options = {
 	/** The source file */
@@ -37,7 +37,7 @@ const formatDiff = ({
 	onUnchanged,
 	intro,
 }: Options): string => {
-	let result = "";
+	let result = '';
 
 	const length = arraySum(changes, (change) => change.count ?? 0).toString().length + 1;
 
@@ -58,10 +58,22 @@ const formatDiff = ({
 		});
 	}
 
-	result += intro({ from, to, changes, expand, maxUnchanged, colorAdded, colorRemoved, prefix, onUnchanged, intro });
+	result += intro({
+		from,
+		to,
+		changes,
+		expand,
+		maxUnchanged,
+		colorAdded,
+		colorRemoved,
+		prefix,
+		onUnchanged,
+		intro,
+	});
 
 	/** Provides the line number prefix */
-	const linePrefix = (line: number): string => color.gray(`${prefix?.() ?? ""}${leftPadMin(`${line + 1 + lineOffset} `, length)} `);
+	const linePrefix = (line: number): string =>
+		color.gray(`${prefix?.() ?? ''}${leftPadMin(`${line + 1 + lineOffset} `, length)} `);
 
 	for (let i = 0; i < changes.length; i++) {
 		const change = changes[i];
@@ -99,9 +111,13 @@ const formatDiff = ({
 				if (ls.length > shownLines) {
 					const count = ls.length - shownLines;
 					result += `${lines.join(
-						lines.get(color.gray(`+ ${count} more unchanged (${color.italic("-E to expand")})`)),
+						lines.get(
+							color.gray(
+								`+ ${count} more unchanged (${color.italic('-E to expand')})`
+							)
+						),
 						{
-							prefix: () => `${prefix?.() ?? ""}${leftPadMin(" ", length)} `,
+							prefix: () => `${prefix?.() ?? ''}${leftPadMin(' ', length)} `,
 						}
 					)}\n`;
 				}
