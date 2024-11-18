@@ -6,12 +6,10 @@ import { Command, program } from 'commander';
 import { type Change, diffLines } from 'diff';
 import * as v from 'valibot';
 import { context } from '..';
-import { arraySum } from '../blocks/utilities/array-sum';
-import * as lines from '../blocks/utilities/lines';
-import { leftPadMin } from '../blocks/utilities/pad';
 import { getConfig } from '../config';
 import { OUTPUT_FILE } from '../utils';
 import type { Block } from '../utils/build';
+import { formatDiff } from '../utils/diff';
 import { getInstalledBlocks } from '../utils/get-installed-blocks';
 import { getWatermark } from '../utils/get-watermark';
 import * as gitProviders from '../utils/git-providers';
@@ -160,17 +158,34 @@ const _diff = async (options: Options) => {
 
 				const changes = diffLines(fileContent, `${watermark}${remoteContent}`);
 
-				printDiff(
-					path
-						.join(
-							`${providerInfo.name}/${providerInfo.owner}/${providerInfo.repoName}`,
-							sourcePath
-						)
-						.replaceAll('\\', '/'),
-					localPath.replaceAll('\\', '/'),
+				const from = path
+					.join(
+						`${providerInfo.name}/${providerInfo.owner}/${providerInfo.repoName}`,
+						sourcePath
+					)
+					.replaceAll('\\', '/');
+
+				const to = localPath.replaceAll('\\', '/');
+
+				const formattedDiff = formatDiff({
+					from,
+					to,
 					changes,
-					options
-				);
+					expand: options.expand,
+					maxUnchanged: options.maxUnchanged,
+					prefix: () => `${L} `,
+					onUnchanged: ({ from, to, prefix }) =>
+						`${prefix?.() ?? ''}${color.cyan(from)} → ${color.gray(to)} ${color.gray('(unchanged)')}\n`,
+					intro: ({ from, to, changes, prefix }) => {
+						const totalChanges = changes.filter((a) => a.added).length;
+
+						return `${prefix?.() ?? ''} ${color.cyan(from)} → ${color.gray(to)} (${totalChanges} change${
+							totalChanges === 1 ? '' : 's'
+						})\n${prefix?.() ?? ''}\n`;
+					},
+				});
+
+				process.stdout.write(formattedDiff);
 			}
 
 			break;
@@ -184,133 +199,6 @@ const _diff = async (options: Options) => {
 	}
 
 	outro(color.green('All done!'));
-};
-
-const printDiff = (specifier: string, localPath: string, changes: Change[], options: Options) => {
-	const length = arraySum(changes, (change) => change.count ?? 0).toString().length + 1;
-
-	let lineOffset = 0;
-
-	if (changes.length === 1 && !changes[0].added && !changes[0].removed) {
-		process.stdout.write(
-			`${L}  ${color.cyan(specifier)} → ${color.gray(localPath)} ${color.gray('(unchanged)')}\n`
-		);
-		return;
-	}
-
-	const totalChanges = changes.filter((a) => a.added).length;
-
-	process.stdout.write(
-		`${L}  ${color.cyan(specifier)} → ${color.gray(localPath)} (${totalChanges} change${
-			totalChanges === 1 ? '' : 's'
-		})\n${L}\n`
-	);
-
-	/** Provides the line number prefix */
-	const linePrefix = (line: number): string =>
-		color.gray(`│ ${leftPadMin(`${line + 1 + lineOffset} `, length)} `);
-
-	for (let i = 0; i < changes.length; i++) {
-		const change = changes[i];
-
-		const hasPreviousChange = changes[i - 1]?.added || changes[i - 1]?.removed;
-		const hasNextChange = changes[i + 1]?.added || changes[i + 1]?.removed;
-
-		if (!change.added && !change.removed) {
-			// show collapsed
-			if (
-				!options.expand &&
-				change.count !== undefined &&
-				change.count > options.maxUnchanged
-			) {
-				const prevLineOffset = lineOffset;
-				const ls = lines.get(change.value.trimEnd());
-
-				let shownLines = 0;
-
-				if (hasNextChange) shownLines += options.maxUnchanged;
-				if (hasPreviousChange) shownLines += options.maxUnchanged;
-
-				// just show all if we are going to show more than we have
-				if (shownLines >= ls.length) {
-					process.stdout.write(
-						`${lines.join(ls, {
-							prefix: linePrefix,
-						})}\n`
-					);
-					lineOffset += ls.length;
-					continue;
-				}
-
-				// this writes the top few lines
-				if (hasPreviousChange) {
-					process.stdout.write(
-						`${lines.join(ls.slice(0, options.maxUnchanged), {
-							prefix: linePrefix,
-						})}\n`
-					);
-				}
-
-				if (ls.length > shownLines) {
-					const count = ls.length - shownLines;
-					process.stdout.write(
-						`${lines.join(
-							lines.get(
-								color.gray(
-									`+ ${count} more unchanged (${color.italic('-E to expand')})`
-								)
-							),
-							{
-								prefix: () => `${L} ${leftPadMin('', length)} `,
-							}
-						)}\n`
-					);
-				}
-
-				if (hasNextChange) {
-					lineOffset = lineOffset + ls.length - options.maxUnchanged;
-					process.stdout.write(
-						`${lines.join(ls.slice(ls.length - options.maxUnchanged), {
-							prefix: linePrefix,
-						})}\n`
-					);
-				}
-
-				// resets the line offset
-				lineOffset = prevLineOffset + change.count;
-				continue;
-			}
-
-			// show expanded
-
-			process.stdout.write(
-				`${lines.join(lines.get(change.value.trimEnd()), {
-					prefix: linePrefix,
-				})}\n`
-			);
-			lineOffset += change.count ?? 0;
-
-			continue;
-		}
-
-		process.stdout.write(
-			`${lines.join(lines.get(colorChange({ ...change, value: change.value.trimEnd() })), {
-				prefix: linePrefix,
-			})}\n`
-		);
-
-		if (!change.removed) {
-			lineOffset += change.count ?? 0;
-		}
-	}
-};
-
-const colorChange = (change: Change) => {
-	if (change.added) {
-		return color.green(change.value);
-	}
-
-	return color.red(change.value);
 };
 
 export { diff };
