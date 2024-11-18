@@ -10,14 +10,14 @@ import { detect } from 'package-manager-detector/detect';
 import * as v from 'valibot';
 import { context } from '..';
 import { getConfig } from '../config';
-import { isTestFile, type Block } from '../utils/build';
+import { type Block, isTestFile } from '../utils/build';
 import { getInstalledBlocks } from '../utils/get-installed-blocks';
 import { getWatermark } from '../utils/get-watermark';
 import * as gitProviders from '../utils/git-providers';
 import { INFO } from '../utils/index';
 import { OUTPUT_FILE } from '../utils/index';
-import { type Task, nextSteps, runTasks } from '../utils/prompts';
 import { languages } from '../utils/language-support';
+import { type Task, nextSteps, runTasks } from '../utils/prompts';
 
 const schema = v.object({
 	yes: v.boolean(),

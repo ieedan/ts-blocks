@@ -1,4 +1,5 @@
 import fs from 'node:fs';
+import path from 'node:path';
 import { intro, outro, spinner } from '@clack/prompts';
 import color from 'chalk';
 import { Command } from 'commander';
@@ -6,7 +7,6 @@ import * as v from 'valibot';
 import { context } from '..';
 import { OUTPUT_FILE } from '../utils';
 import { type Category, buildBlocksDirectory } from '../utils/build';
-import path from 'node:path';
 
 const schema = v.object({
 	verbose: v.boolean(),

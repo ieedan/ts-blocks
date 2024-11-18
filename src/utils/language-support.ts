@@ -1,11 +1,11 @@
 import fs from 'node:fs';
 import { builtinModules } from 'node:module';
 import path from 'node:path';
-import { Project } from 'ts-morph';
-import { findNearestPackageJson } from './package';
-import * as sv from 'svelte/compiler';
 import { walk } from 'estree-walker';
+import * as sv from 'svelte/compiler';
+import { Project } from 'ts-morph';
 import { Err, Ok, type Result } from '../blocks/types/result';
+import { findNearestPackageJson } from './package';
 
 export type ResolvedDependencies = {
 	local: string[];

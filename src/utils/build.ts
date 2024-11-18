@@ -3,8 +3,8 @@ import path from 'node:path';
 import color from 'chalk';
 import { program } from 'commander';
 import * as v from 'valibot';
-import { languages } from './language-support';
 import { WARN } from '.';
+import { languages } from './language-support';
 
 export const blockSchema = v.object({
 	name: v.string(),

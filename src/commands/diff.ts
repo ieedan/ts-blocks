@@ -8,7 +8,7 @@ import * as v from 'valibot';
 import { context } from '..';
 import { getConfig } from '../config';
 import { OUTPUT_FILE } from '../utils';
-import { isTestFile, type Block } from '../utils/build';
+import { type Block, isTestFile } from '../utils/build';
 import { formatDiff } from '../utils/diff';
 import { getInstalledBlocks } from '../utils/get-installed-blocks';
 import { getWatermark } from '../utils/get-watermark';
