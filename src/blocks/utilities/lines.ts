@@ -15,7 +15,7 @@ import { leftPadMin } from './pad';
  */
 export const NEW_LINE_REGEX = /\n|\r\n/g;
 
-/** Splits str into an arry of lines.
+/** Splits str into an array of lines.
  *
  * @param str
  * @returns
