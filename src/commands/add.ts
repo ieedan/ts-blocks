@@ -10,7 +10,7 @@ import { detect } from 'package-manager-detector/detect';
 import * as v from 'valibot';
 import { context } from '..';
 import { getConfig } from '../config';
-import type { Block } from '../utils/build';
+import { isTestFile, type Block } from '../utils/build';
 import { getInstalledBlocks } from '../utils/get-installed-blocks';
 import { getWatermark } from '../utils/get-watermark';
 import * as gitProviders from '../utils/git-providers';
@@ -85,7 +85,10 @@ const _add = async (blockNames: string[], options: Options) => {
 	for (const repo of repoPaths) {
 		const providerInfo: gitProviders.Info = (await gitProviders.getProviderInfo(repo)).match(
 			(info) => info,
-			(err) => program.error(color.red(err))
+			(err) => {
+				loading.stop(`Failed fetching blocks from ${color.cyan(repo)}`);
+				program.error(color.red(err))
+			}
 		);
 
 		const manifestUrl = await providerInfo.provider.resolveRaw(providerInfo, OUTPUT_FILE);
@@ -94,7 +97,10 @@ const _add = async (blockNames: string[], options: Options) => {
 
 		const categories = (await gitProviders.getManifest(manifestUrl)).match(
 			(val) => val,
-			(err) => program.error(color.red(err))
+			(err) => {
+				loading.stop(`Failed fetching blocks from ${color.cyan(repo)}`);
+				program.error(color.red(err))
+			}
 		);
 
 		for (const category of categories) {
@@ -322,7 +328,7 @@ const _add = async (blockNames: string[], options: Options) => {
 				};
 
 				for (const sourceFile of block.files) {
-					if (!config.includeTests && sourceFile.endsWith('test.ts')) continue;
+					if (!config.includeTests && isTestFile(sourceFile)) continue;
 
 					const sourcePath = path.join(block.directory, sourceFile);
 
