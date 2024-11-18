@@ -20,7 +20,7 @@ const getInstalledBlocks = (blocks: Map<string, Block>, config: Config): Install
 	for (const [_, block] of blocks) {
 		const baseDir = path.join(config.path, block.category);
 
-		let blockPath = path.join(baseDir, `${block.name}.ts`);
+		let blockPath = path.join(baseDir, block.files[0]);
 		if (block.subdirectory) {
 			blockPath = path.join(baseDir, block.name);
 		}

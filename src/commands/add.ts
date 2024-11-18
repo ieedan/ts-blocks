@@ -162,109 +162,11 @@ const _add = async (blockNames: string[], options: Options) => {
 		installingBlockNames = promptResult as string[];
 	}
 
-	const installingBlocks: {
-		name: string;
-		subDependency: boolean;
-		block: RemoteBlock;
-	}[] = [];
-
 	verbose(`Installing blocks ${color.cyan(installingBlockNames.join(", "))}`);
 
 	if (options.verbose) console.log("Blocks map: ", blocksMap);
 
-	for (const blockSpecifier of installingBlockNames) {
-		let block: RemoteBlock | undefined = undefined;
-
-		// if the block starts with github (or another provider) we know it has been resolved
-		if (!blockSpecifier.startsWith("github")) {
-			if (repoPaths.length === 0) {
-				program.error(
-					color.red(
-						`If your config doesn't repos then you must provide the repo in the block specifier ex: \`${color.bold(
-							`github/<owner>/<name>/${blockSpecifier}`
-						)}\`!`
-					)
-				);
-			}
-
-			for (const repo of repoPaths) {
-				// we unwrap because we already checked this
-				const providerInfo = (await gitProviders.getProviderInfo(repo)).unwrap();
-
-				const tempBlock = blocksMap.get(
-					`${providerInfo.name}/${providerInfo.owner}/${providerInfo.repoName}/${blockSpecifier}`
-				);
-
-				if (tempBlock === undefined) continue;
-
-				block = tempBlock;
-
-				break;
-			}
-		} else {
-			if (repoPaths.length === 0) {
-				const [providerName, owner, repoName, ...rest] = blockSpecifier.split("/");
-
-				let repo: string;
-				// if rest is greater than 2 it isn't the block specifier so it is part of the path
-				if (rest.length > 2) {
-					repo = `${providerName}/${owner}/${repoName}/${rest.join("/")}`;
-				} else {
-					repo = `${providerName}/${owner}/${repoName}`;
-				}
-
-				const providerInfo = (await gitProviders.getProviderInfo(repo)).match(
-					(val) => val,
-					(err) => program.error(color.red(err))
-				);
-
-				const manifestUrl = await providerInfo.provider.resolveRaw(providerInfo, OUTPUT_FILE);
-
-				const categories = (await gitProviders.getManifest(manifestUrl)).match(
-					(val) => val,
-					(err) => program.error(color.red(err))
-				);
-
-				for (const category of categories) {
-					for (const block of category.blocks) {
-						blocksMap.set(
-							`${providerInfo.name}/${providerInfo.owner}/${providerInfo.repoName}/${category.name}/${block.name}`,
-							{
-								...block,
-								sourceRepo: providerInfo,
-							}
-						);
-					}
-				}
-			}
-
-			block = blocksMap.get(blockSpecifier);
-		}
-
-		if (!block) {
-			program.error(color.red(`Invalid block! ${color.bold(blockSpecifier)} does not exist!`));
-		}
-
-		const providerInfo = block.sourceRepo;
-
-		installingBlocks.push({ name: blockSpecifier, subDependency: false, block });
-
-		if (block.localDependencies && block.localDependencies.length > 0) {
-			for (const dep of block.localDependencies) {
-				if (installingBlocks.find(({ name }) => name === dep)) continue;
-
-				const block = blocksMap.get(
-					`${providerInfo.name}/${providerInfo.owner}/${providerInfo.repoName}/${dep}`
-				);
-
-				if (!block) {
-					program.error(color.red(`Invalid block! ${color.bold(dep)} does not exist!`));
-				}
-
-				installingBlocks.push({ name: dep, subDependency: true, block });
-			}
-		}
-	}
+	const installingBlocks = await getBlocks(installingBlockNames, blocksMap, repoPaths);
 
 	const pm = (await detect({ cwd: process.cwd() }))?.agent ?? "npm";
 
@@ -285,7 +187,7 @@ const _add = async (blockNames: string[], options: Options) => {
 		verbose(`Creating directory ${color.bold(directory)}`);
 
 		const blockExists =
-			(!block.subdirectory && fs.existsSync(path.join(directory, `${block.name}.ts`))) ||
+			(!block.subdirectory && fs.existsSync(path.join(directory, block.files[0]))) ||
 			(block.subdirectory && fs.existsSync(path.join(directory, block.name)));
 
 		if (blockExists && !options.yes) {
@@ -464,6 +366,103 @@ const _add = async (blockNames: string[], options: Options) => {
 	}
 
 	outro(color.green("All done!"));
+};
+
+type InstallingBlock = {
+	name: string;
+	subDependency: boolean;
+	block: RemoteBlock;
+};
+
+const getBlocks = async (
+	blockSpecifiers: string[],
+	blocksMap: Map<string, RemoteBlock>,
+	repoPaths: string[],
+	blocks: InstallingBlock[] = []
+): Promise<InstallingBlock[]> => {
+	for (const blockSpecifier of blockSpecifiers) {
+		let block: RemoteBlock | undefined = undefined;
+
+		// if the block starts with github (or another provider) we know it has been resolved
+		if (!blockSpecifier.startsWith("github")) {
+			if (repoPaths.length === 0) {
+				program.error(
+					color.red(
+						`If your config doesn't repos then you must provide the repo in the block specifier ex: \`${color.bold(
+							`github/<owner>/<name>/${blockSpecifier}`
+						)}\`!`
+					)
+				);
+			}
+
+			for (const repo of repoPaths) {
+				// we unwrap because we already checked this
+				const providerInfo = (await gitProviders.getProviderInfo(repo)).unwrap();
+
+				const tempBlock = blocksMap.get(
+					`${providerInfo.name}/${providerInfo.owner}/${providerInfo.repoName}/${blockSpecifier}`
+				);
+
+				if (tempBlock === undefined) continue;
+
+				block = tempBlock;
+
+				break;
+			}
+		} else {
+			if (repoPaths.length === 0) {
+				const [providerName, owner, repoName, ...rest] = blockSpecifier.split("/");
+
+				let repo: string;
+				// if rest is greater than 2 it isn't the block specifier so it is part of the path
+				if (rest.length > 2) {
+					repo = `${providerName}/${owner}/${repoName}/${rest.join("/")}`;
+				} else {
+					repo = `${providerName}/${owner}/${repoName}`;
+				}
+
+				const providerInfo = (await gitProviders.getProviderInfo(repo)).match(
+					(val) => val,
+					(err) => program.error(color.red(err))
+				);
+
+				const manifestUrl = await providerInfo.provider.resolveRaw(providerInfo, OUTPUT_FILE);
+
+				const categories = (await gitProviders.getManifest(manifestUrl)).match(
+					(val) => val,
+					(err) => program.error(color.red(err))
+				);
+
+				for (const category of categories) {
+					for (const block of category.blocks) {
+						blocksMap.set(
+							`${providerInfo.name}/${providerInfo.owner}/${providerInfo.repoName}/${category.name}/${block.name}`,
+							{
+								...block,
+								sourceRepo: providerInfo,
+							}
+						);
+					}
+				}
+			}
+
+			block = blocksMap.get(blockSpecifier);
+		}
+
+		if (!block) {
+			program.error(color.red(`Invalid block! ${color.bold(blockSpecifier)} does not exist!`));
+		}
+
+		blocks.push({ name: blockSpecifier, subDependency: false, block });
+
+		if (block.localDependencies && block.localDependencies.length > 0) {
+			const subDeps = await getBlocks(block.localDependencies, blocksMap, repoPaths, blocks);
+
+			blocks.push(...subDeps);
+		}
+	}
+
+	return blocks;
 };
 
 export { add };

@@ -8,7 +8,7 @@ import * as v from "valibot";
 import { context } from "..";
 import { getConfig } from "../config";
 import { OUTPUT_FILE } from "../utils";
-import type { Block } from "../utils/build";
+import { isTestFile, type Block } from "../utils/build";
 import { formatDiff } from "../utils/diff";
 import { getInstalledBlocks } from "../utils/get-installed-blocks";
 import { getWatermark } from "../utils/get-watermark";
@@ -129,7 +129,7 @@ const _diff = async (options: Options) => {
 
 			for (const file of block.files) {
 				// skip test files if not included
-				if (!config.includeTests && file.endsWith("test.ts")) continue;
+				if (!config.includeTests && isTestFile(file)) continue;
 
 				process.stdout.write(`${L}\n`);
 
