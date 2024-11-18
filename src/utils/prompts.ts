@@ -1,13 +1,13 @@
-import { spinner } from "@clack/prompts";
-import color from "chalk";
-import { rightPad, rightPadMin } from "../blocks/utilities/pad";
-import { stripAsni } from "../blocks/utilities/strip-ansi";
+import { spinner } from '@clack/prompts';
+import color from 'chalk';
+import { rightPad, rightPadMin } from '../blocks/utilities/pad';
+import { stripAsni } from '../blocks/utilities/strip-ansi';
 
-const VERTICAL_BORDER = color.gray("│");
-const HORIZONTAL_BORDER = color.gray("─");
-const TOP_RIGHT_CORNER = color.gray("┐");
-const BOTTOM_RIGHT_CORNER = color.gray("┘");
-const JUNCTION_RIGHT = color.gray("├");
+const VERTICAL_BORDER = color.gray('│');
+const HORIZONTAL_BORDER = color.gray('─');
+const TOP_RIGHT_CORNER = color.gray('┐');
+const BOTTOM_RIGHT_CORNER = color.gray('┘');
+const JUNCTION_RIGHT = color.gray('├');
 // we may need these eventually
 // const TOP_LEFT_CORNER = color.gray("┌");
 // const BOTTOM_LEFT_CORNER = color.gray("└");
@@ -43,7 +43,7 @@ const nextSteps = (steps: string[]): string => {
 		if (reset.length > max) max = reset.length;
 	});
 
-	const NEXT_STEPS = "Next Steps";
+	const NEXT_STEPS = 'Next Steps';
 
 	let result = `${VERTICAL_BORDER}\n`;
 
@@ -52,13 +52,13 @@ const nextSteps = (steps: string[]): string => {
 		max - NEXT_STEPS.length - 1
 	)}${TOP_RIGHT_CORNER}\n`;
 
-	result += `${VERTICAL_BORDER} ${" ".repeat(max)} ${VERTICAL_BORDER}\n`;
+	result += `${VERTICAL_BORDER} ${' '.repeat(max)} ${VERTICAL_BORDER}\n`;
 
 	steps.map((step) => {
 		result += `${VERTICAL_BORDER}  ${rightPadMin(step, max - 1)} ${VERTICAL_BORDER}\n`;
 	});
 
-	result += `${VERTICAL_BORDER} ${" ".repeat(max)} ${VERTICAL_BORDER}\n`;
+	result += `${VERTICAL_BORDER} ${' '.repeat(max)} ${VERTICAL_BORDER}\n`;
 
 	// bottom
 	result += `${JUNCTION_RIGHT}${HORIZONTAL_BORDER.repeat(max + 2)}${BOTTOM_RIGHT_CORNER}\n`;

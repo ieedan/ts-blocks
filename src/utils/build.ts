@@ -1,9 +1,10 @@
-import fs from "node:fs";
-import path from "node:path";
-import color from "chalk";
-import { program } from "commander";
-import * as v from "valibot";
-import { languages } from "./language-support";
+import fs from 'node:fs';
+import path from 'node:path';
+import color from 'chalk';
+import { program } from 'commander';
+import * as v from 'valibot';
+import { languages } from './language-support';
+import { WARN } from '.';
 
 export const blockSchema = v.object({
 	name: v.string(),
@@ -27,9 +28,10 @@ export type Category = v.InferInput<typeof categorySchema>;
 
 export type Block = v.InferInput<typeof blockSchema>;
 
-const TEST_SUFFIXES = [".test.ts", "_test.ts", ".test.js", "_test.js"] as const;
+const TEST_SUFFIXES = ['.test.ts', '_test.ts', '.test.js', '_test.js'] as const;
 
-const isTestFile = (file: string): boolean => TEST_SUFFIXES.find((suffix) => file.endsWith(suffix)) !== undefined;
+const isTestFile = (file: string): boolean =>
+	TEST_SUFFIXES.find((suffix) => file.endsWith(suffix)) !== undefined;
 
 /** Using the provided path to the blocks folder builds the blocks into categories and also resolves dependencies
  *
@@ -70,21 +72,29 @@ const buildBlocksDirectory = (blocksPath: string, cwd: string): Category[] => {
 				const lang = languages.find((resolver) => resolver.matches(file));
 
 				if (!lang) {
-					// a warning here might be nice
+					console.warn(
+						`${WARN} Skipped \`${color.bold(blockDir)}\` \`${color.bold(
+							path.parse(file).ext
+						)}\` files are not currently supported!`
+					);
 					continue;
 				}
 
 				const name = path.parse(path.basename(file)).name;
 
 				// tries to find a test file with the same name as the file
-				const testsPath = files.find((f) => TEST_SUFFIXES.find((suffix) => f === `${name}${suffix}`));
-
-				const { dependencies, devDependencies, local } = lang.resolveDependencies(blockDir, categoryName, false).match(
-					(val) => val,
-					(err) => {
-						program.error(color.red(err));
-					}
+				const testsPath = files.find((f) =>
+					TEST_SUFFIXES.find((suffix) => f === `${name}${suffix}`)
 				);
+
+				const { dependencies, devDependencies, local } = lang
+					.resolveDependencies(blockDir, categoryName, false)
+					.match(
+						(val) => val,
+						(err) => {
+							program.error(color.red(err));
+						}
+					);
 
 				const block: Block = {
 					name,
@@ -121,7 +131,11 @@ const buildBlocksDirectory = (blocksPath: string, cwd: string): Category[] => {
 					const lang = languages.find((resolver) => resolver.matches(f));
 
 					if (!lang) {
-						// a warning here might be nice
+						console.warn(
+							`${WARN} Skipped \`${color.bold(path.join(blockDir, f))}\` \`${color.bold(
+								path.parse(file).ext
+							)}\` files are not currently supported!`
+						);
 						continue;
 					}
 

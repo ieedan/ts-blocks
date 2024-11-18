@@ -1,4 +1,4 @@
-import { stripAsni } from "./strip-ansi";
+import { stripAsni } from './strip-ansi';
 
 /* 
 	ts-blocks 1.0.0-next.14 
@@ -38,7 +38,8 @@ const leftPad = (str: string, space: number, padWith = ' ') => {
  * ```
  */
 const leftPadMin = (str: string, length: number, padWith = ' ') => {
-	if (stripAsni(str).length > length) throw new Error('String length is greater than the length provided.');
+	if (stripAsni(str).length > length)
+		throw new Error('String length is greater than the length provided.');
 
 	return padWith.repeat(length - stripAsni(str).length) + str;
 };
@@ -75,7 +76,8 @@ const rightPad = (str: string, space: number, padWith = ' ') => {
  * ```
  */
 const rightPadMin = (str: string, length: number, padWith = ' ') => {
-	if (stripAsni(str).length > length) throw new Error('String length is greater than the length provided.');
+	if (stripAsni(str).length > length)
+		throw new Error('String length is greater than the length provided.');
 
 	return str + padWith.repeat(length - stripAsni(str).length);
 };

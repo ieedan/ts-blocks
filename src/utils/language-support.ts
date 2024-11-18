@@ -1,11 +1,11 @@
-import fs from "node:fs";
-import { builtinModules } from "node:module";
-import path from "node:path";
-import { Project } from "ts-morph";
-import { findNearestPackageJson } from "./package";
-import * as sv from "svelte/compiler";
-import { walk } from "estree-walker";
-import { Err, Ok, type Result } from "../blocks/types/result";
+import fs from 'node:fs';
+import { builtinModules } from 'node:module';
+import path from 'node:path';
+import { Project } from 'ts-morph';
+import { findNearestPackageJson } from './package';
+import * as sv from 'svelte/compiler';
+import { walk } from 'estree-walker';
+import { Err, Ok, type Result } from '../blocks/types/result';
 
 export type ResolvedDependencies = {
 	local: string[];
@@ -17,13 +17,17 @@ export type Lang = {
 	/** Matches the supported file types */
 	matches: (fileName: string) => boolean;
 	/** Reads the file and gets any dependencies from its imports */
-	resolveDependencies: (filePath: string, category: string, isSubDir: boolean) => Result<ResolvedDependencies, string>;
+	resolveDependencies: (
+		filePath: string,
+		category: string,
+		isSubDir: boolean
+	) => Result<ResolvedDependencies, string>;
 	/** Returns a multiline comment containing the content */
 	comment: (content: string) => string;
 };
 
 const typescript: Lang = {
-	matches: (fileName) => fileName.endsWith(".ts") || fileName.endsWith(".js"),
+	matches: (fileName) => fileName.endsWith('.ts') || fileName.endsWith('.js'),
 	resolveDependencies: (filePath, category, isSubDir) => {
 		const project = new Project();
 
@@ -31,7 +35,9 @@ const typescript: Lang = {
 
 		const imports = blockFile.getImportDeclarations();
 
-		const relativeImports = imports.filter((declaration) => declaration.getModuleSpecifierValue().startsWith("."));
+		const relativeImports = imports.filter((declaration) =>
+			declaration.getModuleSpecifierValue().startsWith('.')
+		);
 
 		const localDeps = new Set<string>();
 
@@ -44,7 +50,7 @@ const typescript: Lang = {
 		}
 
 		const deps = imports
-			.filter((declaration) => !declaration.getModuleSpecifierValue().startsWith("."))
+			.filter((declaration) => !declaration.getModuleSpecifierValue().startsWith('.'))
 			.map((declaration) => declaration.getModuleSpecifierValue());
 
 		const { devDependencies, dependencies } = resolveRemoteDeps(Array.from(deps), filePath);
@@ -55,11 +61,11 @@ const typescript: Lang = {
 			devDependencies,
 		} satisfies ResolvedDependencies);
 	},
-	comment: (content) => `/*\n${content}\n*/`
+	comment: (content) => `/*\n${content}\n*/`,
 };
 
 const svelte: Lang = {
-	matches: (fileName) => fileName.endsWith(".svelte"),
+	matches: (fileName) => fileName.endsWith('.svelte'),
 	resolveDependencies: (filePath, category, isSubDir) => {
 		const sourceCode = fs.readFileSync(filePath).toString();
 
@@ -74,10 +80,14 @@ const svelte: Lang = {
 		// biome-ignore lint/suspicious/noExplicitAny: The root instance is just missing the `id` prop
 		walk(root.instance as any, {
 			enter: (node) => {
-				if (node.type === "ImportDeclaration") {
-					if (typeof node.source.value === "string") {
-						if (node.source.value.startsWith(".")) {
-							const localDep = resolveLocalImport(node.source.value, category, isSubDir);
+				if (node.type === 'ImportDeclaration') {
+					if (typeof node.source.value === 'string') {
+						if (node.source.value.startsWith('.')) {
+							const localDep = resolveLocalImport(
+								node.source.value,
+								category,
+								isSubDir
+							);
 
 							if (localDep) localDeps.add(localDep);
 						} else {
@@ -96,22 +106,26 @@ const svelte: Lang = {
 			local: Array.from(localDeps),
 		} satisfies ResolvedDependencies);
 	},
-	comment: (content) => `<!--\n${content}\n-->`
+	comment: (content) => `<!--\n${content}\n-->`,
 };
 
-const resolveLocalImport = (mod: string, category: string, isSubDir: boolean): string | undefined => {
+const resolveLocalImport = (
+	mod: string,
+	category: string,
+	isSubDir: boolean
+): string | undefined => {
 	// do not add local deps that are within the same folder
-	if (isSubDir && mod.startsWith("./")) return undefined;
+	if (isSubDir && mod.startsWith('./')) return undefined;
 
-	if (mod.startsWith("./")) {
+	if (mod.startsWith('./')) {
 		return `${category}/${path.parse(path.basename(mod)).name}`;
 	}
 
-	if (isSubDir && mod.startsWith("../") && !mod.startsWith("../.")) {
+	if (isSubDir && mod.startsWith('../') && !mod.startsWith('../.')) {
 		return `${category}/${path.parse(path.basename(mod)).name}`;
 	}
 
-	const segments = mod.replaceAll("../", "").split("/");
+	const segments = mod.replaceAll('../', '').split('/');
 
 	// invalid path
 	if (segments.length !== 2) return undefined;
@@ -127,17 +141,18 @@ const resolveLocalImport = (mod: string, category: string, isSubDir: boolean): s
  * @returns
  */
 const resolveRemoteDeps = (deps: string[], filePath: string) => {
-	const filteredDeps = deps.filter((dep) => !builtinModules.includes(dep) && !dep.startsWith("node:"));
+	const filteredDeps = deps.filter(
+		(dep) => !builtinModules.includes(dep) && !dep.startsWith('node:')
+	);
 
-	const pkgPath = findNearestPackageJson(path.dirname(filePath), "");
+	const pkgPath = findNearestPackageJson(path.dirname(filePath), '');
 
 	const dependencies = new Set<string>();
 	const devDependencies = new Set<string>();
 
 	if (pkgPath) {
-		const { devDependencies: packageDevDependencies, dependencies: packageDependencies } = JSON.parse(
-			fs.readFileSync(pkgPath, "utf-8")
-		);
+		const { devDependencies: packageDevDependencies, dependencies: packageDependencies } =
+			JSON.parse(fs.readFileSync(pkgPath, 'utf-8'));
 
 		for (const dep of filteredDeps) {
 			let version: string | undefined = undefined;

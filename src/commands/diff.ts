@@ -1,21 +1,21 @@
-import fs from "node:fs";
-import path from "node:path";
-import { cancel, confirm, intro, isCancel, outro, spinner } from "@clack/prompts";
-import color from "chalk";
-import { Command, program } from "commander";
-import { type Change, diffLines } from "diff";
-import * as v from "valibot";
-import { context } from "..";
-import { getConfig } from "../config";
-import { OUTPUT_FILE } from "../utils";
-import { isTestFile, type Block } from "../utils/build";
-import { formatDiff } from "../utils/diff";
-import { getInstalledBlocks } from "../utils/get-installed-blocks";
-import { getWatermark } from "../utils/get-watermark";
-import * as gitProviders from "../utils/git-providers";
-import { languages } from "../utils/language-support";
+import fs from 'node:fs';
+import path from 'node:path';
+import { cancel, confirm, intro, isCancel, outro, spinner } from '@clack/prompts';
+import color from 'chalk';
+import { Command, program } from 'commander';
+import { type Change, diffLines } from 'diff';
+import * as v from 'valibot';
+import { context } from '..';
+import { getConfig } from '../config';
+import { OUTPUT_FILE } from '../utils';
+import { isTestFile, type Block } from '../utils/build';
+import { formatDiff } from '../utils/diff';
+import { getInstalledBlocks } from '../utils/get-installed-blocks';
+import { getWatermark } from '../utils/get-watermark';
+import * as gitProviders from '../utils/git-providers';
+import { languages } from '../utils/language-support';
 
-const L = color.gray("│");
+const L = color.gray('│');
 
 const schema = v.object({
 	allow: v.boolean(),
@@ -26,14 +26,14 @@ const schema = v.object({
 
 type Options = v.InferInput<typeof schema>;
 
-const diff = new Command("diff")
-	.description("Compares local blocks to the blocks in the provided repository.")
-	.option("-A, --allow", "Allow ts-blocks to download code from the provided repo.", false)
-	.option("-E, --expand", "Expands the diff so you see everything.", false)
-	.option("--repo <repo>", "Repository to download the blocks from.")
+const diff = new Command('diff')
+	.description('Compares local blocks to the blocks in the provided repository.')
+	.option('-A, --allow', 'Allow ts-blocks to download code from the provided repo.', false)
+	.option('-E, --expand', 'Expands the diff so you see everything.', false)
+	.option('--repo <repo>', 'Repository to download the blocks from.')
 	.option(
-		"--max-unchanged <number>",
-		"Maximum unchanged lines that will show without being collapsed.",
+		'--max-unchanged <number>',
+		'Maximum unchanged lines that will show without being collapsed.',
 		(val) => Number.parseInt(val), // this is such a dumb api thing
 		3
 	)
@@ -46,7 +46,7 @@ const diff = new Command("diff")
 type RemoteBlock = Block & { sourceRepo: gitProviders.Info };
 
 const _diff = async (options: Options) => {
-	intro(`${color.bgBlueBright(" ts-blocks ")}${color.gray(` v${context.package.version} `)}`);
+	intro(`${color.bgBlueBright(' ts-blocks ')}${color.gray(` v${context.package.version} `)}`);
 
 	const loading = spinner();
 
@@ -64,17 +64,17 @@ const _diff = async (options: Options) => {
 
 	if (!options.allow && options.repo) {
 		const result = await confirm({
-			message: `Allow ${color.cyan("ts-blocks")} to download and run code from ${color.cyan(options.repo)}?`,
+			message: `Allow ${color.cyan('ts-blocks')} to download and run code from ${color.cyan(options.repo)}?`,
 			initialValue: true,
 		});
 
 		if (isCancel(result) || !result) {
-			cancel("Canceled!");
+			cancel('Canceled!');
 			process.exit(0);
 		}
 	}
 
-	loading.start(`Fetching blocks from ${color.cyan(repoPaths.join(", "))}`);
+	loading.start(`Fetching blocks from ${color.cyan(repoPaths.join(', '))}`);
 
 	for (const repo of repoPaths) {
 		const providerInfo: gitProviders.Info = (await gitProviders.getProviderInfo(repo)).match(
@@ -102,7 +102,7 @@ const _diff = async (options: Options) => {
 		}
 	}
 
-	loading.stop(`Retrieved blocks from ${color.cyan(repoPaths.join(", "))}`);
+	loading.stop(`Retrieved blocks from ${color.cyan(repoPaths.join(', '))}`);
 
 	const installedBlocks = getInstalledBlocks(blocksMap, config);
 
@@ -150,7 +150,7 @@ const _diff = async (options: Options) => {
 					localPath = path.join(config.path, block.category, block.name, file);
 				}
 
-				let fileContent = "";
+				let fileContent = '';
 				if (fs.existsSync(localPath)) {
 					fileContent = fs.readFileSync(localPath).toString();
 				}
@@ -160,7 +160,7 @@ const _diff = async (options: Options) => {
 
 					if (lang) {
 						const watermark = getWatermark(context.package.version, repo);
-						
+
 						const comment = lang.comment(watermark);
 
 						remoteContent = `${comment}\n\n${remoteContent}`;
@@ -170,10 +170,13 @@ const _diff = async (options: Options) => {
 				const changes = diffLines(fileContent, remoteContent);
 
 				const from = path
-					.join(`${providerInfo.name}/${providerInfo.owner}/${providerInfo.repoName}`, sourcePath)
-					.replaceAll("\\", "/");
+					.join(
+						`${providerInfo.name}/${providerInfo.owner}/${providerInfo.repoName}`,
+						sourcePath
+					)
+					.replaceAll('\\', '/');
 
-				const to = localPath.replaceAll("\\", "/");
+				const to = localPath.replaceAll('\\', '/');
 
 				const formattedDiff = formatDiff({
 					from,
@@ -183,13 +186,13 @@ const _diff = async (options: Options) => {
 					maxUnchanged: options.maxUnchanged,
 					prefix: () => `${L} `,
 					onUnchanged: ({ from, to, prefix }) =>
-						`${prefix?.() ?? ""} ${color.cyan(from)} → ${color.gray(to)} ${color.gray("(unchanged)")}\n`,
+						`${prefix?.() ?? ''} ${color.cyan(from)} → ${color.gray(to)} ${color.gray('(unchanged)')}\n`,
 					intro: ({ from, to, changes, prefix }) => {
 						const totalChanges = changes.filter((a) => a.added).length;
 
-						return `${prefix?.() ?? ""} ${color.cyan(from)} → ${color.gray(to)} (${totalChanges} change${
-							totalChanges === 1 ? "" : "s"
-						})\n${prefix?.() ?? ""}\n`;
+						return `${prefix?.() ?? ''} ${color.cyan(from)} → ${color.gray(to)} (${totalChanges} change${
+							totalChanges === 1 ? '' : 's'
+						})\n${prefix?.() ?? ''}\n`;
 					},
 				});
 
@@ -200,11 +203,13 @@ const _diff = async (options: Options) => {
 		}
 
 		if (!found) {
-			program.error(color.red(`Invalid block! ${color.bold(blockSpecifier)} does not exist!`));
+			program.error(
+				color.red(`Invalid block! ${color.bold(blockSpecifier)} does not exist!`)
+			);
 		}
 	}
 
-	outro(color.green("All done!"));
+	outro(color.green('All done!'));
 };
 
 export { diff };
