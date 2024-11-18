@@ -9,6 +9,7 @@ import { resolveCommand } from 'package-manager-detector/commands';
 import { detect } from 'package-manager-detector/detect';
 import * as v from 'valibot';
 import { context } from '..';
+import { mapToArray } from '../blocks/utilities/map-to-array';
 import { getConfig } from '../config';
 import { type Block, isTestFile } from '../utils/build';
 import { getInstalledBlocks } from '../utils/get-installed-blocks';
@@ -391,9 +392,10 @@ type InstallingBlock = {
 const getBlocks = async (
 	blockSpecifiers: string[],
 	blocksMap: Map<string, RemoteBlock>,
-	repoPaths: string[],
-	blocks: InstallingBlock[] = []
+	repoPaths: string[]
 ): Promise<InstallingBlock[]> => {
+	const blocks = new Map<string, InstallingBlock>();
+
 	for (const blockSpecifier of blockSpecifiers) {
 		let block: RemoteBlock | undefined = undefined;
 
@@ -472,20 +474,22 @@ const getBlocks = async (
 			);
 		}
 
-		blocks.push({ name: blockSpecifier, subDependency: false, block });
+		blocks.set(blockSpecifier, { name: blockSpecifier, subDependency: false, block });
 
 		if (block.localDependencies && block.localDependencies.length > 0) {
 			const subDeps = await getBlocks(
-				block.localDependencies.filter((dep) => !blocks.find(({ name }) => name === dep)),
+				block.localDependencies.filter((dep) => blocks.has(dep)),
 				blocksMap,
 				repoPaths
 			);
 
-			blocks.push(...subDeps);
+			for (const dep of subDeps) {
+				blocks.set(dep.name, dep);
+			}
 		}
 	}
 
-	return blocks;
+	return mapToArray(blocks, (_, val) => val);
 };
 
 export { add };
