@@ -17,7 +17,7 @@
 				<span class="text-4xl font-serif text-muted-foreground">v{data.version}</span>
 			</div>
 			<p class="text-lg text-muted-foreground">
-				The best way to share <span class="text-primary">your</span> code.
+				The best way to reuse <span class="text-primary">your</span> code.
 			</p>
 			<Snippet command="execute" args={['jsrepo', 'init']} />
 		</div>
