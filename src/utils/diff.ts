@@ -1,5 +1,5 @@
 import color from 'chalk';
-import type { Change } from 'diff';
+import { type Change, diffChars } from 'diff';
 import { arraySum } from '../blocks/utilities/array-sum';
 import * as lines from '../blocks/utilities/lines';
 import { leftPadMin } from '../blocks/utilities/pad';
@@ -149,17 +149,32 @@ const formatDiff = ({
 				return colorAdded(change.value.trimEnd());
 			}
 
-			return colorRemoved(change.value.trimEnd());
+			if (change.removed) {
+				return colorRemoved(change.value.trimEnd());
+			}
+
+			return change.value;
 		};
 
-		console.log(change);
+		if (change.removed && change.count === 1) {
+			// single line change
+			const diffedChars = diffChars(change.value, changes[i + 1].value);
 
-		result += `${lines.join(lines.get(colorChange(change)), {
-			prefix: linePrefix,
-		})}\n`;
+			const sentence = diffedChars.map((chg) => colorChange(chg)).join('');
 
-		if (!change.removed) {
-			lineOffset += change.count ?? 0;
+			result += `${linePrefix(0)}${sentence}`;
+
+			lineOffset += 1;
+
+			i++;
+		} else {
+			result += `${lines.join(lines.get(colorChange(change)), {
+				prefix: linePrefix,
+			})}\n`;
+
+			if (!change.removed) {
+				lineOffset += change.count ?? 0;
+			}
 		}
 	}
 

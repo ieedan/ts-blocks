@@ -3,7 +3,7 @@ import path from 'node:path';
 import { cancel, confirm, intro, isCancel, outro, spinner } from '@clack/prompts';
 import color from 'chalk';
 import { Command, program } from 'commander';
-import { type Change, diffLines } from 'diff';
+import { diffLines } from 'diff';
 import * as v from 'valibot';
 import { context } from '..';
 import { getConfig } from '../config';
@@ -184,6 +184,8 @@ const _diff = async (options: Options) => {
 					changes,
 					expand: options.expand,
 					maxUnchanged: options.maxUnchanged,
+					colorAdded: color.greenBright,
+					colorRemoved: color.redBright,
 					prefix: () => `${L} `,
 					onUnchanged: ({ from, to, prefix }) =>
 						`${prefix?.() ?? ''} ${color.cyan(from)} → ${color.gray(to)} ${color.gray('(unchanged)')}\n`,
