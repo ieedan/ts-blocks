@@ -1,5 +1,13 @@
 # ts-blocks
 
+## 1.0.0-next.17
+
+### Patch Changes
+
+- c2dc81c: Fixes an issue where not all block dependencies were added.
+- 5448277: TSX / JSX support 🎉
+- c2dc81c: Svelte support 🎉
+
 ## 1.0.0-next.16
 
 ### Patch Changes
