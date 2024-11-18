@@ -1,71 +1,21 @@
 {
-	"name": "jsrepo",
-	"description": "A CLI to blocks to your project.",
-	"version": "1.0.0",
-	"packageManager": "pnpm@9.12.3",
-	"repository": {
-		"type": "git",
-		"url": "git+https://github.com/ieedan/jsrepo"
-	},
-	"keywords": [
-		"blocks",
-		"typescript",
-		"tested",
-		"documented"
-	],
-	"author": "Aidan Bleser",
-	"license": "MIT",
-	"bugs": {
-		"url": "https://github.com/ieedan/jsrepo/issues"
-	},
-	"homepage": "https://ieedan.github.io/jsrepo/",
-	"main": "bin.mjs",
-	"bin": "./bin.mjs",
-	"type": "module",
-	"files": [
-		"bin.mjs",
-		"package.json",
-		"pnpm-lock.yaml",
-		"README.md",
-		"schema.json",
-		"dist/**/*",
-		"src/**/*",
-		"blocks/**/*"
-	],
-	"scripts": {
-		"start": "tsup --silent && node bin.mjs",
-		"build": "tsup",
-		"format": "biome format --write",
-		"lint": "biome lint --write",
-		"check": "biome check",
-		"ci:release": "tsup && changeset publish",
-		"changeset": "changeset",
-		"test": "vitest",
-		"check:types": "tsc"
-	},
-	"devDependencies": {
-		"@biomejs/biome": "1.9.4",
-		"@types/diff": "^6.0.0",
-		"@types/node": "^22.9.0",
-		"@types/validate-npm-package-name": "^4.0.2",
-		"tsup": "^8.3.5",
-		"typescript": "^5.6.3",
-		"vitest": "^2.1.5"
-	},
-	"dependencies": {
-		"@changesets/cli": "^2.27.9",
-		"@clack/prompts": "^0.8.1",
-		"ansi-regex": "^6.1.0",
-		"chalk": "^5.3.0",
-		"commander": "^12.1.0",
-		"diff": "^7.0.0",
-		"estree-walker": "^3.0.3",
-		"execa": "^9.5.1",
-		"octokit": "^4.0.2",
-		"package-manager-detector": "^0.2.4",
-		"svelte": "^5.2.3",
-		"ts-morph": "^24.0.0",
-		"valibot": "^0.42.1",
-		"validate-npm-package-name": "^6.0.0"
-	}
+  "name": "jsrepo-monorepo",
+  "packageManager": "pnpm@9.12.3",
+  "version": "0.0.0",
+  "description": "A monorepo for jsrepo",
+  "scripts": {
+    "ci:publish": "changeset publish",
+    "format": "pnpm -F jsrepo format",
+    "lint": "pnpm -F jsrepo check",
+    "test": "pnpm -F jsrepo test",
+    "build:cli": "pnpm -F jsrepo build",
+    "ci:release": "pnpm build:cli && changeset publish",
+		"changeset": "changeset"
+  },
+  "keywords": [],
+  "author": "Aidan Bleser",
+  "license": "MIT",
+  "devDependencies": {
+    "@changesets/cli": "^2.27.9"
+  }
 }
