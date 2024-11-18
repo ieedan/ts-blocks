@@ -8,11 +8,12 @@ import * as v from 'valibot';
 import { context } from '..';
 import { getConfig } from '../config';
 import { OUTPUT_FILE } from '../utils';
-import type { Block } from '../utils/build';
+import { type Block, isTestFile } from '../utils/build';
 import { formatDiff } from '../utils/diff';
 import { getInstalledBlocks } from '../utils/get-installed-blocks';
 import { getWatermark } from '../utils/get-watermark';
 import * as gitProviders from '../utils/git-providers';
+import { languages } from '../utils/language-support';
 
 const L = color.gray('│');
 
@@ -128,7 +129,7 @@ const _diff = async (options: Options) => {
 
 			for (const file of block.files) {
 				// skip test files if not included
-				if (!config.includeTests && file.endsWith('test.ts')) continue;
+				if (!config.includeTests && isTestFile(file)) continue;
 
 				process.stdout.write(`${L}\n`);
 
@@ -142,9 +143,7 @@ const _diff = async (options: Options) => {
 					program.error(color.red(`There was an error trying to get ${fullSpecifier}`));
 				}
 
-				const watermark = getWatermark(context.package.version, repo);
-
-				const remoteContent = await response.text();
+				let remoteContent = await response.text();
 
 				let localPath = path.join(config.path, block.category, file);
 				if (block.subdirectory) {
@@ -156,7 +155,19 @@ const _diff = async (options: Options) => {
 					fileContent = fs.readFileSync(localPath).toString();
 				}
 
-				const changes = diffLines(fileContent, `${watermark}${remoteContent}`);
+				if (config.watermark) {
+					const lang = languages.find((lang) => lang.matches(sourcePath));
+
+					if (lang) {
+						const watermark = getWatermark(context.package.version, repo);
+
+						const comment = lang.comment(watermark);
+
+						remoteContent = `${comment}\n\n${remoteContent}`;
+					}
+				}
+
+				const changes = diffLines(fileContent, remoteContent);
 
 				const from = path
 					.join(
@@ -175,7 +186,7 @@ const _diff = async (options: Options) => {
 					maxUnchanged: options.maxUnchanged,
 					prefix: () => `${L} `,
 					onUnchanged: ({ from, to, prefix }) =>
-						`${prefix?.() ?? ''}${color.cyan(from)} → ${color.gray(to)} ${color.gray('(unchanged)')}\n`,
+						`${prefix?.() ?? ''} ${color.cyan(from)} → ${color.gray(to)} ${color.gray('(unchanged)')}\n`,
 					intro: ({ from, to, changes, prefix }) => {
 						const totalChanges = changes.filter((a) => a.added).length;
 

@@ -11,7 +11,7 @@ import * as v from 'valibot';
 import { context } from '..';
 import { getConfig } from '../config';
 import { INFO } from '../utils';
-import { type Block, categorySchema } from '../utils/build';
+import { type Block, categorySchema, isTestFile } from '../utils/build';
 import { getInstalledBlocks } from '../utils/get-installed-blocks';
 import * as gitProviders from '../utils/git-providers';
 import { OUTPUT_FILE } from '../utils/index';
@@ -250,7 +250,7 @@ const _test = async (blockNames: string[], options: Options) => {
 
 		const testFiles: string[] = [];
 
-		for (const testFile of block.files.filter((file) => file.endsWith('test.ts'))) {
+		for (const testFile of block.files.filter((file) => isTestFile(file))) {
 			const content = await getSourceFile(path.join(block.directory, testFile));
 
 			const destPath = path.join(tempTestDirectory, testFile);
