@@ -68,7 +68,8 @@ const config: Config = {
 				sm: 'calc(var(--radius) - 4px)'
 			},
 			fontFamily: {
-				sans: [...fontFamily.sans]
+				sans: ['Poppins', 'sans-serif'],
+				serif: ['JetBrains Mono Variable', 'monospace'],
 			},
 			keyframes: {
 				'accordion-down': {

@@ -12,9 +12,12 @@
 		"lint": "prettier --check . && eslint ."
 	},
 	"devDependencies": {
+		"@fontsource-variable/jetbrains-mono": "^5.1.1",
+		"@fontsource/poppins": "^5.1.0",
 		"@sveltejs/adapter-auto": "^3.0.0",
 		"@sveltejs/kit": "^2.0.0",
 		"@sveltejs/vite-plugin-svelte": "^4.0.0",
+		"@tailwindcss/typography": "^0.5.15",
 		"@types/eslint": "^9.6.0",
 		"autoprefixer": "^10.4.20",
 		"clsx": "^2.1.1",
@@ -33,8 +36,6 @@
 		"typescript": "^5.0.0",
 		"typescript-eslint": "^8.0.0",
 		"vite": "^5.0.3",
-		"@fontsource-variable/jetbrains-mono": "^5.1.1",
-		"@fontsource/poppins": "^5.1.0",
-		"@tailwindcss/typography": "^0.5.15"
+		"mode-watcher": "^0.4.1"
 	}
 }
