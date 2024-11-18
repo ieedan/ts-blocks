@@ -1,10 +1,11 @@
 import fs from 'node:fs';
-import { cancel, confirm, intro, isCancel, outro, spinner, text } from '@clack/prompts';
+import { cancel, confirm, isCancel, outro, spinner, text } from '@clack/prompts';
 import color from 'chalk';
 import { Command } from 'commander';
 import * as v from 'valibot';
 import { context } from '..';
 import { CONFIG_NAME, type Config, getConfig } from '../config';
+import { intro } from '../utils/prompts';
 
 const schema = v.object({
 	path: v.optional(v.string()),
@@ -31,7 +32,7 @@ const init = new Command('init')
 	});
 
 const _init = async (options: Options) => {
-	intro(`${color.bgBlueBright(' ts-blocks ')}${color.gray(` v${context.package.version} `)}`);
+	intro(context.package.version);
 
 	const initialConfig = getConfig();
 
@@ -92,7 +93,7 @@ const _init = async (options: Options) => {
 	}
 
 	const config: Config = {
-		$schema: `https://unpkg.com/ts-blocks@${context.package.version}/schema.json`,
+		$schema: `https://unpkg.com/jsrepo@${context.package.version}/schema.json`,
 		repos: options.repos,
 		path: options.path,
 		includeTests:

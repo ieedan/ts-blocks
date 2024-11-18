@@ -1,4 +1,4 @@
-import { spinner } from '@clack/prompts';
+import { intro, spinner } from '@clack/prompts';
 import color from 'chalk';
 import { rightPad, rightPadMin } from '../blocks/utilities/pad';
 import { stripAsni } from '../blocks/utilities/strip-ansi';
@@ -66,4 +66,7 @@ const nextSteps = (steps: string[]): string => {
 	return result;
 };
 
-export { runTasks, nextSteps };
+const _intro = (version: string) =>
+	intro(`${color.bgHex('#f7df1e').black(' jsrepo ')}${color.gray(` v${version} `)}`);
+
+export { runTasks, nextSteps, _intro as intro };

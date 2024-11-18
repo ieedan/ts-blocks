@@ -25,7 +25,3 @@ jobs:
 
             - name: Test
               run: pnpm test
-
-            # test dogfed blocks not sure why this fails
-            # - name: Test Blocks
-            #   run: pnpm start test --verbose

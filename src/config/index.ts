@@ -14,7 +14,7 @@ const schema = v.object({
 
 const getConfig = (): Result<Config, string> => {
 	if (!fs.existsSync(CONFIG_NAME)) {
-		return Err('Could not find your configuration file! Please run `npx ts-blocks init`.');
+		return Err('Could not find your configuration file! Please run `npx jsrepo init`.');
 	}
 
 	const config = v.safeParse(schema, JSON.parse(fs.readFileSync(CONFIG_NAME).toString()));
