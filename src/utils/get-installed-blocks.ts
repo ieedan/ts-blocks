@@ -1,22 +1,35 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { blocks } from '../blocks';
 import type { Config } from '../config';
+import type { Block } from './build';
 
-const getInstalledBlocks = (config: Config) => {
-	const installedBlocks: string[] = [];
+type InstalledBlock = {
+	specifier: `${string}/${string}`;
+	path: string;
+};
 
-	for (const [key, block] of Object.entries(blocks)) {
-		let baseDir: string;
-		if (config.addByCategory) {
-			baseDir = path.join(config.path, block.category);
-		} else {
-			baseDir = config.path;
+/** Finds installed blocks and returns them as `<category>/<name>`
+ *
+ * @param blocks
+ * @param config
+ * @returns
+ */
+const getInstalledBlocks = (blocks: Map<string, Block>, config: Config): InstalledBlock[] => {
+	const installedBlocks: InstalledBlock[] = [];
+
+	for (const [_, block] of blocks) {
+		const baseDir = path.join(config.path, block.category);
+
+		let blockPath = path.join(baseDir, block.files[0]);
+		if (block.subdirectory) {
+			blockPath = path.join(baseDir, block.name);
 		}
 
-		const blockPath = path.join(baseDir, `${key}.ts`);
-
-		if (fs.existsSync(blockPath)) installedBlocks.push(key);
+		if (fs.existsSync(blockPath))
+			installedBlocks.push({
+				specifier: `${block.category}/${block.name}`,
+				path: blockPath,
+			});
 	}
 
 	return installedBlocks;

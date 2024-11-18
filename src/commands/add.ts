@@ -1,46 +1,50 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { cancel, confirm, intro, isCancel, multiselect, outro, spinner } from '@clack/prompts';
+import { cancel, confirm, isCancel, multiselect, outro, spinner } from '@clack/prompts';
 import color from 'chalk';
-import { Argument, Command, program } from 'commander';
+import { Command, program } from 'commander';
 import { execa } from 'execa';
+import type { ResolvedCommand } from 'package-manager-detector';
 import { resolveCommand } from 'package-manager-detector/commands';
 import { detect } from 'package-manager-detector/detect';
-import { Project, type SourceFile } from 'ts-morph';
-import { type InferInput, boolean, object, parse } from 'valibot';
-import { type Block, blocks } from '../blocks';
+import * as v from 'valibot';
+import { context } from '..';
+import { mapToArray } from '../blocks/utilities/map-to-array';
 import { getConfig } from '../config';
+import { type Block, isTestFile } from '../utils/build';
 import { getInstalledBlocks } from '../utils/get-installed-blocks';
 import { getWatermark } from '../utils/get-watermark';
-import { INFO, WARN } from '../utils/index';
-import { type Task, runTasks } from '../utils/prompts';
+import * as gitProviders from '../utils/git-providers';
+import { INFO } from '../utils/index';
+import { OUTPUT_FILE } from '../utils/index';
+import { languages } from '../utils/language-support';
+import { type Task, intro, nextSteps, runTasks } from '../utils/prompts';
 
-const schema = object({
-	yes: boolean(),
-	verbose: boolean(),
+const schema = v.object({
+	yes: v.boolean(),
+	verbose: v.boolean(),
+	repo: v.optional(v.string()),
+	allow: v.boolean(),
 });
 
-type Options = InferInput<typeof schema>;
+type Options = v.InferInput<typeof schema>;
 
 const add = new Command('add')
-	.addArgument(
-		new Argument('[blocks...]', 'Whichever block you want to add to your project.').choices(
-			Object.entries(blocks).map(([key]) => key)
-		)
-	)
+	.argument('[blocks...]', 'Whichever block you want to add to your project.')
 	.option('-y, --yes', 'Add and install any required dependencies.', false)
+	.option('-A, --allow', 'Allow jsrepo to download code from the provided repo.', false)
+	.option('--repo <repo>', 'Repository to download the blocks from')
 	.option('--verbose', 'Include debug logs.', false)
 	.action(async (blockNames, opts) => {
-		const options = parse(schema, opts);
+		const options = v.parse(schema, opts);
 
 		await _add(blockNames, options);
 	});
 
+type RemoteBlock = Block & { sourceRepo: gitProviders.Info };
+
 const _add = async (blockNames: string[], options: Options) => {
-	// get version from package.json
-	const { version } = JSON.parse(
-		fs.readFileSync(new URL('../package.json', import.meta.url), 'utf-8')
-	);
+	intro(context.package.version);
 
 	const verbose = (msg: string) => {
 		if (options.verbose) {
@@ -50,26 +54,100 @@ const _add = async (blockNames: string[], options: Options) => {
 
 	verbose(`Attempting to add ${JSON.stringify(blockNames)}`);
 
-	intro(color.bgBlueBright('ts-blocks'));
-
-	const config = getConfig();
-
 	const loading = spinner();
 
-	const watermark = getWatermark(version);
+	const config = getConfig().match(
+		(val) => val,
+		(err) => program.error(color.red(err))
+	);
 
-	const installedBlocks = getInstalledBlocks(config);
+	const blocksMap: Map<string, RemoteBlock> = new Map();
+
+	let repoPaths = config.repos;
+
+	// we just want to override all others if supplied via the CLI
+	if (options.repo) repoPaths = [options.repo];
+
+	if (!options.allow && options.repo) {
+		const result = await confirm({
+			message: `Allow ${color.cyan('jsrepo')} to download and run code from ${color.cyan(options.repo)}?`,
+			initialValue: true,
+		});
+
+		if (isCancel(result) || !result) {
+			cancel('Canceled!');
+			process.exit(0);
+		}
+	}
+
+	verbose(`Fetching blocks from ${color.cyan(repoPaths.join(', '))}`);
+
+	if (!options.verbose) loading.start(`Fetching blocks from ${color.cyan(repoPaths.join(', '))}`);
+
+	for (const repo of repoPaths) {
+		const providerInfo: gitProviders.Info = (await gitProviders.getProviderInfo(repo)).match(
+			(info) => info,
+			(err) => {
+				loading.stop(`Failed fetching blocks from ${color.cyan(repo)}`);
+				program.error(color.red(err));
+			}
+		);
+
+		const manifestUrl = await providerInfo.provider.resolveRaw(providerInfo, OUTPUT_FILE);
+
+		verbose(`Got info for provider ${color.cyan(providerInfo.name)}`);
+
+		const categories = (await gitProviders.getManifest(manifestUrl)).match(
+			(val) => val,
+			(err) => {
+				loading.stop(`Failed fetching blocks from ${color.cyan(repo)}`);
+				program.error(color.red(err));
+			}
+		);
+
+		for (const category of categories) {
+			for (const block of category.blocks) {
+				blocksMap.set(
+					`${providerInfo.name}/${providerInfo.owner}/${providerInfo.repoName}/${category.name}/${block.name}`,
+					{
+						...block,
+						sourceRepo: providerInfo,
+					}
+				);
+			}
+		}
+	}
+
+	verbose(`Retrieved blocks from ${color.cyan(repoPaths.join(', '))}`);
+
+	if (!options.verbose) loading.stop(`Retrieved blocks from ${color.cyan(repoPaths.join(', '))}`);
+
+	const installedBlocks = getInstalledBlocks(blocksMap, config).map((val) => val.specifier);
 
 	let installingBlockNames = blockNames;
 
 	if (installingBlockNames.length === 0) {
 		const promptResult = await multiselect({
 			message: 'Select which blocks to add.',
-			options: Object.entries(blocks).map(([key]) => {
-				const blockExists = installedBlocks.findIndex((block) => block === key) !== -1;
+			options: Array.from(blocksMap.entries()).map(([key, value]) => {
+				const shortName = `${value.category}/${value.name}`;
+
+				const blockExists =
+					installedBlocks.findIndex((block) => block === shortName) !== -1;
+
+				let label: string;
+
+				// show the full repo if there are multiple repos
+				if (repoPaths.length > 1) {
+					label = `${color.cyan(
+						`${value.sourceRepo.name}/${value.sourceRepo.owner}/${value.sourceRepo.repoName}/${value.category}`
+					)}/${value.name}`;
+				} else {
+					label = `${color.cyan(value.category)}/${value.name}`;
+				}
 
 				return {
-					label: blockExists ? color.gray(key) : key,
+					label: blockExists ? color.gray(label) : label,
 					value: key,
 					// show hint for `Installed` if block is already installed
 					hint: blockExists ? 'Installed' : undefined,
@@ -86,61 +164,37 @@ const _add = async (blockNames: string[], options: Options) => {
 		installingBlockNames = promptResult as string[];
 	}
 
-	const installingBlocks: { name: string; subDependency: boolean; block: Block }[] = [];
+	verbose(`Installing blocks ${color.cyan(installingBlockNames.join(', '))}`);
 
-	installingBlockNames.map((blockName) => {
-		const block = blocks[blockName];
+	if (options.verbose) console.log('Blocks map: ', blocksMap);
 
-		if (!block) {
-			program.error(color.red(`Invalid block! ${color.bold(blockName)} does not exist!`));
-		}
+	const installingBlocks = await getBlocks(installingBlockNames, blocksMap, repoPaths);
 
-		installingBlocks.push({ name: blockName, subDependency: false, block });
-
-		if (block.localDependencies && block.localDependencies.length > 0) {
-			for (const dep of block.localDependencies) {
-				if (installingBlocks.find(({ name }) => name === dep)) continue;
-
-				const block = blocks[dep];
-
-				if (!block) {
-					program.error(
-						color.red(`Invalid block! ${color.bold(blockName)} does not exist!`)
-					);
-				}
-
-				installingBlocks.push({ name: dep, subDependency: true, block });
-			}
-		}
-	});
+	const pm = (await detect({ cwd: process.cwd() }))?.agent ?? 'npm';
 
 	const tasks: Task[] = [];
 
-	for (const { name: blockName, block } of installingBlocks) {
-		verbose(`Attempting to add ${blockName}`);
+	const devDeps: Set<string> = new Set<string>();
+	const deps: Set<string> = new Set<string>();
 
-		verbose(`Found block ${JSON.stringify(block)}`);
+	for (const { name: specifier, block } of installingBlocks) {
+		const watermark = getWatermark(context.package.version, block.sourceRepo.url);
 
-		const registryDir = path.join(import.meta.url, '../../blocks').replace(/^file:\\/, '');
+		const providerInfo = block.sourceRepo;
 
-		const registryFilePath = path.join(registryDir, `${block.category}/${blockName}.ts`);
+		verbose(`Attempting to add ${specifier}`);
 
-		let newPath: string;
-		let directory: string;
-
-		if (config.addByCategory) {
-			directory = path.join(config.path, block.category);
-			newPath = path.join(directory, `${blockName}.ts`);
-		} else {
-			directory = config.path;
-			newPath = path.join(directory, `${blockName}.ts`);
-		}
+		const directory = path.join(config.path, block.category);
 
 		verbose(`Creating directory ${color.bold(directory)}`);
 
-		if (fs.existsSync(newPath) && !options.yes) {
+		const blockExists =
+			(!block.subdirectory && fs.existsSync(path.join(directory, block.files[0]))) ||
+			(block.subdirectory && fs.existsSync(path.join(directory, block.name)));
+
+		if (blockExists && !options.yes) {
 			const result = await confirm({
-				message: `${color.bold(blockName)} already exists in your project would you like to overwrite it?`,
+				message: `${color.bold(block.name)} already exists in your project would you like to overwrite it?`,
 				initialValue: false,
 			});
 
@@ -151,182 +205,82 @@ const _add = async (blockNames: string[], options: Options) => {
 		}
 
 		tasks.push({
-			loadingMessage: `Adding ${blockName}`,
-			completedMessage: `Added ${blockName}`,
+			loadingMessage: `Adding ${specifier}`,
+			completedMessage: `Added ${specifier}`,
 			run: async () => {
 				// in case the directory didn't already exist
 				fs.mkdirSync(directory, { recursive: true });
 
-				verbose(
-					`Copying files from ${color.bold(registryFilePath)} to ${color.bold(newPath)}`
-				);
+				const files: { content: string; destPath: string }[] = [];
 
-				let registryFile = fs.readFileSync(registryFilePath).toString();
+				const getSourceFile = async (filePath: string) => {
+					const rawUrl = await providerInfo.provider.resolveRaw(providerInfo, filePath);
 
-				if (config.watermark) {
-					registryFile = `${watermark}${registryFile}`;
+					const response = await fetch(rawUrl);
+
+					if (!response.ok) {
+						loading.stop(color.red(`Error fetching ${color.bold(rawUrl.href)}`));
+						program.error(color.red(`There was an error trying to get ${specifier}`));
+					}
+
+					return await response.text();
+				};
+
+				for (const sourceFile of block.files) {
+					if (!config.includeTests && isTestFile(sourceFile)) continue;
+
+					const sourcePath = path.join(block.directory, sourceFile);
+
+					let destPath: string;
+					if (block.subdirectory) {
+						destPath = path.join(config.path, block.category, block.name, sourceFile);
+					} else {
+						destPath = path.join(config.path, block.category, sourceFile);
+					}
+
+					const content = await getSourceFile(sourcePath);
+
+					fs.mkdirSync(destPath.slice(0, destPath.length - sourceFile.length), {
+						recursive: true,
+					});
+
+					files.push({ content, destPath });
 				}
 
-				fs.writeFileSync(newPath, registryFile);
+				for (const file of files) {
+					let content: string = file.content;
 
-				// resolve local dependencies if they are not organized by category as they are in the project
-				//
-				// this must be done because of the `addByCategory` option which can
-				// allow you to put all of your blocks in one file instead of sub-categories
-				if (
-					!config.addByCategory &&
-					block.localDependencies &&
-					block.localDependencies.length > 0
-				) {
-					const project = new Project();
+					if (config.watermark) {
+						const lang = languages.find((lang) => lang.matches(file.destPath));
 
-					const blockFile = project.addSourceFileAtPath(newPath);
+						if (lang) {
+							const comment = lang.comment(watermark);
 
-					const imports = blockFile.getImportDeclarations();
-
-					for (const dep of block.localDependencies) {
-						const depBlock = blocks[dep];
-
-						if (!depBlock) {
-							program.error(
-								color.red(`Invalid block! ${color.bold(dep)} does not exist!`)
-							);
+							content = `${comment}\n\n${content}`;
 						}
-
-						const importDeclaration = imports.find((declaration) =>
-							declaration.getModuleSpecifierValue().includes(dep)
-						);
-
-						if (importDeclaration === undefined) {
-							program.error(
-								color.red(
-									`Expected dependency '${color.bold(dep)}' to be imported from ${newPath}.`
-								)
-							);
-						}
-
-						importDeclaration.setModuleSpecifier(
-							`./${dep}${config.imports === 'deno' ? '.ts' : ''}`
-						);
-
-						project.saveSync();
 					}
-				}
 
-				if (config.includeIndexFile) {
-					verbose('Trying to include index file');
-
-					const indexPath = path.join(directory, 'index.ts');
-
-					try {
-						let index: SourceFile;
-
-						const project = new Project();
-
-						if (fs.existsSync(indexPath)) {
-							index = project.addSourceFileAtPath(indexPath);
-						} else {
-							index = project.createSourceFile(indexPath);
-						}
-
-						if (config.imports === 'node') {
-							index.addExportDeclaration({
-								moduleSpecifier: `./${blockName}`,
-								isTypeOnly: false,
-							});
-						} else if (config.imports === 'deno') {
-							index.addExportDeclaration({
-								moduleSpecifier: `./${blockName}.ts`,
-								isTypeOnly: false,
-							});
-						}
-
-						index.saveSync();
-					} catch {
-						console.warn(`${WARN} Failed to modify ${indexPath}!`);
-					}
+					fs.writeFileSync(file.destPath, content);
 				}
 
 				if (config.includeTests) {
 					verbose('Trying to include tests');
 
-					const registryTestPath = path.join(
-						registryDir,
-						`${block.category}/${blockName}.test.ts`
+					const { devDependencies } = JSON.parse(
+						fs.readFileSync('package.json').toString()
 					);
 
-					if (fs.existsSync(registryTestPath)) {
-						const { devDependencies } = JSON.parse(
-							fs.readFileSync('package.json').toString()
-						);
-
-						if (devDependencies.vitest === undefined) {
-							loading.message(`Installing ${color.cyan('vitest')}`);
-
-							const pm = await detect({ cwd: process.cwd() });
-
-							if (pm == null) {
-								program.error(color.red('Could not detect package manager'));
-							}
-
-							const resolved = resolveCommand(pm.agent, 'install', [
-								'vitest',
-								'--save-dev',
-							]);
-
-							if (resolved == null) {
-								program.error(
-									color.red(`Could not resolve add command for '${pm.agent}'.`)
-								);
-							}
-
-							const { command, args } = resolved;
-
-							const installCommand = `${command} ${args.join(' ')}`;
-
-							try {
-								await execa({ cwd: process.cwd() })`${installCommand}`;
-							} catch {
-								program.error(
-									color.red(
-										`Failed to install ${color.bold('vitest')}! Failed while running '${color.bold(
-											installCommand
-										)}'`
-									)
-								);
-							}
-						}
-
-						let registryTestFile = fs.readFileSync(registryTestPath).toString();
-
-						if (config.watermark) {
-							registryTestFile = `${watermark}${registryTestFile}`;
-						}
-
-						fs.writeFileSync(newPath, path.join(directory, `${blockName}.test.ts`));
+					if (devDependencies.vitest === undefined) {
+						devDeps.add('vitest');
 					}
 				}
 
-				if (block.dependencies) {
-					verbose('Trying to include dependencies');
+				for (const dep of block.devDependencies) {
+					devDeps.add(dep);
+				}
 
-					if (!options.yes) {
-						const result = await confirm({
-							message: 'Add and install dependencies?',
-						});
-
-						if (isCancel(result)) {
-							cancel('Canceled!');
-							process.exit(0);
-						}
-
-						options.yes = result;
-					}
-
-					if (options.yes) {
-						// currently no functions require dependencies (lets try and keep it that way)
-						throw new Error('NOT IMPLEMENTED');
-					}
+				for (const dep of block.dependencies) {
+					deps.add(dep);
 				}
 			},
 		});
@@ -334,7 +288,208 @@ const _add = async (blockNames: string[], options: Options) => {
 
 	await runTasks(tasks, { verbose: options.verbose });
 
+	const installDependencies = async (deps: string[], dev: boolean) => {
+		if (!options.verbose) loading.start(`Installing dependencies with ${color.cyan(pm)}`);
+
+		let add: ResolvedCommand | null;
+		if (dev) {
+			add = resolveCommand(pm, 'install', [...deps, '-D']);
+		} else {
+			add = resolveCommand(pm, 'install', [...deps]);
+		}
+
+		if (add == null) {
+			program.error(color.red(`Could not resolve add command for '${pm}'.`));
+		}
+
+		try {
+			await execa(add.command, [...add.args], { cwd: process.cwd() });
+		} catch {
+			program.error(
+				color.red(
+					`Failed to install ${color.bold('vitest')}! Failed while running '${color.bold(
+						`${add.command} ${add.args.join(' ')}`
+					)}'`
+				)
+			);
+		}
+
+		if (!options.verbose) loading.stop(`Installed ${color.cyan(deps.join(', '))}`);
+	};
+
+	const hasDependencies = deps.size > 0 || devDeps.size > 0;
+
+	if (hasDependencies) {
+		let install = options.yes;
+		if (!options.yes) {
+			const result = await confirm({
+				message: 'Would you like to install dependencies?',
+				initialValue: true,
+			});
+
+			if (isCancel(result)) {
+				cancel('Canceled!');
+				process.exit(0);
+			}
+
+			install = result;
+		}
+
+		if (install) {
+			if (deps.size > 0) {
+				await installDependencies(Array.from(deps), false);
+			}
+
+			if (devDeps.size > 0) {
+				await installDependencies(Array.from(devDeps), true);
+			}
+		}
+
+		// next steps if they didn't install dependencies
+		let steps = [];
+
+		if (!install) {
+			if (deps.size > 0) {
+				const cmd = resolveCommand(pm, 'install', [...deps]);
+
+				steps.push(
+					`Install dependencies \`${color.cyan(`${cmd?.command} ${cmd?.args.join(' ')}`)}\``
+				);
+			}
+
+			if (devDeps.size > 0) {
+				const cmd = resolveCommand(pm, 'install', [...devDeps, '-D']);
+
+				steps.push(
+					`Install dev dependencies \`${color.cyan(`${cmd?.command} ${cmd?.args.join(' ')}`)}\``
+				);
+			}
+		}
+
+		// put steps with numbers above here
+		steps = steps.map((step, i) => `${i + 1}. ${step}`);
+
+		if (!install) {
+			steps.push('');
+		}
+
+		steps.push(`Import the blocks from \`${color.cyan(config.path)}\``);
+
+		const next = nextSteps(steps);
+
+		process.stdout.write(next);
+	}
+
 	outro(color.green('All done!'));
+};
+
+type InstallingBlock = {
+	name: string;
+	subDependency: boolean;
+	block: RemoteBlock;
+};
+
+const getBlocks = async (
+	blockSpecifiers: string[],
+	blocksMap: Map<string, RemoteBlock>,
+	repoPaths: string[]
+): Promise<InstallingBlock[]> => {
+	const blocks = new Map<string, InstallingBlock>();
+
+	for (const blockSpecifier of blockSpecifiers) {
+		let block: RemoteBlock | undefined = undefined;
+
+		// if the block starts with github (or another provider) we know it has been resolved
+		if (!blockSpecifier.startsWith('github')) {
+			if (repoPaths.length === 0) {
+				program.error(
+					color.red(
+						`If your config doesn't repos then you must provide the repo in the block specifier ex: \`${color.bold(
+							`github/<owner>/<name>/${blockSpecifier}`
+						)}\`!`
+					)
+				);
+			}
+
+			for (const repo of repoPaths) {
+				// we unwrap because we already checked this
+				const providerInfo = (await gitProviders.getProviderInfo(repo)).unwrap();
+
+				const tempBlock = blocksMap.get(
+					`${providerInfo.name}/${providerInfo.owner}/${providerInfo.repoName}/${blockSpecifier}`
+				);
+
+				if (tempBlock === undefined) continue;
+
+				block = tempBlock;
+
+				break;
+			}
+		} else {
+			if (repoPaths.length === 0) {
+				const [providerName, owner, repoName, ...rest] = blockSpecifier.split('/');
+
+				let repo: string;
+				// if rest is greater than 2 it isn't the block specifier so it is part of the path
+				if (rest.length > 2) {
+					repo = `${providerName}/${owner}/${repoName}/${rest.join('/')}`;
+				} else {
+					repo = `${providerName}/${owner}/${repoName}`;
+				}
+
+				const providerInfo = (await gitProviders.getProviderInfo(repo)).match(
+					(val) => val,
+					(err) => program.error(color.red(err))
+				);
+
+				const manifestUrl = await providerInfo.provider.resolveRaw(
+					providerInfo,
+					OUTPUT_FILE
+				);
+
+				const categories = (await gitProviders.getManifest(manifestUrl)).match(
+					(val) => val,
+					(err) => program.error(color.red(err))
+				);
+
+				for (const category of categories) {
+					for (const block of category.blocks) {
+						blocksMap.set(
+							`${providerInfo.name}/${providerInfo.owner}/${providerInfo.repoName}/${category.name}/${block.name}`,
+							{
+								...block,
+								sourceRepo: providerInfo,
+							}
+						);
+					}
+				}
+			}
+
+			block = blocksMap.get(blockSpecifier);
+		}
+
+		if (!block) {
+			program.error(
+				color.red(`Invalid block! ${color.bold(blockSpecifier)} does not exist!`)
+			);
+		}
+
+		blocks.set(blockSpecifier, { name: blockSpecifier, subDependency: false, block });
+
+		if (block.localDependencies && block.localDependencies.length > 0) {
+			const subDeps = await getBlocks(
+				block.localDependencies.filter((dep) => blocks.has(dep)),
+				blocksMap,
+				repoPaths
+			);
+
+			for (const dep of subDeps) {
+				blocks.set(dep.name, dep);
+			}
+		}
+	}
+
+	return mapToArray(blocks, (_, val) => val);
 };
 
 export { add };

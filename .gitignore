@@ -4,6 +4,4 @@ node_modules
 dist
 docs
 
-# testing
-blocks.json
 testing

@@ -1,36 +1,31 @@
 import fs from 'node:fs';
-import color from 'chalk';
-import { program } from 'commander';
-import { boolean, literal, minLength, object, optional, parse, pipe, string, union } from 'valibot';
+import * as v from 'valibot';
+import { Err, Ok, type Result } from '../blocks/types/result';
 
 const CONFIG_NAME = 'blocks.json';
 
-const schema = object({
-	$schema: string(),
-	addByCategory: boolean(),
-	includeIndexFile: boolean(),
-	includeTests: boolean(),
-	path: pipe(string(), minLength(1)),
-	imports: optional(union([literal('deno'), literal('node')]), 'node'),
-	watermark: optional(boolean(), true),
+const schema = v.object({
+	$schema: v.string(),
+	repos: v.optional(v.array(v.string()), []),
+	includeTests: v.boolean(),
+	path: v.pipe(v.string(), v.minLength(1)),
+	watermark: v.optional(v.boolean(), true),
 });
 
-const getConfig = () => {
+const getConfig = (): Result<Config, string> => {
 	if (!fs.existsSync(CONFIG_NAME)) {
-		program.error(
-			color.red(
-				`Could not find your configuration file! Please run ${color.bold(`'ts-blocks init'`)}.`
-			)
-		);
+		return Err('Could not find your configuration file! Please run `npx jsrepo init`.');
 	}
 
-	const config = parse(schema, JSON.parse(fs.readFileSync(CONFIG_NAME).toString()), {
-		message: color.red('Invalid config file!'),
-	});
+	const config = v.safeParse(schema, JSON.parse(fs.readFileSync(CONFIG_NAME).toString()));
 
-	return config;
+	if (!config.success) {
+		return Err('There was an error reading your `blocks.json` file!');
+	}
+
+	return Ok(config.output);
 };
 
-type Config = ReturnType<typeof getConfig>;
+type Config = v.InferOutput<typeof schema>;
 
 export { type Config, CONFIG_NAME, getConfig, schema };

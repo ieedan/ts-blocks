@@ -1,3 +1,9 @@
+/*
+	jsrepo 1.0.0-next.18
+	Installed from github/ieedan/std
+	11-18-2024
+*/
+
 /** This is just a helper type used only within this file */
 type _Result<T, E> = { ok: true; val: T } | { ok: false; err: E };
 
