@@ -1,3 +1,3 @@
-import LightSwitch from "./light-switch.svelte";
+import LightSwitch from './light-switch.svelte';
 
-export { LightSwitch }
+export { LightSwitch };

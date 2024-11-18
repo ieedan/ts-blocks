@@ -12,7 +12,7 @@
 
 <header class="py-2 px-6 flex place-items-center justify-between border-b border-border">
 	<a href="/" class="flex place-items-center gap-2">
-		<h1 class="bg-primary text-primary-foreground text-lg font-serif font-bold p-2 w-fit">
+		<h1 class="bg-primary text-primary-foreground text-lg font-serif font-bold p-1 w-fit">
 			jsrepo
 		</h1>
 		<span class="text-base font-serif text-muted-foreground">v{version}</span>

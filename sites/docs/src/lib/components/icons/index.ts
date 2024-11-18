@@ -1,7 +1,7 @@
-import GitHub from "./github.svelte";
+import GitHub from './github.svelte';
 
 export type Props = {
-    class?: string;
-}
+	class?: string;
+};
 
-export { GitHub }
+export { GitHub };

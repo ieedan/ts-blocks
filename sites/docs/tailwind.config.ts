@@ -1,4 +1,3 @@
-import { fontFamily } from 'tailwindcss/defaultTheme';
 import type { Config } from 'tailwindcss';
 import tailwindcssAnimate from 'tailwindcss-animate';
 import typography from '@tailwindcss/typography';
@@ -69,7 +68,7 @@ const config: Config = {
 			},
 			fontFamily: {
 				sans: ['Poppins', 'sans-serif'],
-				serif: ['JetBrains Mono Variable', 'monospace'],
+				serif: ['JetBrains Mono Variable', 'monospace']
 			},
 			keyframes: {
 				'accordion-down': {
