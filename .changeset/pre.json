@@ -1,31 +1,32 @@
 {
-	"mode": "pre",
-	"tag": "next",
-	"initialVersions": {
-		"ts-blocks": "0.11.0"
-	},
-	"changesets": [
-		"brown-phones-know",
-		"empty-camels-smoke",
-		"fast-tips-grow",
-		"friendly-timers-repeat",
-		"good-bulldogs-mate",
-		"healthy-flies-argue",
-		"hip-rivers-swim",
-		"kind-eels-rescue",
-		"kind-news-decide",
-		"late-mails-allow",
-		"lazy-humans-compete",
-		"mean-owls-arrive",
-		"nasty-weeks-whisper",
-		"neat-rockets-build",
-		"olive-cars-relax",
-		"polite-ligers-float",
-		"shiny-dodos-battle",
-		"soft-mails-worry",
-		"thick-eggs-roll",
-		"tidy-queens-suffer",
-		"tough-crabs-jump",
-		"wise-pumpkins-bake"
-	]
+  "mode": "pre",
+  "tag": "next",
+  "initialVersions": {
+    "ts-blocks": "0.11.0"
+  },
+  "changesets": [
+    "brown-phones-know",
+    "empty-camels-smoke",
+    "fast-tips-grow",
+    "friendly-timers-repeat",
+    "good-bulldogs-mate",
+    "healthy-flies-argue",
+    "hip-rivers-swim",
+    "kind-eels-rescue",
+    "kind-news-decide",
+    "late-mails-allow",
+    "lazy-humans-compete",
+    "mean-owls-arrive",
+    "nasty-weeks-whisper",
+    "neat-moons-sparkle",
+    "neat-rockets-build",
+    "olive-cars-relax",
+    "polite-ligers-float",
+    "shiny-dodos-battle",
+    "soft-mails-worry",
+    "thick-eggs-roll",
+    "tidy-queens-suffer",
+    "tough-crabs-jump",
+    "wise-pumpkins-bake"
+  ]
 }

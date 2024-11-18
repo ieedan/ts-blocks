@@ -1,5 +1,11 @@
 # ts-blocks
 
+## 1.0.0-next.18
+
+### Patch Changes
+
+- 4c3ac0a: Fixes an issue where the same block would be added twice if you selected a block and a block that depended on a selected block.
+
 ## 1.0.0-next.17
 
 ### Patch Changes
