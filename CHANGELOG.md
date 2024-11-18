@@ -1,5 +1,11 @@
 # ts-blocks
 
+## 1.0.0-next.19
+
+### Patch Changes
+
+- fad0ec4: `diff` now shows single line changes as a character diff.
+
 ## 1.0.0-next.18
 
 ### Patch Changes
