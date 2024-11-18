@@ -1,2 +1,23 @@
-<h1>Welcome to SvelteKit</h1>
-<p>Visit <a href="https://svelte.dev/docs/kit">svelte.dev/docs/kit</a> to read the documentation</p>
+<script lang="ts">
+	import Button from '$lib/components/ui/button/button.svelte';
+	import { Snippet } from '$lib/components/ui/snippet';
+
+	let { data } = $props();
+</script>
+
+<main class="min-h-svh flex place-items-center justify-center w-full">
+	<div class="max-w-6xl">
+		<div class="flex flex-col gap-5 justify-center place-items-center w-full">
+			<div class="flex place-items-center gap-4 justify-center w-full">
+				<h1
+					class="bg-primary text-primary-foreground text-6xl font-serif font-bold py-4 px-4 w-fit"
+				>
+					jsrepo
+				</h1>
+				<span class="text-4xl font-serif text-muted-foreground">v{data.version}</span>
+			</div>
+			<p class="text-lg text-muted-foreground">The best way to share <span class="text-primary">your</span> code.</p>
+			<Snippet command="execute" args={['jsrepo', 'init']} />
+		</div>
+	</div>
+</main>

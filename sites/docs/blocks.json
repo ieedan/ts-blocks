@@ -1,0 +1,9 @@
+{
+	"$schema": "https://unpkg.com/jsrepo@1.0.0/schema.json",
+	"repos": [
+		"github/ieedan/std"
+	],
+	"path": "src/lib/ts",
+	"includeTests": false,
+	"watermark": true
+}

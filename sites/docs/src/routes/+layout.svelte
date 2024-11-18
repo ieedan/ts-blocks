@@ -1,10 +1,13 @@
 <script lang="ts">
-	import { ModeWatcher } from "mode-watcher"
-	import "@fontsource-variable/jetbrains-mono"
-	import "@fontsource/poppins"
+	import { ModeWatcher } from 'mode-watcher';
+	import '@fontsource-variable/jetbrains-mono';
+	import '@fontsource/poppins';
 	import '../app.css';
-	let { children } = $props();
+	import { Header } from '$lib/components/site/header';
+
+	let { children, data } = $props();
 </script>
 
-<ModeWatcher/>
+<ModeWatcher />
+<Header {...data} />
 {@render children()}
