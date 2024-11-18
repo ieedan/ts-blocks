@@ -7,12 +7,7 @@
 		"type": "git",
 		"url": "git+https://github.com/ieedan/ts-blocks"
 	},
-	"keywords": [
-		"blocks",
-		"typescript",
-		"tested",
-		"documented"
-	],
+	"keywords": ["blocks", "typescript", "tested", "documented"],
 	"author": "Aidan Bleser",
 	"license": "MIT",
 	"bugs": {
@@ -61,8 +56,8 @@
 		"estree-walker": "^3.0.3",
 		"execa": "^9.5.1",
 		"octokit": "^4.0.2",
-		"package-manager-detector": "^0.2.2",
-		"svelte": "^5.2.2",
+		"package-manager-detector": "^0.2.4",
+		"svelte": "^5.2.3",
 		"ts-morph": "^24.0.0",
 		"valibot": "^0.42.1",
 		"validate-npm-package-name": "^6.0.0"

@@ -152,6 +152,8 @@ const formatDiff = ({
 			return colorRemoved(change.value.trimEnd());
 		};
 
+		console.log(change);
+
 		result += `${lines.join(lines.get(colorChange(change)), {
 			prefix: linePrefix,
 		})}\n`;
