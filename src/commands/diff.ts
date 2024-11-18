@@ -183,7 +183,7 @@ const _diff = async (options: Options) => {
 					maxUnchanged: options.maxUnchanged,
 					prefix: () => `${L} `,
 					onUnchanged: ({ from, to, prefix }) =>
-						`${prefix?.() ?? ""}${color.cyan(from)} → ${color.gray(to)} ${color.gray("(unchanged)")}\n`,
+						`${prefix?.() ?? ""} ${color.cyan(from)} → ${color.gray(to)} ${color.gray("(unchanged)")}\n`,
 					intro: ({ from, to, changes, prefix }) => {
 						const totalChanges = changes.filter((a) => a.added).length;
 

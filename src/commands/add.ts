@@ -16,7 +16,7 @@ import { getWatermark } from "../utils/get-watermark";
 import * as gitProviders from "../utils/git-providers";
 import { INFO } from "../utils/index";
 import { OUTPUT_FILE } from "../utils/index";
-import { type Task, runTasks } from "../utils/prompts";
+import { type Task, nextSteps, runTasks } from "../utils/prompts";
 import { languages } from "../utils/language-support";
 
 const schema = v.object({
@@ -352,7 +352,7 @@ const _add = async (blockNames: string[], options: Options) => {
 						if (lang) {
 							const comment = lang.comment(watermark);
 
-							content = `${comment}\n\n${content}`
+							content = `${comment}\n\n${content}`;
 						}
 					}
 
@@ -420,18 +420,46 @@ const _add = async (blockNames: string[], options: Options) => {
 				initialValue: true,
 			});
 
-			if (isCancel(result) || !result) {
+			if (isCancel(result)) {
 				cancel("Canceled!");
 				process.exit(0);
 			}
-		}
 
-		if (deps.size > 0) {
-			await installDependencies(Array.from(deps), false);
-		}
+			if (!result) {
+				// next steps if they didn't install dependencies
+				let steps = [];
 
-		if (devDeps.size > 0) {
-			await installDependencies(Array.from(devDeps), true);
+				if (deps.size > 0) {
+					const cmd = resolveCommand(pm, "install", [...deps]);
+
+					steps.push(`Install dependencies \`${color.cyan(`${cmd?.command} ${cmd?.args.join(" ")}`)}\``);
+				}
+
+				if (devDeps.size > 0) {
+					const cmd = resolveCommand(pm, "install", [...devDeps, "-D"]);
+
+					steps.push(`Install dev dependencies \`${color.cyan(`${cmd?.command} ${cmd?.args.join(" ")}`)}\``);
+				}
+
+				// put steps with numbers above here
+				steps = steps.map((step, i) => `${i + 1}. ${step}`);
+
+				steps.push("");
+
+				steps.push(`Import the blocks from \`${color.cyan(config.path)}\``);
+
+				const next = nextSteps(steps);
+
+				process.stdout.write(next);
+			} else {
+				if (deps.size > 0) {
+					await installDependencies(Array.from(deps), false);
+				}
+
+				if (devDeps.size > 0) {
+					await installDependencies(Array.from(devDeps), true);
+				}
+			}
 		}
 	}
 
