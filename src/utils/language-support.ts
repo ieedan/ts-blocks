@@ -4,6 +4,7 @@ import path from 'node:path';
 import { walk } from 'estree-walker';
 import * as sv from 'svelte/compiler';
 import { Project } from 'ts-morph';
+import validatePackageName from 'validate-npm-package-name';
 import { Err, Ok, type Result } from '../blocks/types/result';
 import { findNearestPackageJson } from './package';
 
@@ -27,7 +28,11 @@ export type Lang = {
 };
 
 const typescript: Lang = {
-	matches: (fileName) => fileName.endsWith('.ts') || fileName.endsWith('.js'),
+	matches: (fileName) =>
+		fileName.endsWith('.ts') ||
+		fileName.endsWith('.js') ||
+		fileName.endsWith('.tsx') ||
+		fileName.endsWith('.jsx'),
 	resolveDependencies: (filePath, category, isSubDir) => {
 		const project = new Project();
 
@@ -142,7 +147,10 @@ const resolveLocalImport = (
  */
 const resolveRemoteDeps = (deps: string[], filePath: string) => {
 	const filteredDeps = deps.filter(
-		(dep) => !builtinModules.includes(dep) && !dep.startsWith('node:')
+		(dep) =>
+			!builtinModules.includes(dep) &&
+			!dep.startsWith('node:') &&
+			validatePackageName(dep).validForNewPackages
 	);
 
 	const pkgPath = findNearestPackageJson(path.dirname(filePath), '');
