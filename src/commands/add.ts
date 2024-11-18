@@ -456,7 +456,11 @@ const getBlocks = async (
 		blocks.push({ name: blockSpecifier, subDependency: false, block });
 
 		if (block.localDependencies && block.localDependencies.length > 0) {
-			const subDeps = await getBlocks(block.localDependencies, blocksMap, repoPaths, blocks);
+			const subDeps = await getBlocks(
+				block.localDependencies.filter((dep) => !blocks.find(({ name }) => name === dep)),
+				blocksMap,
+				repoPaths
+			);
 
 			blocks.push(...subDeps);
 		}
