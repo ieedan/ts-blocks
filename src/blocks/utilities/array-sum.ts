@@ -1,5 +1,5 @@
 /*
-	ts-blocks 1.0.0-next.18
+	jsrepo 1.0.0-next.18
 	Installed from github/ieedan/std
 	11-18-2024
 */

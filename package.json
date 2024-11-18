@@ -1,19 +1,19 @@
 {
-	"name": "ts-blocks",
+	"name": "jsrepo",
 	"description": "A CLI to blocks to your project.",
 	"version": "1.0.0-next.19",
 	"packageManager": "pnpm@9.12.3",
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/ieedan/ts-blocks"
+		"url": "git+https://github.com/ieedan/jsrepo"
 	},
 	"keywords": ["blocks", "typescript", "tested", "documented"],
 	"author": "Aidan Bleser",
 	"license": "MIT",
 	"bugs": {
-		"url": "https://github.com/ieedan/ts-blocks/issues"
+		"url": "https://github.com/ieedan/jsrepo/issues"
 	},
-	"homepage": "https://ieedan.github.io/ts-blocks/",
+	"homepage": "https://ieedan.github.io/jsrepo/",
 	"main": "bin.mjs",
 	"bin": "./bin.mjs",
 	"type": "module",

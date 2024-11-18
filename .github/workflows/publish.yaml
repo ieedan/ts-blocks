@@ -11,7 +11,7 @@ concurrency: ${{ github.workflow }}-${{ github.ref }}
 jobs:
     release:
         name: Build & Publish Release
-        if: github.repository == 'ieedan/ts-blocks'
+        if: github.repository == 'ieedan/jsrepo'
         runs-on: ubuntu-latest
 
         steps:

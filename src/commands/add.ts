@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { cancel, confirm, intro, isCancel, multiselect, outro, spinner } from '@clack/prompts';
+import { cancel, confirm, isCancel, multiselect, outro, spinner } from '@clack/prompts';
 import color from 'chalk';
 import { Command, program } from 'commander';
 import { execa } from 'execa';
@@ -18,7 +18,7 @@ import * as gitProviders from '../utils/git-providers';
 import { INFO } from '../utils/index';
 import { OUTPUT_FILE } from '../utils/index';
 import { languages } from '../utils/language-support';
-import { type Task, nextSteps, runTasks } from '../utils/prompts';
+import { type Task, intro, nextSteps, runTasks } from '../utils/prompts';
 
 const schema = v.object({
 	yes: v.boolean(),
@@ -32,7 +32,7 @@ type Options = v.InferInput<typeof schema>;
 const add = new Command('add')
 	.argument('[blocks...]', 'Whichever block you want to add to your project.')
 	.option('-y, --yes', 'Add and install any required dependencies.', false)
-	.option('-A, --allow', 'Allow ts-blocks to download code from the provided repo.', false)
+	.option('-A, --allow', 'Allow jsrepo to download code from the provided repo.', false)
 	.option('--repo <repo>', 'Repository to download the blocks from')
 	.option('--verbose', 'Include debug logs.', false)
 	.action(async (blockNames, opts) => {
@@ -44,13 +44,13 @@ const add = new Command('add')
 type RemoteBlock = Block & { sourceRepo: gitProviders.Info };
 
 const _add = async (blockNames: string[], options: Options) => {
+	intro(context.package.version);
+	
 	const verbose = (msg: string) => {
 		if (options.verbose) {
 			console.info(`${INFO} ${msg}`);
 		}
 	};
-
-	intro(`${color.bgBlueBright(' ts-blocks ')}${color.gray(` v${context.package.version} `)}`);
 
 	verbose(`Attempting to add ${JSON.stringify(blockNames)}`);
 
@@ -70,7 +70,7 @@ const _add = async (blockNames: string[], options: Options) => {
 
 	if (!options.allow && options.repo) {
 		const result = await confirm({
-			message: `Allow ${color.cyan('ts-blocks')} to download and run code from ${color.cyan(options.repo)}?`,
+			message: `Allow ${color.cyan('jsrepo')} to download and run code from ${color.cyan(options.repo)}?`,
 			initialValue: true,
 		});
 

@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { cancel, confirm, intro, isCancel, outro, spinner } from '@clack/prompts';
+import { cancel, confirm, isCancel, outro, spinner } from '@clack/prompts';
 import color from 'chalk';
 import { Command, program } from 'commander';
 import { diffLines } from 'diff';
@@ -14,6 +14,7 @@ import { getInstalledBlocks } from '../utils/get-installed-blocks';
 import { getWatermark } from '../utils/get-watermark';
 import * as gitProviders from '../utils/git-providers';
 import { languages } from '../utils/language-support';
+import { intro } from '../utils/prompts';
 
 const L = color.gray('│');
 
@@ -28,7 +29,7 @@ type Options = v.InferInput<typeof schema>;
 
 const diff = new Command('diff')
 	.description('Compares local blocks to the blocks in the provided repository.')
-	.option('-A, --allow', 'Allow ts-blocks to download code from the provided repo.', false)
+	.option('-A, --allow', 'Allow jsrepo to download code from the provided repo.', false)
 	.option('-E, --expand', 'Expands the diff so you see everything.', false)
 	.option('--repo <repo>', 'Repository to download the blocks from.')
 	.option(
@@ -46,7 +47,7 @@ const diff = new Command('diff')
 type RemoteBlock = Block & { sourceRepo: gitProviders.Info };
 
 const _diff = async (options: Options) => {
-	intro(`${color.bgBlueBright(' ts-blocks ')}${color.gray(` v${context.package.version} `)}`);
+	intro(context.package.version);
 
 	const loading = spinner();
 
@@ -64,7 +65,7 @@ const _diff = async (options: Options) => {
 
 	if (!options.allow && options.repo) {
 		const result = await confirm({
-			message: `Allow ${color.cyan('ts-blocks')} to download and run code from ${color.cyan(options.repo)}?`,
+			message: `Allow ${color.cyan('jsrepo')} to download and run code from ${color.cyan(options.repo)}?`,
 			initialValue: true,
 		});
 

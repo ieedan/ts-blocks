@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { cancel, confirm, intro, isCancel, outro, spinner } from '@clack/prompts';
+import { cancel, confirm, isCancel, outro, spinner } from '@clack/prompts';
 import color from 'chalk';
 import { Argument, Command, program } from 'commander';
 import { execa } from 'execa';
@@ -15,6 +15,7 @@ import { type Block, categorySchema, isTestFile } from '../utils/build';
 import { getInstalledBlocks } from '../utils/get-installed-blocks';
 import * as gitProviders from '../utils/git-providers';
 import { OUTPUT_FILE } from '../utils/index';
+import { intro } from '../utils/prompts';
 
 const schema = v.object({
 	debug: v.boolean(),
@@ -29,7 +30,7 @@ const test = new Command('test')
 	.description('Tests blocks against most recent tests')
 	.addArgument(new Argument('[blocks...]', 'Whichever blocks you want to test.').default([]))
 	.option('--verbose', 'Include debug logs.', false)
-	.option('-A, --allow', 'Allow ts-blocks to download code from the provided repo.', false)
+	.option('-A, --allow', 'Allow jsrepo to download code from the provided repo.', false)
 	.option('--repo <repo>', 'Repository to download the blocks from')
 	.option('--debug', 'Leaves the temp test file around for debugging upon failure.', false)
 	.action(async (blockNames, opts) => {
@@ -41,7 +42,7 @@ const test = new Command('test')
 type RemoteBlock = Block & { sourceRepo: gitProviders.Info };
 
 const _test = async (blockNames: string[], options: Options) => {
-	intro(`${color.bgBlueBright(' ts-blocks ')}${color.gray(` v${context.package.version} `)}`);
+	intro(context.package.version);
 
 	const verbose = (msg: string) => {
 		if (options.verbose) {
@@ -67,7 +68,7 @@ const _test = async (blockNames: string[], options: Options) => {
 
 	if (!options.allow && options.repo) {
 		const result = await confirm({
-			message: `Allow ${color.cyan('ts-blocks')} to download and run code from ${color.cyan(options.repo)}?`,
+			message: `Allow ${color.cyan('jsrepo')} to download and run code from ${color.cyan(options.repo)}?`,
 			initialValue: true,
 		});
 

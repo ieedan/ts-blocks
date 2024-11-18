@@ -1,5 +1,5 @@
 {
-	"$schema": "https://unpkg.com/ts-blocks@1.0.0-next.11/schema.json",
+	"$schema": "https://unpkg.com/jsrepo@1.0.0/schema.json",
 	"repos": ["github/ieedan/std"],
 	"path": "src/blocks",
 	"includeTests": false,
