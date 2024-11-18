@@ -18,11 +18,6 @@
 			"type": "boolean",
 			"default": "true"
 		},
-		"imports": {
-			"description": "Controls the `.ts` suffix of relative imports.",
-			"enum": ["deno", "node"],
-			"default": "node"
-		},
 		"watermark": {
 			"description": "When true will add a watermark with the version and repository at the top of the installed files.",
 			"type": "boolean",

@@ -9,7 +9,6 @@ const schema = v.object({
 	repos: v.optional(v.array(v.string()), []),
 	includeTests: v.boolean(),
 	path: v.pipe(v.string(), v.minLength(1)),
-	imports: v.optional(v.union([v.literal('deno'), v.literal('node')]), 'node'),
 	watermark: v.optional(v.boolean(), true),
 });
 
