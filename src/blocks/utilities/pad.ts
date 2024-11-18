@@ -1,10 +1,10 @@
-import { stripAsni } from './strip-ansi';
-
-/* 
-	ts-blocks 1.0.0-next.14 
+/*
+	ts-blocks 1.0.0-next.17
 	Installed from github/ieedan/std
-	11-15-2024
+	11-18-2024
 */
+
+import { stripAsni } from './strip-ansi';
 
 /** Adds the `padWith` (default `' '`) to the string the amount of times specified by the `space` argument
  *
