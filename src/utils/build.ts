@@ -3,7 +3,7 @@ import path from "node:path";
 import color from "chalk";
 import { program } from "commander";
 import * as v from "valibot";
-import { resolvers } from "./dependency-resolution";
+import { languages } from "./language-support";
 
 export const blockSchema = v.object({
 	name: v.string(),
@@ -67,9 +67,9 @@ const buildBlocksDirectory = (blocksPath: string, cwd: string): Category[] => {
 			if (fs.statSync(blockDir).isFile()) {
 				if (isTestFile(file)) continue;
 
-				const resolver = resolvers.find((resolver) => resolver.matches(file));
+				const lang = languages.find((resolver) => resolver.matches(file));
 
-				if (!resolver) {
+				if (!lang) {
 					// a warning here might be nice
 					continue;
 				}
@@ -79,7 +79,12 @@ const buildBlocksDirectory = (blocksPath: string, cwd: string): Category[] => {
 				// tries to find a test file with the same name as the file
 				const testsPath = files.find((f) => TEST_SUFFIXES.find((suffix) => f === `${name}${suffix}`));
 
-				const { dependencies, devDependencies, local } = resolver.resolve(blockDir, categoryName, false);
+				const { dependencies, devDependencies, local } = lang.resolveDependencies(blockDir, categoryName, false).match(
+					(val) => val,
+					(err) => {
+						program.error(color.red(err));
+					}
+				);
 
 				const block: Block = {
 					name,
@@ -113,18 +118,21 @@ const buildBlocksDirectory = (blocksPath: string, cwd: string): Category[] => {
 				for (const f of blockFiles) {
 					if (isTestFile(f)) continue;
 
-					const resolver = resolvers.find((resolver) => resolver.matches(f));
+					const lang = languages.find((resolver) => resolver.matches(f));
 
-					if (!resolver) {
+					if (!lang) {
 						// a warning here might be nice
 						continue;
 					}
 
-					const { local, dependencies, devDependencies } = resolver.resolve(
-						path.join(blockDir, f),
-						categoryName,
-						true
-					);
+					const { local, dependencies, devDependencies } = lang
+						.resolveDependencies(path.join(blockDir, f), categoryName, true)
+						.match(
+							(val) => val,
+							(err) => {
+								program.error(color.red(err));
+							}
+						);
 
 					for (const dep of local) {
 						localDepsSet.add(dep);
