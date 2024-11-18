@@ -45,7 +45,7 @@ type RemoteBlock = Block & { sourceRepo: gitProviders.Info };
 
 const _add = async (blockNames: string[], options: Options) => {
 	intro(context.package.version);
-	
+
 	const verbose = (msg: string) => {
 		if (options.verbose) {
 			console.info(`${INFO} ${msg}`);
