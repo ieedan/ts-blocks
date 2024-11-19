@@ -6,7 +6,7 @@
 	import { Header } from '$lib/components/site/header';
 	import { pmContext } from '$lib/ts/context';
 
-	pmContext.init("npm", { persistValue: true });
+	pmContext.init("npm");
 
 	let { children, data } = $props();
 </script>

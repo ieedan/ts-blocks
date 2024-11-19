@@ -7,14 +7,14 @@ type Options = {
 };
 
 export type Context<T> = {
-	init: (value: T, opts: Partial<Options>) => Writable<T>;
+	init: (value: T) => Writable<T>;
 	get: () => Writable<T>;
 };
 
-export const context = <T>(key: string): Context<T> => {
+export const context = <T>(key: string, { persistValue = false }: Partial<Options> = {}): Context<T> => {
 	const keySymbol = Symbol(key);
 	return {
-		init: (value, { persistValue = false }) => {
+		init: (value) => {
 			let store: Writable<T>;
 
 			if (persistValue) {
