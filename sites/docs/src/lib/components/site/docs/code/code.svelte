@@ -49,10 +49,9 @@
 	<div
 		class="scrollbar-hide flex max-h-full max-w-full place-items-start overflow-x-auto overflow-y-auto py-6"
 	>
-		<pre class="w-full flex-grow pl-6 text-sm" class:line-numbers={showLines}>
-			<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-			{@html highlighted}
-		</pre>
+		<pre
+			class="w-full flex-grow pl-6 text-sm"
+			class:line-numbers={showLines}>{@html highlighted}</pre>
 	</div>
 	{#if showCopy}
 		<div
