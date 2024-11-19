@@ -166,7 +166,6 @@ const resolveRemoteDeps = (deps: string[], filePath: string) => {
 			const parsed = parsePackageName(dep);
 
 			if (parsed.isErr()) {
-				// maybe we warn here
 				console.warn(
 					`${WARN} Skipped adding import \`${color.cyan(dep)}\`. Reason: Couldn't parse package name`
 				);
@@ -176,7 +175,6 @@ const resolveRemoteDeps = (deps: string[], filePath: string) => {
 			const depInfo = parsed.unwrap();
 
 			if (!validatePackageName(depInfo.name).validForNewPackages) {
-				// maybe we warn here
 				console.warn(
 					`${WARN} Skipped adding import \`${color.cyan(dep)}\`. Reason: Not a valid package name`
 				);
