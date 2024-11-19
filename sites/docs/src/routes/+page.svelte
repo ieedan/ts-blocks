@@ -4,6 +4,14 @@
 	let { data } = $props();
 </script>
 
+<svelte:head>
+	<title>jsrepo ~ Home</title>
+	<meta
+		name="description"
+		content="The best way to share your code across projects in the js ecosystem."
+	/>
+</svelte:head>
+
 <main
 	class="flex place-items-center justify-center w-full px-4"
 	style="height: calc(100svh - 57px);"
