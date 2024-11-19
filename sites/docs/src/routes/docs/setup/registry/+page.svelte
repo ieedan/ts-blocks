@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { Code, CodeSpan, DocHeader, Jsrepo, Link, SubHeading } from '$lib/components/site/docs';
 	import { Snippet } from '$lib/components/ui/snippet';
+
+  let { data } = $props();
 </script>
 
 <DocHeader title="Registry Setup" description="Create your own registry to share your code." />
@@ -137,18 +139,18 @@ const add = (a: number, b: number): number => {
   print(\`result is: \${color.cyan(\`\${a + b}\`)}\`)
 }`}
 />
-<p>In this case this would be the output for the following command:</p>
+<p>If you now add <CodeSpan>utils/math</CodeSpan> you will get the following output:</p>
 <Snippet command="execute" args={['jsrepo', 'add', 'utils/math']} />
 <Code
 	showCopy={false}
 	showLines={false}
-	code={`┌   jsrepo  v1.0.3 
+	code={`┌   jsrepo  v${data.version} 
 │
 ◇  Retrieved blocks from github/<owner>/<name>
 │
-◇  Added utils/math
+◇  Added github/<owner>/<name>/utils/math
 │
-◇  Added utils/print
+◇  Added github/<owner>/<name>/utils/print
 │
 ◇  Would you like to install dependencies?
 │  Yes

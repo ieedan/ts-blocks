@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { Code, CodeSpan, DocHeader, Jsrepo } from '$lib/components/site/docs';
 	import { Snippet } from '$lib/components/ui/snippet';
+
+	let { data } = $props();
 </script>
 
 <DocHeader
@@ -21,7 +23,7 @@
 <Code
 	showLines={false}
 	showCopy={false}
-	code={`┌   jsrepo  v1.0.0 
+	code={`┌   jsrepo  v${data.version}
 │
 ◇  Where should we add the blocks?
 │  src/blocks
@@ -36,11 +38,11 @@
 │
 └  All done!`}
 />
-<p>Once you have run through the prompts you should end up with a config file like this:</p>
+<p>Once you have run through the prompts your <CodeSpan>jsrepo.json</CodeSpan> file should look something like this:</p>
 <Code
 	lang="json"
 	code={`{
-	"$schema": "https://unpkg.com/jsrepo@1.0.0/schema.json",
+	"$schema": "https://unpkg.com/jsrepo@${data.version}/schema.json",
 	"repos": ["github/ieedan/std"],
 	"path": "src/blocks",
 	"includeTests": false,
