@@ -84,6 +84,18 @@ const _add = async (blockNames: string[], options: Options) => {
 		}
 
 		if (!repoPaths.find((repoPath) => repoPath === repo)) {
+			if (!options.allow) {
+				const result = await confirm({
+					message: `Allow ${color.cyan('jsrepo')} to download and run code from ${color.cyan(repo)}?`,
+					initialValue: true,
+				});
+
+				if (isCancel(result) || !result) {
+					cancel('Canceled!');
+					process.exit(0);
+				}
+			}
+
 			repoPaths.push(repo);
 		}
 	}
