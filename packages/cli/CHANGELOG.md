@@ -1,5 +1,11 @@
 # jsrepo
 
+## 1.0.2
+
+### Patch Changes
+
+- 3097380: `build` command can now add dependencies with complex paths such as `lucide-svelte/icons/moon`.
+
 ## 1.0.1
 
 ### Patch Changes
