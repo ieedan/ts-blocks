@@ -5,5 +5,5 @@
 # jsrepo
 
 ```bash
-npx jsrepo@next init
+npx jsrepo init
 ```
