@@ -109,6 +109,19 @@
 	command="execute"
 	args={['jsrepo', 'add', '--repo', 'github/<owner>/<repo>/<category>/<name>']}
 />
+<SubHeading>Dependencies</SubHeading>
+<p>
+	Your blocks can depend on other blocks under the same directory of your project and they will also
+	be added when users add that block.
+</p>
+<p>
+  <span class="font-serif text-sm">blocks/utils/math/add.ts</span>
+</p>
+<Code lang="ts" code={`import { print } from "../print"; // import the print block
+
+const add = (a: number, b: number): number => {
+  print(\`result is: \${a + b}\`)
+}`}/>
 <SubHeading>Examples</SubHeading>
 <ul>
 	<li>
