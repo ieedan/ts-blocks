@@ -38,7 +38,10 @@
 │
 └  All done!`}
 />
-<p>Once you have run through the prompts your <CodeSpan>jsrepo.json</CodeSpan> file should look something like this:</p>
+<p>
+	Once you have run through the prompts your <CodeSpan>jsrepo.json</CodeSpan> file should look something
+	like this:
+</p>
 <Code
 	lang="json"
 	code={`{

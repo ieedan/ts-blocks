@@ -2,7 +2,7 @@
 	import { Code, CodeSpan, DocHeader, Jsrepo, Link, SubHeading } from '$lib/components/site/docs';
 	import { Snippet } from '$lib/components/ui/snippet';
 
-  let { data } = $props();
+	let { data } = $props();
 </script>
 
 <DocHeader title="Registry Setup" description="Create your own registry to share your code." />
