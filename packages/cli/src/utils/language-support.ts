@@ -1,12 +1,15 @@
 import fs from 'node:fs';
 import { builtinModules } from 'node:module';
 import path from 'node:path';
+import color from 'chalk';
 import { walk } from 'estree-walker';
 import * as sv from 'svelte/compiler';
 import { Project } from 'ts-morph';
 import validatePackageName from 'validate-npm-package-name';
-import { Err, Ok, type Result } from '../blocks/types/result';
+import { WARN } from '.';
+import { Ok, type Result } from '../blocks/types/result';
 import { findNearestPackageJson } from './package';
+import { parsePackageName } from './parse-package-name';
 
 export type ResolvedDependencies = {
 	local: string[];
@@ -147,10 +150,7 @@ const resolveLocalImport = (
  */
 const resolveRemoteDeps = (deps: string[], filePath: string) => {
 	const filteredDeps = deps.filter(
-		(dep) =>
-			!builtinModules.includes(dep) &&
-			!dep.startsWith('node:') &&
-			validatePackageName(dep).validForNewPackages
+		(dep) => !builtinModules.includes(dep) && !dep.startsWith('node:')
 	);
 
 	const pkgPath = findNearestPackageJson(path.dirname(filePath), '');
@@ -163,27 +163,47 @@ const resolveRemoteDeps = (deps: string[], filePath: string) => {
 			JSON.parse(fs.readFileSync(pkgPath, 'utf-8'));
 
 		for (const dep of filteredDeps) {
+			const parsed = parsePackageName(dep);
+
+			if (parsed.isErr()) {
+				// maybe we warn here
+				console.warn(
+					`${WARN} Skipped adding import \`${color.cyan(dep)}\`. Reason: Couldn't parse package name`
+				);
+				continue;
+			}
+
+			const depInfo = parsed.unwrap();
+
+			if (!validatePackageName(depInfo.name).validForNewPackages) {
+				// maybe we warn here
+				console.warn(
+					`${WARN} Skipped adding import \`${color.cyan(dep)}\`. Reason: Not a valid package name`
+				);
+				continue;
+			}
+
 			let version: string | undefined = undefined;
 			if (packageDependencies !== undefined) {
-				version = packageDependencies[dep];
+				version = packageDependencies[depInfo.name];
 			}
 
 			if (version !== undefined) {
-				dependencies.add(`${dep}@${version}`);
+				dependencies.add(`${depInfo.name}@${version}`);
 				continue;
 			}
 
 			if (packageDevDependencies !== undefined) {
-				version = packageDevDependencies[dep];
+				version = packageDevDependencies[depInfo.name];
 			}
 
 			if (version !== undefined) {
-				devDependencies.add(`${dep}@${version}`);
+				devDependencies.add(`${depInfo.name}@${version}`);
 				continue;
 			}
 
 			// if no version found just add it without a version
-			dependencies.add(dep);
+			dependencies.add(depInfo.name);
 		}
 	}
 
