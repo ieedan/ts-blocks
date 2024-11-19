@@ -199,12 +199,13 @@ const _add = async (blockNames: string[], options: Options) => {
 	const devDeps: Set<string> = new Set<string>();
 	const deps: Set<string> = new Set<string>();
 
-	for (const { name: specifier, block } of installingBlocks) {
+	for (const { block } of installingBlocks) {
+		const fullSpecifier = `${block.sourceRepo.url}/${block.category}/${block.name}`;
 		const watermark = getWatermark(context.package.version, block.sourceRepo.url);
 
 		const providerInfo = block.sourceRepo;
 
-		verbose(`Attempting to add ${specifier}`);
+		verbose(`Attempting to add ${fullSpecifier}`);
 
 		const directory = path.join(config.path, block.category);
 
@@ -227,8 +228,8 @@ const _add = async (blockNames: string[], options: Options) => {
 		}
 
 		tasks.push({
-			loadingMessage: `Adding ${specifier}`,
-			completedMessage: `Added ${specifier}`,
+			loadingMessage: `Adding ${fullSpecifier}`,
+			completedMessage: `Added ${fullSpecifier}`,
 			run: async () => {
 				// in case the directory didn't already exist
 				fs.mkdirSync(directory, { recursive: true });
@@ -242,7 +243,9 @@ const _add = async (blockNames: string[], options: Options) => {
 
 					if (!response.ok) {
 						loading.stop(color.red(`Error fetching ${color.bold(rawUrl.href)}`));
-						program.error(color.red(`There was an error trying to get ${specifier}`));
+						program.error(
+							color.red(`There was an error trying to get ${fullSpecifier}`)
+						);
 					}
 
 					return await response.text();
