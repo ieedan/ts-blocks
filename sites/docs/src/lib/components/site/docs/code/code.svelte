@@ -23,8 +23,6 @@
 		showCopy = true
 	}: Props = $props();
 
-	let lines = $derived(code.split('\n').length);
-
 	let highlighted: string = $state(code);
 
 	let hl: HighlighterGeneric<BundledLanguage, BundledTheme> | undefined = undefined;
@@ -51,16 +49,10 @@
 	<div
 		class="scrollbar-hide flex max-h-full max-w-full place-items-start overflow-x-auto overflow-y-auto py-6"
 	>
-		{#if showLines}
-			<div class="min-w-14 text-end text-sm leading-[20px]">
-				{#each new Array(lines).fill(0) as _, index}
-					<span class="text-end font-serif text-muted-foreground">{index + 1}</span>
-					<br />
-				{/each}
-			</div>
-		{/if}
-		<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-		<pre class="w-full flex-grow pl-6 text-sm">{@html highlighted}</pre>
+		<pre class="w-full flex-grow pl-6 text-sm" class:line-numbers={showLines}>
+			<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+			{@html highlighted}
+		</pre>
 	</div>
 	{#if showCopy}
 		<div
@@ -73,3 +65,23 @@
 		</div>
 	{/if}
 </div>
+
+<style lang="postcss">
+	:global(pre.line-numbers) {
+		counter-reset: step;
+		counter-increment: step 0;
+	}
+
+	:global(pre.line-numbers .line::before) {
+		content: counter(step);
+		counter-increment: step;
+		width: 1rem;
+		margin-right: 1.5rem;
+		display: inline-block;
+		text-align: right;
+	}
+
+	:global(pre.line-numbers .line::before) {
+		@apply text-muted-foreground;
+	}
+</style>
