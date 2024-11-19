@@ -1,0 +1,61 @@
+{
+	"name": "jsrepo",
+	"description": "A CLI to add shared code from remote repositories.",
+	"version": "1.0.0",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/ieedan/jsrepo"
+	},
+	"keywords": ["repo", "cli"],
+	"author": "Aidan Bleser",
+	"license": "MIT",
+	"bugs": {
+		"url": "https://github.com/ieedan/jsrepo/issues"
+	},
+	"homepage": "https://ieedan.github.io/jsrepo/",
+	"main": "bin.mjs",
+	"bin": "./bin.mjs",
+	"type": "module",
+	"files": [
+		"bin.mjs",
+		"package.json",
+		"pnpm-lock.yaml",
+		"README.md",
+		"schema.json",
+		"dist/**/*",
+		"src/**/*"
+	],
+	"scripts": {
+		"start": "tsup --silent && node bin.mjs",
+		"build": "tsup",
+		"format": "biome format --write",
+		"lint": "biome lint --write",
+		"check": "biome check && tsc",
+		"test": "vitest",
+		"check:types": "tsc"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "1.9.4",
+		"@types/diff": "^6.0.0",
+		"@types/node": "^22.9.0",
+		"@types/validate-npm-package-name": "^4.0.2",
+		"tsup": "^8.3.5",
+		"typescript": "^5.6.3",
+		"vitest": "^2.1.5"
+	},
+	"dependencies": {
+		"@clack/prompts": "^0.8.1",
+		"ansi-regex": "^6.1.0",
+		"chalk": "^5.3.0",
+		"commander": "^12.1.0",
+		"diff": "^7.0.0",
+		"estree-walker": "^3.0.3",
+		"execa": "^9.5.1",
+		"octokit": "^4.0.2",
+		"package-manager-detector": "^0.2.4",
+		"svelte": "^5.2.3",
+		"ts-morph": "^24.0.0",
+		"valibot": "^0.42.1",
+		"validate-npm-package-name": "^6.0.0"
+	}
+}

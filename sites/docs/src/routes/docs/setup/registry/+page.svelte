@@ -1,0 +1,117 @@
+<script lang="ts">
+	import { Code, CodeSpan, DocHeader, Jsrepo, Link, SubHeading } from '$lib/components/site/docs';
+	import { Snippet } from '$lib/components/ui/snippet';
+</script>
+
+<DocHeader title="Registry Setup" description="Create your own registry to share your code." />
+<p>
+	To create a registry start by creating a new
+	<Link target="_blank" href="https://github.com/new">github</Link> repository.
+</p>
+<p>
+	<Jsrepo /> looks at the directories in your project to determine which blocks to add the the
+	<CodeSpan>jsrepo-manifest.json</CodeSpan> file. Because of this you need to follow a specific file
+	structure.
+</p>
+<Code
+	showLines={false}
+	showCopy={false}
+	code={`root
+├── package.json
+├── ...
+└── <folder>
+    ├── <category>
+    │   ├── <block>.(ts|js|tsx|jsx|svelte)
+    │   └── <block>
+    │       ├── <file>
+    │       └── <file>
+    └── <category>
+`}
+/>
+<p>You will need to create a folder that will have the block categories (`blocks` above).</p>
+<p>Inside this folder you add your categories ex: (utils, components, etc.).</p>
+<p>
+	Inside your categories folders you add the code for your blocks. You can either add the block code
+	as a single file directly inside the category or you can create a folder that contains the files
+	for the block.
+</p>
+<p>
+	When adding blocks users will access your blocks by specifying
+	<CodeSpan>{`<category>/<name>`}</CodeSpan>.
+</p>
+<p>When you are done your file structure might look something like this:</p>
+<Code
+	showLines={false}
+	showCopy={false}
+	code={`root
+├── package.json
+├── ...
+└── blocks
+    └── utils
+        ├─── print.ts
+        └─── math
+            ├─── add.ts
+            └─── subtract.ts
+`}
+/>
+<p>
+	Once you have setup all you files run <CodeSpan>build</CodeSpan> to build you files into a
+	<CodeSpan>jsrepo-manifest.json</CodeSpan> file.
+</p>
+<Snippet command="execute" args={['jsrepo', 'build', '--dirs', '<folder>']} />
+<p>
+	The output <CodeSpan>jsrepo-manifest.json</CodeSpan> should look something like this.
+</p>
+<Code
+	lang="json"
+	code={`[
+  {
+    "name": "utils", // category name
+    "blocks": [ // blocks in the category
+	  {
+		"name": "print", // name of the block
+        "directory": "src/utils", // directory containing the files
+        "category": "utils",
+        "tests": false, // whether or not the block has tests
+        "subdirectory": false, // is the block in a subdirectory of it's category
+        "files": [
+            "print.ts"
+        ],
+        "localDependencies": [], // any dependencies to other blocks
+        "dependencies": [], // any dependencies 
+        "devDependencies": []  // any dependencies 
+      },
+      {
+        "name": "print", // name of the block
+        "directory": "src/utils", // directory containing the files
+        "category": "utils",
+        "tests": false, // whether or not the block has tests
+        "subdirectory": true, // is the block in a subdirectory of it's category
+        "files": [
+            "add.ts",
+            "subtract.ts"
+        ],
+        "localDependencies": [ // any dependencies to other blocks
+            "utils/print"
+        ], 
+        "dependencies": [], // any dependencies 
+        "devDependencies": []  // any dependencies 
+      }
+	]
+  },
+]`}
+/>
+<p>
+	Commit the output <CodeSpan>jsrepo-manifest.json</CodeSpan> to a public repository and you should now
+	be able to access your blocks by running:
+</p>
+<Snippet
+	command="execute"
+	args={['jsrepo', 'add', '--repo', 'github/<owner>/<repo>/<category>/<name>']}
+/>
+<SubHeading>Examples</SubHeading>
+<ul>
+	<li>
+		<Link target="_blank" href="https://github.com/ieedan/std">github/ieedan/std</Link>
+	</li>
+</ul>

@@ -1,0 +1,35 @@
+<script lang="ts">
+	import { Snippet } from '$lib/components/ui/snippet';
+
+	let { data } = $props();
+</script>
+
+<svelte:head>
+	<title>jsrepo ~ Home</title>
+	<meta
+		name="description"
+		content="The best way to share your code across projects in the js ecosystem."
+	/>
+</svelte:head>
+
+<main
+	class="flex place-items-center justify-center w-full px-4"
+	style="height: calc(100svh - 57px);"
+>
+	<div class="max-w-xl w-full">
+		<div class="flex flex-col gap-5 justify-center place-items-center w-full">
+			<div class="flex place-items-center gap-4 justify-center w-full">
+				<h1
+					class="bg-primary text-primary-foreground text-6xl font-serif font-bold py-4 px-4 w-fit"
+				>
+					jsrepo
+				</h1>
+				<span class="text-4xl font-serif text-muted-foreground">v{data.version}</span>
+			</div>
+			<p class="text-lg text-muted-foreground">
+				The best way to reuse <span class="text-primary">your</span> code.
+			</p>
+			<Snippet command="execute" args={['jsrepo', 'init']} class="max-w-[450px]" />
+		</div>
+	</div>
+</main>
