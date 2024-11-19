@@ -18,7 +18,7 @@ const tryGetVersion = async (): Promise<Result<string, string>> => {
 			return Err('Error getting version');
 		}
 
-		const { version } = JSON.parse(await response.json());
+		const { version } = await response.json();
 
 		return Ok(version);
 	} catch (err) {
