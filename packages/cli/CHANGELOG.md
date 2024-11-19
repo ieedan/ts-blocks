@@ -1,5 +1,15 @@
 # jsrepo
 
+## 1.1.0
+
+### Minor Changes
+
+- 2ad43fe: fix `add` command issue where package sub dependencies weren't added.
+
+### Patch Changes
+
+- b0b8edb: Fixed an issuew where the tasks showed an incomplete specifier when saying `Added <x>`.
+
 ## 1.0.3
 
 ### Patch Changes
