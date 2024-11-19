@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import * as v from 'valibot';
 import { Err, Ok, type Result } from '../blocks/types/result';
 
-const CONFIG_NAME = 'blocks.json';
+const CONFIG_NAME = 'jsrepo.json';
 
 const schema = v.object({
 	$schema: v.string(),
@@ -20,7 +20,7 @@ const getConfig = (): Result<Config, string> => {
 	const config = v.safeParse(schema, JSON.parse(fs.readFileSync(CONFIG_NAME).toString()));
 
 	if (!config.success) {
-		return Err('There was an error reading your `blocks.json` file!');
+		return Err(`There was an error reading your \`${CONFIG_NAME}\` file!`);
 	}
 
 	return Ok(config.output);

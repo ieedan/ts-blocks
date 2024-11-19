@@ -3,14 +3,14 @@
 	"type": "object",
 	"properties": {
 		"repos": {
-			"description": "Repositories to download blocks from.",
+			"description": "Repositories to download code from.",
 			"type": "array",
 			"items": {
 				"type": "string"
 			}
 		},
 		"path": {
-			"description": "Path to add blocks to in your project.",
+			"description": "Path to add code to in your project.",
 			"type": "string"
 		},
 		"includeTests": {

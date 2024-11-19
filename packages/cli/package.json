@@ -6,7 +6,7 @@
 		"type": "git",
 		"url": "git+https://github.com/ieedan/jsrepo"
 	},
-	"keywords": ["blocks", "typescript", "tested", "documented"],
+	"keywords": ["repo", "cli"],
 	"author": "Aidan Bleser",
 	"license": "MIT",
 	"bugs": {
@@ -23,8 +23,7 @@
 		"README.md",
 		"schema.json",
 		"dist/**/*",
-		"src/**/*",
-		"blocks/**/*"
+		"src/**/*"
 	],
 	"scripts": {
 		"start": "tsup --silent && node bin.mjs",

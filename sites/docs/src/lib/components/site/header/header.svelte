@@ -2,6 +2,10 @@
 	import * as Icons from '$lib/components/icons';
 	import LightSwitch from '$lib/components/ui/light-switch/light-switch.svelte';
 	import Button from '$lib/components/ui/button/button.svelte';
+	import * as Drawer from '$lib/components/ui/drawer';
+	import { categories } from '$lib/components/site/map';
+	import { page } from '$app/stores';
+	import { Menu } from 'lucide-svelte';
 
 	type Props = {
 		version: string;
@@ -10,24 +14,62 @@
 	let { version }: Props = $props();
 </script>
 
-<header class="py-2 px-6 flex place-items-center justify-between border-b border-border">
-	<div class="flex place-items-center gap-6">
-		<a href="/" class="flex place-items-center gap-2">
-			<h1 class="bg-primary text-primary-foreground text-lg font-serif font-bold p-1 w-fit">
-				jsrepo
-			</h1>
-			<span class="text-base font-serif text-muted-foreground">v{version}</span>
-		</a>
-		<div class="flex place-items-center gap-4">
-			<a href="/docs" class="hover:text-primary text-muted-foreground transition-all">
-				Docs
+<header class="py-2 px-6 flex place-items-center justify-center border-b border-border h-14 sticky top-0 bg-background z-20">
+	<div class="flex place-items-center justify-between max-w-screen-2xl w-full">
+		<div class="flex place-items-center gap-6">
+			<Drawer.Root>
+				<Drawer.Trigger class="lg:hidden">
+					<Menu class="size-5" />
+				</Drawer.Trigger>
+				<Drawer.Content class="p-6 flex flex-col gap-4">
+					{#each categories as { name, routes }}
+						<div class="flex flex-col gap-1 w-full">
+							{#if name !== 'routes'}
+								<span class="text-sm font-semibold">{name}</span>
+							{/if}
+							<div class="flex flex-col">
+								{#each routes as { name, href }}
+									<a
+										class="data-[active=true]:text-primary text-muted-foreground"
+										{href}
+										data-active={$page.url.pathname.endsWith(href)}
+									>
+										{name}
+									</a>
+								{/each}
+							</div>
+						</div>
+					{/each}
+				</Drawer.Content>
+			</Drawer.Root>
+			<a href="/" class="lg:flex place-items-center gap-2 hidden">
+				<h1 class="bg-primary text-primary-foreground text-lg font-serif font-bold p-1 w-fit">
+					jsrepo
+				</h1>
+				<span class="text-base font-serif text-muted-foreground">v{version}</span>
 			</a>
+			<div class="flex place-items-center gap-4">
+				<a
+					href="/"
+					class="hover:text-primary text-muted-foreground transition-all data-[active=true]:text-primary"
+					data-active={$page.url.pathname === '/'}
+				>
+					Home
+				</a>
+				<a
+					href="/docs"
+					class="hover:text-primary text-muted-foreground transition-all data-[active=true]:text-primary"
+					data-active={$page.url.pathname.startsWith('/docs')}
+				>
+					Docs
+				</a>
+			</div>
 		</div>
-	</div>
-	<div class="flex place-items-center gap-1">
-		<Button href="https://github.com/ieedan/jsrepo" variant="ghost" size="icon">
-			<Icons.GitHub />
-		</Button>
-		<LightSwitch />
+		<div class="flex place-items-center gap-1">
+			<Button href="https://github.com/ieedan/jsrepo" variant="ghost" size="icon">
+				<Icons.GitHub />
+			</Button>
+			<LightSwitch />
+		</div>
 	</div>
 </header>

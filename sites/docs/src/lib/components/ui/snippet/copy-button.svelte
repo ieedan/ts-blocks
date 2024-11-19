@@ -1,7 +1,9 @@
 <script lang="ts">
 	import { Button } from '$lib/components/ui/button';
 	import { cn } from '$lib/utils';
-	import { Copy, Check, ChevronsUpDown } from 'lucide-svelte';
+	import Check from 'lucide-svelte/icons/check';
+	import Copy from 'lucide-svelte/icons/copy';
+	import { ChevronsUpDown } from 'lucide-svelte';
 	import { scale } from 'svelte/transition';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import type { Agent } from 'package-manager-detector';
@@ -34,7 +36,7 @@
 			{#snippet child({ props })}
 				<Button
 					variant="secondary"
-					class="h-7 px-2 text-sm text-muted-foreground flex place-items-center gap-1 hover:bg-secondary"
+					class="h-6 px-2 text-sm text-muted-foreground flex place-items-center gap-1 hover:bg-secondary"
 					{...props}
 				>
 					{pm}
@@ -55,14 +57,15 @@
 			{/each}
 		</DropdownMenu.Content>
 	</DropdownMenu.Root>
-	<Button onclick={copy} variant="ghost" size="icon" class="size-7">
+	<Button onclick={copy} variant="ghost" size="icon" class="size-6 text-xs">
+		<span class="sr-only">Copy</span>
 		{#if copied}
 			<div in:scale={{ start: 0.85 }}>
-				<Check class="size-2" />
+				<Check class="size-3" tabindex={-1} />
 			</div>
 		{:else}
 			<div in:scale={{ start: 0.85 }}>
-				<Copy class="size-2" />
+				<Copy class="size-3" tabindex={-1} />
 			</div>
 		{/if}
 	</Button>

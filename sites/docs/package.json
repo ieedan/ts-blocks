@@ -31,6 +31,7 @@
 		"package-manager-detector": "^0.2.4",
 		"prettier": "^3.3.2",
 		"prettier-plugin-svelte": "^3.2.6",
+		"shiki": "^1.23.1",
 		"svelte": "^5.0.0",
 		"svelte-check": "^4.0.0",
 		"svelte-persisted-store": "^0.12.0",
@@ -40,6 +41,7 @@
 		"tailwindcss-animate": "^1.0.7",
 		"typescript": "^5.0.0",
 		"typescript-eslint": "^8.0.0",
+		"vaul-svelte": "1.0.0-next.3",
 		"vite": "^5.0.3"
 	}
 }

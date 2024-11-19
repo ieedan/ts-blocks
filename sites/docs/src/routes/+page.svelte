@@ -4,7 +4,7 @@
 	let { data } = $props();
 </script>
 
-<main class="flex place-items-center justify-center w-full" style="height: calc(100svh - 57px);">
+<main class="flex place-items-center justify-center w-full px-4" style="height: calc(100svh - 57px);">
 	<div class="max-w-xl w-full">
 		<div class="flex flex-col gap-5 justify-center place-items-center w-full">
 			<div class="flex place-items-center gap-4 justify-center w-full">
@@ -18,7 +18,7 @@
 			<p class="text-lg text-muted-foreground">
 				The best way to reuse <span class="text-primary">your</span> code.
 			</p>
-			<Snippet command="execute" args={['jsrepo', 'init']} />
+			<Snippet command="execute" args={['jsrepo', 'init']} class="max-w-[450px]"/>
 		</div>
 	</div>
 </main>

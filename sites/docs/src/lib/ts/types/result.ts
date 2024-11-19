@@ -1,7 +1,7 @@
 /*
 	jsrepo 1.0.0
 	Installed from github/ieedan/std
-	11-18-2024
+	11-19-2024
 */
 
 /** This is just a helper type used only within this file */
