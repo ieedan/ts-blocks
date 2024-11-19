@@ -7,3 +7,10 @@
 ```bash
 npx jsrepo init
 ```
+
+# Docs
+https://jsrepo.dev
+
+# Demo
+
+https://github.com/user-attachments/assets/cf870d66-e091-48a0-90bb-0eafa0d90138
