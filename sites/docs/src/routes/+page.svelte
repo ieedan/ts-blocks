@@ -20,11 +20,11 @@
 		<div class="flex flex-col gap-5 justify-center place-items-center w-full">
 			<div class="flex place-items-center gap-4 justify-center w-full">
 				<h1
-					class="bg-primary text-primary-foreground text-6xl font-serif font-bold py-4 px-4 w-fit"
+					class="bg-primary text-primary-foreground sm:text-6xl text-4xl font-serif font-bold py-4 px-4 w-fit"
 				>
 					jsrepo
 				</h1>
-				<span class="text-4xl font-serif text-muted-foreground">v{data.version}</span>
+				<span class="text-2xl sm:text-4xl font-serif text-muted-foreground">v{data.version}</span>
 			</div>
 			<p class="text-lg text-muted-foreground">
 				The best way to reuse <span class="text-primary">your</span> code.
