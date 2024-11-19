@@ -28,7 +28,7 @@
 	};
 </script>
 
-<div class={cn('flex place-items-center gap-2', className)}>
+<div class={cn('flex place-items-center gap-1', className)}>
 	<DropdownMenu.Root>
 		<DropdownMenu.Trigger>
 			{#snippet child({ props })}
@@ -55,7 +55,7 @@
 			{/each}
 		</DropdownMenu.Content>
 	</DropdownMenu.Root>
-	<Button onclick={copy} variant="ghost" size="icon" class="size-8">
+	<Button onclick={copy} variant="ghost" size="icon" class="size-7">
 		{#if copied}
 			<div in:scale={{ start: 0.85 }}>
 				<Check class="size-2" />

@@ -141,6 +141,9 @@ importers:
       svelte-check:
         specifier: ^4.0.0
         version: 4.0.9(picomatch@4.0.2)(svelte@5.2.3)(typescript@5.6.3)
+      svelte-persisted-store:
+        specifier: ^0.12.0
+        version: 0.12.0(svelte@5.2.3)
       tailwind-merge:
         specifier: ^2.5.4
         version: 2.5.4
@@ -2233,6 +2236,12 @@ packages:
     peerDependenciesMeta:
       svelte:
         optional: true
+
+  svelte-persisted-store@0.12.0:
+    resolution: {integrity: sha512-BdBQr2SGSJ+rDWH8/aEV5GthBJDapVP0GP3fuUCA7TjYG5ctcB+O9Mj9ZC0+Jo1oJMfZUd1y9H68NFRR5MyIJA==}
+    engines: {node: '>=0.14'}
+    peerDependencies:
+      svelte: ^3.48.0 || ^4 || ^5
 
   svelte-toolbelt@0.4.6:
     resolution: {integrity: sha512-k8OUvXBUifHZcAlWeY/HLg/4J0v5m2iOfOhn8fDmjt4AP8ZluaDh9eBFus9lFiLX6O5l6vKqI1dKL5wy7090NQ==}
@@ -4537,6 +4546,10 @@ snapshots:
       postcss: 8.4.49
       postcss-scss: 4.0.9(postcss@8.4.49)
     optionalDependencies:
+      svelte: 5.2.3
+
+  svelte-persisted-store@0.12.0(svelte@5.2.3):
+    dependencies:
       svelte: 5.2.3
 
   svelte-toolbelt@0.4.6(svelte@5.2.3):
