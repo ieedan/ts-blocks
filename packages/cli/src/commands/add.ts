@@ -168,7 +168,7 @@ const _add = async (blockNames: string[], options: Options) => {
 
 	if (options.verbose) console.log('Blocks map: ', blocksMap);
 
-	const installingBlocks = await getBlocks(installingBlockNames, blocksMap, repoPaths);
+	const installingBlocks = await getBlocks(installingBlockNames, blocksMap, repoPaths, options);
 
 	const pm = (await detect({ cwd: process.cwd() }))?.agent ?? 'npm';
 
@@ -392,7 +392,8 @@ type InstallingBlock = {
 const getBlocks = async (
 	blockSpecifiers: string[],
 	blocksMap: Map<string, RemoteBlock>,
-	repoPaths: string[]
+	repoPaths: string[],
+	options: Options
 ): Promise<InstallingBlock[]> => {
 	const blocks = new Map<string, InstallingBlock>();
 
@@ -426,42 +427,49 @@ const getBlocks = async (
 				break;
 			}
 		} else {
-			if (repoPaths.length === 0) {
-				const [providerName, owner, repoName, ...rest] = blockSpecifier.split('/');
+			const [providerName, owner, repoName, ...rest] = blockSpecifier.split('/');
 
-				let repo: string;
-				// if rest is greater than 2 it isn't the block specifier so it is part of the path
-				if (rest.length > 2) {
-					repo = `${providerName}/${owner}/${repoName}/${rest.join('/')}`;
-				} else {
-					repo = `${providerName}/${owner}/${repoName}`;
+			let repo: string;
+			// if rest is greater than 2 it isn't the block specifier so it is part of the path
+			if (rest.length > 2) {
+				repo = `${providerName}/${owner}/${repoName}/${rest.join('/')}`;
+			} else {
+				repo = `${providerName}/${owner}/${repoName}`;
+			}
+
+			const providerInfo = (await gitProviders.getProviderInfo(repo)).match(
+				(val) => val,
+				(err) => program.error(color.red(err))
+			);
+
+			const manifestUrl = await providerInfo.provider.resolveRaw(providerInfo, OUTPUT_FILE);
+
+			if (!options.allow) {
+				const result = await confirm({
+					message: `Allow ${color.cyan('jsrepo')} to download and run code from ${color.cyan(repo)}?`,
+					initialValue: true,
+				});
+
+				if (isCancel(result) || !result) {
+					cancel('Canceled!');
+					process.exit(0);
 				}
+			}
 
-				const providerInfo = (await gitProviders.getProviderInfo(repo)).match(
-					(val) => val,
-					(err) => program.error(color.red(err))
-				);
+			const categories = (await gitProviders.getManifest(manifestUrl)).match(
+				(val) => val,
+				(err) => program.error(color.red(err))
+			);
 
-				const manifestUrl = await providerInfo.provider.resolveRaw(
-					providerInfo,
-					OUTPUT_FILE
-				);
-
-				const categories = (await gitProviders.getManifest(manifestUrl)).match(
-					(val) => val,
-					(err) => program.error(color.red(err))
-				);
-
-				for (const category of categories) {
-					for (const block of category.blocks) {
-						blocksMap.set(
-							`${providerInfo.name}/${providerInfo.owner}/${providerInfo.repoName}/${category.name}/${block.name}`,
-							{
-								...block,
-								sourceRepo: providerInfo,
-							}
-						);
-					}
+			for (const category of categories) {
+				for (const block of category.blocks) {
+					blocksMap.set(
+						`${providerInfo.name}/${providerInfo.owner}/${providerInfo.repoName}/${category.name}/${block.name}`,
+						{
+							...block,
+							sourceRepo: providerInfo,
+						}
+					);
 				}
 			}
 
@@ -480,7 +488,8 @@ const getBlocks = async (
 			const subDeps = await getBlocks(
 				block.localDependencies.filter((dep) => blocks.has(dep)),
 				blocksMap,
-				repoPaths
+				repoPaths,
+				options
 			);
 
 			for (const dep of subDeps) {
