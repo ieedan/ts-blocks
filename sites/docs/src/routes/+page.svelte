@@ -1,12 +1,11 @@
 <script lang="ts">
-	import Button from '$lib/components/ui/button/button.svelte';
 	import { Snippet } from '$lib/components/ui/snippet';
 
 	let { data } = $props();
 </script>
 
-<main class="min-h-svh flex place-items-center justify-center w-full">
-	<div class="max-w-6xl">
+<main class="flex place-items-center justify-center w-full" style="height: calc(100svh - 57px);">
+	<div class="max-w-xl w-full">
 		<div class="flex flex-col gap-5 justify-center place-items-center w-full">
 			<div class="flex place-items-center gap-4 justify-center w-full">
 				<h1

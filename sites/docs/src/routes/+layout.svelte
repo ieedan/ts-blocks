@@ -4,6 +4,9 @@
 	import '@fontsource/poppins';
 	import '../app.css';
 	import { Header } from '$lib/components/site/header';
+	import { pmContext } from '$lib/ts/context';
+
+	pmContext.init("npm");
 
 	let { children, data } = $props();
 </script>
