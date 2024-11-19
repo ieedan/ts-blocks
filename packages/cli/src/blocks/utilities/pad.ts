@@ -1,7 +1,7 @@
 /*
-	jsrepo 1.0.0-next.18
+	jsrepo 1.0.3
 	Installed from github/ieedan/std
-	11-18-2024
+	11-19-2024
 */
 
 import { stripAsni } from './strip-ansi';

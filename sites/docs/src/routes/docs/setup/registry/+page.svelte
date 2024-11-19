@@ -115,13 +115,54 @@
 	be added when users add that block.
 </p>
 <p>
-  <span class="font-serif text-sm">blocks/utils/math/add.ts</span>
+	<span class="font-serif text-sm">blocks/utils/math/add.ts</span>
 </p>
-<Code lang="ts" code={`import { print } from "../print"; // import the print block
+<Code
+	lang="ts"
+	code={`import { print } from "../print"; // import the print block
 
 const add = (a: number, b: number): number => {
   print(\`result is: \${a + b}\`)
-}`}/>
+}`}
+/>
+<p>
+	Your blocks can also depend on npm packages and they will be installed when users add your block.
+</p>
+<Code
+	lang="ts"
+	code={`import { print } from "../print"; // import the print block
+import color from "chalk"; // import the chalk package
+
+const add = (a: number, b: number): number => {
+  print(\`result is: \${color.cyan(\`\${a + b}\`)}\`)
+}`}
+/>
+<p>In this case this would be the output for the following command:</p>
+<Snippet command="execute" args={['jsrepo', 'add', 'utils/math']} />
+<Code
+	showCopy={false}
+	showLines={false}
+	code={`┌   jsrepo  v1.0.3 
+│
+◇  Retrieved blocks from github/<owner>/<name>
+│
+◇  Added utils/math
+│
+◇  Added utils/print
+│
+◇  Would you like to install dependencies?
+│  Yes
+│
+◇  Installed chalk
+│
+├  Next Steps ────────────────────────────┐
+│                                         │
+│  Import the blocks from \`src/blocks\`    │
+│                                         │
+├─────────────────────────────────────────┘
+│
+└  All done!`}
+/>
 <SubHeading>Examples</SubHeading>
 <ul>
 	<li>
