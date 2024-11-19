@@ -29,7 +29,7 @@
 			{/each}
 		</ScrollArea>
 	</aside>
-	<div class="flex flex-col gap-5 py-8 w-full flex-grow">
+	<div class="flex flex-col gap-5 py-8 w-full flex-grow max-w-2xl">
 		{@render children?.()}
 	</div>
 </div>
