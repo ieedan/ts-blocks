@@ -157,64 +157,64 @@ const dark: ThemeInput = {
 		'button.background': '#47A8FF',
 		'button.foreground': '#000000',
 		'badge.foreground': '#000000',
-		'activityBarBadge.foreground': '#000000',
+		'activityBarBadge.foreground': '#000000'
 	},
 	tokenColors: [
 		{
 			name: 'plain',
 			scope: ['source', 'support.type.property-name.css'],
 			settings: {
-				foreground: '#EDEDED',
-			},
+				foreground: '#EDEDED'
+			}
 		},
 		{
 			name: 'classes',
 			scope: ['entity.name.type.class'],
 			settings: {
-				foreground: '#E5B800',
-			},
+				foreground: '#E5B800'
+			}
 		},
 		{
 			name: 'interfaces',
 			scope: ['entity.name.type.interface', 'entity.name.type'],
 			settings: {
-				foreground: '#C372FC',
-			},
+				foreground: '#C372FC'
+			}
 		},
 		{
 			name: 'structs',
 			scope: ['entity.name.type.struct'],
 			settings: {
-				foreground: '#E5B800',
-			},
+				foreground: '#E5B800'
+			}
 		},
 		{
 			name: 'enums',
 			scope: ['entity.name.type.enum'],
 			settings: {
-				foreground: '#E5B800',
-			},
+				foreground: '#E5B800'
+			}
 		},
 		{
 			name: 'keys',
 			scope: ['meta.object-literal.key'],
 			settings: {
-				foreground: '#EDEDED',
-			},
+				foreground: '#EDEDED'
+			}
 		},
 		{
 			name: 'methods',
 			scope: ['entity.name.function.method', 'meta.function.method'],
 			settings: {
-				foreground: '#47A8FF',
-			},
+				foreground: '#47A8FF'
+			}
 		},
 		{
 			name: 'functions',
 			scope: ['entity.name.function', 'support.function', 'meta.function-call.generic'],
 			settings: {
-				foreground: '#C372FC',
-			},
+				foreground: '#C372FC'
+			}
 		},
 		{
 			name: 'variables',
@@ -222,221 +222,221 @@ const dark: ThemeInput = {
 				'variable',
 				'meta.variable',
 				'variable.other.object.property',
-				'variable.other.readwrite.alias',
+				'variable.other.readwrite.alias'
 			],
 			settings: {
-				foreground: '#EDEDED',
-			},
+				foreground: '#EDEDED'
+			}
 		},
 		{
 			name: 'variablesOther',
 			scope: ['variable.other.object'],
 			settings: {
-				foreground: '#47A8FF',
-			},
+				foreground: '#47A8FF'
+			}
 		},
 		{
 			name: 'globalVariables',
 			scope: ['variable.other.global', 'variable.language.this'],
 			settings: {
-				foreground: '#4CC0BA',
-			},
+				foreground: '#4CC0BA'
+			}
 		},
 		{
 			name: 'localVariables',
 			scope: ['variable.other.local'],
 			settings: {
-				foreground: '#171717',
-			},
+				foreground: '#171717'
+			}
 		},
 		{
 			name: 'parameters',
 			scope: ['variable.parameter', 'meta.parameter'],
 			settings: {
-				foreground: '#EDEDED',
-			},
+				foreground: '#EDEDED'
+			}
 		},
 		{
 			name: 'properties',
 			scope: ['variable.other.property', 'meta.property'],
 			settings: {
-				foreground: '#EDEDED',
-			},
+				foreground: '#EDEDED'
+			}
 		},
 		{
 			name: 'strings',
 			scope: ['string', 'string.other.link', 'markup.inline.raw.string.markdown'],
 			settings: {
-				foreground: '#00CA51',
-			},
+				foreground: '#00CA51'
+			}
 		},
 		{
 			name: 'stringEscapeSequences',
 			scope: ['constant.character.escape', 'constant.other.placeholder'],
 			settings: {
-				foreground: '#EDEDED',
-			},
+				foreground: '#EDEDED'
+			}
 		},
 		{
 			name: 'keywords',
 			scope: ['keyword'],
 			settings: {
-				foreground: '#FF4C8D',
-			},
+				foreground: '#FF4C8D'
+			}
 		},
 		{
 			name: 'keywordsControl',
 			scope: ['keyword.control.import', 'keyword.control.from', 'keyword.import'],
 			settings: {
-				foreground: '#FF4C8D',
-			},
+				foreground: '#FF4C8D'
+			}
 		},
 		{
 			name: 'storageModifiers',
 			scope: ['storage.modifier', 'keyword.modifier', 'storage.type'],
 			settings: {
-				foreground: '#FF4C8D',
-			},
+				foreground: '#FF4C8D'
+			}
 		},
 		{
 			name: 'comments',
 			scope: ['comment', 'punctuation.definition.comment'],
 			settings: {
-				foreground: '#A3A3A3',
-			},
+				foreground: '#A3A3A3'
+			}
 		},
 		{
 			name: 'docComments',
 			scope: ['comment.documentation', 'comment.line.documentation'],
 			settings: {
-				foreground: '#A3A3A3',
-			},
+				foreground: '#A3A3A3'
+			}
 		},
 		{
 			name: 'numbers',
 			scope: ['constant.numeric'],
 			settings: {
-				foreground: '#EDEDED',
-			},
+				foreground: '#EDEDED'
+			}
 		},
 		{
 			name: 'booleans',
 			scope: ['constant.language.boolean', 'constant.language.json'],
 			settings: {
-				foreground: '#EDEDED',
-			},
+				foreground: '#EDEDED'
+			}
 		},
 		{
 			name: 'operators',
 			scope: ['keyword.operator'],
 			settings: {
-				foreground: '#FF4C8D',
-			},
+				foreground: '#FF4C8D'
+			}
 		},
 		{
 			name: 'macros',
 			scope: ['entity.name.function.preprocessor', 'meta.preprocessor'],
 			settings: {
-				foreground: '#47A8FF',
-			},
+				foreground: '#47A8FF'
+			}
 		},
 		{
 			name: 'preprocessor',
 			scope: ['meta.preprocessor'],
 			settings: {
-				foreground: '#4CC0BA',
-			},
+				foreground: '#4CC0BA'
+			}
 		},
 		{
 			name: 'urls',
 			scope: ['markup.underline.link'],
 			settings: {
-				foreground: '#47A8FF',
-			},
+				foreground: '#47A8FF'
+			}
 		},
 		{
 			name: 'tags',
 			scope: ['entity.name.tag'],
 			settings: {
-				foreground: '#00CA51',
-			},
+				foreground: '#00CA51'
+			}
 		},
 		{
 			name: 'jsxTags',
 			scope: ['support.class.component'],
 			settings: {
-				foreground: '#47A8FF',
-			},
+				foreground: '#47A8FF'
+			}
 		},
 		{
 			name: 'attributes',
 			scope: ['entity.other.attribute-name', 'meta.attribute'],
 			settings: {
-				foreground: '#C372FC',
-			},
+				foreground: '#C372FC'
+			}
 		},
 		{
 			name: 'types',
 			scope: ['support.type'],
 			settings: {
-				foreground: '#47A8FF',
-			},
+				foreground: '#47A8FF'
+			}
 		},
 		{
 			name: 'constants',
 			scope: ['variable.other.constant', 'variable.readonly'],
 			settings: {
-				foreground: '#47A8FF',
-			},
+				foreground: '#47A8FF'
+			}
 		},
 		{
 			name: 'labels',
 			scope: ['entity.name.label', 'punctuation.definition.label'],
 			settings: {
-				foreground: '#4CC0BA',
-			},
+				foreground: '#4CC0BA'
+			}
 		},
 		{
 			name: 'namespaces',
 			scope: ['entity.name.namespace', 'storage.modifier.namespace', 'markup.bold.markdown'],
 			settings: {
-				foreground: '#E5B800',
-			},
+				foreground: '#E5B800'
+			}
 		},
 		{
 			name: 'modules',
 			scope: ['entity.name.module', 'storage.modifier.module'],
 			settings: {
-				foreground: '#D14D41',
-			},
+				foreground: '#D14D41'
+			}
 		},
 		{
 			name: 'typeParameters',
 			scope: ['variable.type.parameter', 'variable.parameter.type'],
 			settings: {
-				foreground: '#E5B800',
-			},
+				foreground: '#E5B800'
+			}
 		},
 		{
 			name: 'exceptions',
 			scope: ['keyword.control.exception', 'keyword.control.trycatch'],
 			settings: {
-				foreground: '#FF4C8D',
-			},
+				foreground: '#FF4C8D'
+			}
 		},
 		{
 			name: 'decorators',
 			scope: ['meta.decorator', 'punctuation.decorator', 'entity.name.function.decorator'],
 			settings: {
-				foreground: '#E5B800',
-			},
+				foreground: '#E5B800'
+			}
 		},
 		{
 			name: 'calls',
 			scope: ['variable.function'],
 			settings: {
-				foreground: '#EDEDED',
-			},
+				foreground: '#EDEDED'
+			}
 		},
 		{
 			name: 'punctuation',
@@ -446,11 +446,11 @@ const dark: ThemeInput = {
 				'punctuation.definition.tag',
 				'punctuation.separator',
 				'punctuation.definition.string',
-				'punctuation.section.block',
+				'punctuation.section.block'
 			],
 			settings: {
-				foreground: '#EDEDED',
-			},
+				foreground: '#EDEDED'
+			}
 		},
 		{
 			name: 'yellow',
@@ -469,18 +469,18 @@ const dark: ThemeInput = {
 				'punctuation.definition.list.begin.markdown',
 				'punctuation.definition.quote.begin.markdown',
 				'meta.separator.markdown',
-				'entity.name.section.markdown',
+				'entity.name.section.markdown'
 			],
 			settings: {
-				foreground: '#E5B800',
-			},
+				foreground: '#E5B800'
+			}
 		},
 		{
 			name: 'green',
 			scope: [],
 			settings: {
-				foreground: '#4CC0BA',
-			},
+				foreground: '#4CC0BA'
+			}
 		},
 		{
 			name: 'cyan',
@@ -489,48 +489,48 @@ const dark: ThemeInput = {
 				'support.type.python',
 				'variable.legacy.builtin.python',
 				'support.constant.property-value.css',
-				'storage.modifier.attribute.swift',
+				'storage.modifier.attribute.swift'
 			],
 			settings: {
-				foreground: '#4CC0BA',
-			},
+				foreground: '#4CC0BA'
+			}
 		},
 		{
 			name: 'blue',
 			scope: ['constant.language.boolean.json'],
 			settings: {
-				foreground: '#47A8FF',
-			},
+				foreground: '#47A8FF'
+			}
 		},
 		{
 			name: 'purple',
 			scope: ['keyword.channel.go', 'keyword.other.platform.os.swift'],
 			settings: {
-				foreground: '#C372FC',
-			},
+				foreground: '#C372FC'
+			}
 		},
 		{
 			name: 'magenta',
 			scope: ['punctuation.definition.heading.markdown', 'support.type.property-name'],
 			settings: {
-				foreground: '#FF4C8D',
-			},
+				foreground: '#FF4C8D'
+			}
 		},
 		{
 			name: 'red',
 			scope: [],
 			settings: {
-				foreground: '#D14D41',
-			},
+				foreground: '#D14D41'
+			}
 		},
 		{
 			name: 'orange',
 			scope: [],
 			settings: {
-				foreground: '#F27F35',
-			},
-		},
-	],
+				foreground: '#F27F35'
+			}
+		}
+	]
 };
 
 export default dark;

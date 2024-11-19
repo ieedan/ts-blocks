@@ -30,10 +30,10 @@ const schema = v.object({
 type Options = v.InferInput<typeof schema>;
 
 const add = new Command('add')
-	.argument('[blocks...]', 'Whichever block you want to add to your project.')
+	.argument('[blocks...]', 'Names of the blocks you want to add to your project.')
 	.option('-y, --yes', 'Add and install any required dependencies.', false)
 	.option('-A, --allow', 'Allow jsrepo to download code from the provided repo.', false)
-	.option('--repo <repo>', 'Repository to download the blocks from')
+	.option('--repo <repo>', 'Repository to download the blocks from.')
 	.option('--verbose', 'Include debug logs.', false)
 	.action(async (blockNames, opts) => {
 		const options = v.parse(schema, opts);

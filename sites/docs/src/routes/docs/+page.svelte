@@ -13,7 +13,8 @@
 	and give up control.
 </p>
 <p>
-	<Jsrepo/> takes inspiration from tools like <Link target="_blank" href="https://ui.shadcn.com/">
+	<Jsrepo /> takes inspiration from tools like <Link target="_blank" href="https://ui.shadcn.com/">
 		shadcn-ui
-	</Link> allowing you to only bring it what you need while making it almost as easy as just installing an npm package.
+	</Link> allowing you to only bring it what you need while making it almost as easy as just installing
+	an npm package.
 </p>

@@ -1,3 +1,1 @@
-<span class="text-primary font-serif">
-    jsrepo
-</span>
+<span class="text-primary font-serif"> jsrepo </span>

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Code, CodeSpan, DocHeader, Jsrepo, SubHeading } from '$lib/components/site/docs';
+	import { Code, CodeSpan, DocHeader, Jsrepo } from '$lib/components/site/docs';
 	import { Snippet } from '$lib/components/ui/snippet';
 </script>
 

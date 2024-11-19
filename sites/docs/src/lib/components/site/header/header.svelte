@@ -14,7 +14,9 @@
 	let { version }: Props = $props();
 </script>
 
-<header class="py-2 px-6 flex place-items-center justify-center border-b border-border h-14 sticky top-0 bg-background z-20">
+<header
+	class="py-2 px-6 flex place-items-center justify-center border-b border-border h-14 sticky top-0 bg-background z-20"
+>
 	<div class="flex place-items-center justify-between max-w-screen-2xl w-full">
 		<div class="flex place-items-center gap-6">
 			<Drawer.Root>

@@ -3,14 +3,14 @@
 
 	const guides = [
 		{
-			name: 'New Registry',
-            description: 'Host your own registry',
-			href: '/docs/setup/registry'
+			name: 'New Project',
+			description: 'Use blocks from a registry in your project.',
+			href: '/docs/setup/project'
 		},
 		{
-			name: 'New Project',
-            description: 'Use blocks from a registry in your project.',
-			href: '/docs/setup/project'
+			name: 'New Registry',
+			description: 'Host your own registry',
+			href: '/docs/setup/registry'
 		}
 	];
 </script>
@@ -24,9 +24,9 @@
 			class="bg-background border border-border rounded-lg p-4 flex place-items-center justify-center h-44 hover:bg-secondary transition-all"
 		>
 			<div class="flex flex-col place-items-center justify-center">
-                <h3 class="text-xl font-bold text-center">{name}</h3>
-                <p class="text-muted-foreground text-center">{description}</p>
-            </div>
+				<h3 class="text-xl font-bold text-center">{name}</h3>
+				<p class="text-muted-foreground text-center">{description}</p>
+			</div>
 		</a>
 	{/each}
 </div>

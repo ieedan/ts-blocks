@@ -30,5 +30,5 @@
 		<span class="text-primary">{cmd?.command}</span>
 		<span>{cmd?.args.join(' ')}</span>
 	</div>
-	<CopyButton bind:pm={$pm} {text} class="absolute top-1/2 -translate-y-1/2 right-2"/>
+	<CopyButton bind:pm={$pm} {text} class="absolute top-1/2 -translate-y-1/2 right-2" />
 </div>

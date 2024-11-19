@@ -8,8 +8,8 @@
 </script>
 
 <svelte:head>
-    <title>jsrepo | {title}</title>
-    <meta name="description" content="description">
+	<title>jsrepo | {title}</title>
+	<meta name="description" content="description" />
 </svelte:head>
 
 <div class="flex flex-col gap-1">

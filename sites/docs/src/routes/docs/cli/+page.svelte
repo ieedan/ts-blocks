@@ -29,10 +29,8 @@ Options:
 	The <CodeSpan>add</CodeSpan> command helps you add blocks to your project from remote repositories.
 </p>
 <Snippet command="execute" args={['jsrepo', 'add', '<category>/<name>']} />
-<p>
-  or
-</p>
-  <Snippet command="execute" args={['jsrepo', 'add', 'github/<owner>/<name>/<category>/<name>']} />
+<p>or</p>
+<Snippet command="execute" args={['jsrepo', 'add', 'github/<owner>/<name>/<category>/<name>']} />
 <Code
 	showLines={false}
 	showCopy={false}
@@ -65,16 +63,14 @@ Options:
   --dirs [dirs...]  The directories containing the blocks. (default: ["./blocks"])
   --no-output       Do not output a \`jsrepo-manifest.json\` file.
   --verbose         Include debug logs. (default: false)
-  --cwd <cwd>       The current working directory (default: ".")
+  --cwd <cwd>       The current working directory. (default: ".")
   -h, --help        display help for command`}
 />
 <SubHeading>test</SubHeading>
 <p>
 	The <CodeSpan>test</CodeSpan> command allows you to run remote tests on your local code from the CLI.
 </p>
-<p>
-  This ensures any changes to your code haven't caused any of the original tests to fail.
-</p>
+<p>This ensures any changes to your code haven't caused any of the original tests to fail.</p>
 <Snippet command="execute" args={['jsrepo', 'test']} />
 <Code
 	showLines={false}
@@ -84,7 +80,7 @@ Options:
 Tests local blocks against most recent remote tests.
 
 Arguments:
-  blocks         Whichever blocks you want to test. (default: [])
+  blocks         The blocks you want to test. (default: [])
 
 Options:
   --verbose      Include debug logs. (default: false)

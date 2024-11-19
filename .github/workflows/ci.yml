@@ -18,10 +18,10 @@ jobs:
               run: pnpm install
 
             - name: Check Types
-              run: pnpm check:types
-
-            - name: Lint
-              run: pnpm check
+              run: pnpm lint
 
             - name: Test
               run: pnpm test
+
+            - name: Build CLI
+              run: pnpm build:cli

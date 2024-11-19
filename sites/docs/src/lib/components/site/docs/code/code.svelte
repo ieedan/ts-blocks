@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { cn } from '$lib/utils';
-	import { onMount, type Snippet } from 'svelte';
+	import { onMount } from 'svelte';
 	import Copy from './copy.svelte';
 	import { highlighter, THEMES, type Lang } from './highlighter';
 	import type { BundledLanguage, BundledTheme, HighlighterGeneric } from 'shiki';
@@ -42,7 +42,12 @@
 	});
 </script>
 
-<div class={cn('relative rounded-lg border border-border bg-background max-w-full overflow-x-auto', className)}>
+<div
+	class={cn(
+		'relative rounded-lg border border-border bg-background max-w-full overflow-x-auto',
+		className
+	)}
+>
 	<div
 		class="scrollbar-hide flex max-h-full max-w-full place-items-start overflow-x-auto overflow-y-auto py-6"
 	>
@@ -54,6 +59,7 @@
 				{/each}
 			</div>
 		{/if}
+		<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 		<pre class="w-full flex-grow pl-6 text-sm">{@html highlighted}</pre>
 	</div>
 	{#if showCopy}

@@ -109,3 +109,9 @@
 	command="execute"
 	args={['jsrepo', 'add', '--repo', 'github/<owner>/<repo>/<category>/<name>']}
 />
+<SubHeading>Examples</SubHeading>
+<ul>
+	<li>
+		<Link target="_blank" href="https://github.com/ieedan/std">github/ieedan/std</Link>
+	</li>
+</ul>

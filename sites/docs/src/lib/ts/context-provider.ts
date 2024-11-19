@@ -11,7 +11,10 @@ export type Context<T> = {
 	get: () => Writable<T>;
 };
 
-export const context = <T>(key: string, { persistValue = false }: Partial<Options> = {}): Context<T> => {
+export const context = <T>(
+	key: string,
+	{ persistValue = false }: Partial<Options> = {}
+): Context<T> => {
 	const keySymbol = Symbol(key);
 	return {
 		init: (value) => {

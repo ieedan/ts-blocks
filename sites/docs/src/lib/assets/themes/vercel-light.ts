@@ -157,64 +157,64 @@ const light: ThemeInput = {
 		'button.background': '#0060F1',
 		'button.foreground': '#FFFFFF',
 		'badge.foreground': '#FFFFFF',
-		'activityBarBadge.foreground': '#FFFFFF',
+		'activityBarBadge.foreground': '#FFFFFF'
 	},
 	tokenColors: [
 		{
 			name: 'plain',
 			scope: ['source', 'support.type.property-name.css'],
 			settings: {
-				foreground: '#171717',
-			},
+				foreground: '#171717'
+			}
 		},
 		{
 			name: 'classes',
 			scope: ['entity.name.type.class'],
 			settings: {
-				foreground: '#B38F00',
-			},
+				foreground: '#B38F00'
+			}
 		},
 		{
 			name: 'interfaces',
 			scope: ['entity.name.type.interface', 'entity.name.type'],
 			settings: {
-				foreground: '#7D00CC',
-			},
+				foreground: '#7D00CC'
+			}
 		},
 		{
 			name: 'structs',
 			scope: ['entity.name.type.struct'],
 			settings: {
-				foreground: '#B38F00',
-			},
+				foreground: '#B38F00'
+			}
 		},
 		{
 			name: 'enums',
 			scope: ['entity.name.type.enum'],
 			settings: {
-				foreground: '#B38F00',
-			},
+				foreground: '#B38F00'
+			}
 		},
 		{
 			name: 'keys',
 			scope: ['meta.object-literal.key'],
 			settings: {
-				foreground: '#171717',
-			},
+				foreground: '#171717'
+			}
 		},
 		{
 			name: 'methods',
 			scope: ['entity.name.function.method', 'meta.function.method'],
 			settings: {
-				foreground: '#0060F1',
-			},
+				foreground: '#0060F1'
+			}
 		},
 		{
 			name: 'functions',
 			scope: ['entity.name.function', 'support.function', 'meta.function-call.generic'],
 			settings: {
-				foreground: '#7D00CC',
-			},
+				foreground: '#7D00CC'
+			}
 		},
 		{
 			name: 'variables',
@@ -222,221 +222,221 @@ const light: ThemeInput = {
 				'variable',
 				'meta.variable',
 				'variable.other.object.property',
-				'variable.other.readwrite.alias',
+				'variable.other.readwrite.alias'
 			],
 			settings: {
-				foreground: '#171717',
-			},
+				foreground: '#171717'
+			}
 		},
 		{
 			name: 'variablesOther',
 			scope: ['variable.other.object'],
 			settings: {
-				foreground: '#0060F1',
-			},
+				foreground: '#0060F1'
+			}
 		},
 		{
 			name: 'globalVariables',
 			scope: ['variable.other.global', 'variable.language.this'],
 			settings: {
-				foreground: '#1B9E97',
-			},
+				foreground: '#1B9E97'
+			}
 		},
 		{
 			name: 'localVariables',
 			scope: ['variable.other.local'],
 			settings: {
-				foreground: '#EDEDED',
-			},
+				foreground: '#EDEDED'
+			}
 		},
 		{
 			name: 'parameters',
 			scope: ['variable.parameter', 'meta.parameter'],
 			settings: {
-				foreground: '#171717',
-			},
+				foreground: '#171717'
+			}
 		},
 		{
 			name: 'properties',
 			scope: ['variable.other.property', 'meta.property'],
 			settings: {
-				foreground: '#171717',
-			},
+				foreground: '#171717'
+			}
 		},
 		{
 			name: 'strings',
 			scope: ['string', 'string.other.link', 'markup.inline.raw.string.markdown'],
 			settings: {
-				foreground: '#0F7E32',
-			},
+				foreground: '#0F7E32'
+			}
 		},
 		{
 			name: 'stringEscapeSequences',
 			scope: ['constant.character.escape', 'constant.other.placeholder'],
 			settings: {
-				foreground: '#171717',
-			},
+				foreground: '#171717'
+			}
 		},
 		{
 			name: 'keywords',
 			scope: ['keyword'],
 			settings: {
-				foreground: '#C31562',
-			},
+				foreground: '#C31562'
+			}
 		},
 		{
 			name: 'keywordsControl',
 			scope: ['keyword.control.import', 'keyword.control.from', 'keyword.import'],
 			settings: {
-				foreground: '#C31562',
-			},
+				foreground: '#C31562'
+			}
 		},
 		{
 			name: 'storageModifiers',
 			scope: ['storage.modifier', 'keyword.modifier', 'storage.type'],
 			settings: {
-				foreground: '#C31562',
-			},
+				foreground: '#C31562'
+			}
 		},
 		{
 			name: 'comments',
 			scope: ['comment', 'punctuation.definition.comment'],
 			settings: {
-				foreground: '#666666',
-			},
+				foreground: '#666666'
+			}
 		},
 		{
 			name: 'docComments',
 			scope: ['comment.documentation', 'comment.line.documentation'],
 			settings: {
-				foreground: '#666666',
-			},
+				foreground: '#666666'
+			}
 		},
 		{
 			name: 'numbers',
 			scope: ['constant.numeric'],
 			settings: {
-				foreground: '#171717',
-			},
+				foreground: '#171717'
+			}
 		},
 		{
 			name: 'booleans',
 			scope: ['constant.language.boolean', 'constant.language.json'],
 			settings: {
-				foreground: '#171717',
-			},
+				foreground: '#171717'
+			}
 		},
 		{
 			name: 'operators',
 			scope: ['keyword.operator'],
 			settings: {
-				foreground: '#C31562',
-			},
+				foreground: '#C31562'
+			}
 		},
 		{
 			name: 'macros',
 			scope: ['entity.name.function.preprocessor', 'meta.preprocessor'],
 			settings: {
-				foreground: '#0060F1',
-			},
+				foreground: '#0060F1'
+			}
 		},
 		{
 			name: 'preprocessor',
 			scope: ['meta.preprocessor'],
 			settings: {
-				foreground: '#1B9E97',
-			},
+				foreground: '#1B9E97'
+			}
 		},
 		{
 			name: 'urls',
 			scope: ['markup.underline.link'],
 			settings: {
-				foreground: '#0060F1',
-			},
+				foreground: '#0060F1'
+			}
 		},
 		{
 			name: 'tags',
 			scope: ['entity.name.tag'],
 			settings: {
-				foreground: '#0F7E32',
-			},
+				foreground: '#0F7E32'
+			}
 		},
 		{
 			name: 'jsxTags',
 			scope: ['support.class.component'],
 			settings: {
-				foreground: '#0060F1',
-			},
+				foreground: '#0060F1'
+			}
 		},
 		{
 			name: 'attributes',
 			scope: ['entity.other.attribute-name', 'meta.attribute'],
 			settings: {
-				foreground: '#7D00CC',
-			},
+				foreground: '#7D00CC'
+			}
 		},
 		{
 			name: 'types',
 			scope: ['support.type'],
 			settings: {
-				foreground: '#0060F1',
-			},
+				foreground: '#0060F1'
+			}
 		},
 		{
 			name: 'constants',
 			scope: ['variable.other.constant', 'variable.readonly'],
 			settings: {
-				foreground: '#0060F1',
-			},
+				foreground: '#0060F1'
+			}
 		},
 		{
 			name: 'labels',
 			scope: ['entity.name.label', 'punctuation.definition.label'],
 			settings: {
-				foreground: '#1B9E97',
-			},
+				foreground: '#1B9E97'
+			}
 		},
 		{
 			name: 'namespaces',
 			scope: ['entity.name.namespace', 'storage.modifier.namespace', 'markup.bold.markdown'],
 			settings: {
-				foreground: '#B38F00',
-			},
+				foreground: '#B38F00'
+			}
 		},
 		{
 			name: 'modules',
 			scope: ['entity.name.module', 'storage.modifier.module'],
 			settings: {
-				foreground: '#AF3029',
-			},
+				foreground: '#AF3029'
+			}
 		},
 		{
 			name: 'typeParameters',
 			scope: ['variable.type.parameter', 'variable.parameter.type'],
 			settings: {
-				foreground: '#B38F00',
-			},
+				foreground: '#B38F00'
+			}
 		},
 		{
 			name: 'exceptions',
 			scope: ['keyword.control.exception', 'keyword.control.trycatch'],
 			settings: {
-				foreground: '#C31562',
-			},
+				foreground: '#C31562'
+			}
 		},
 		{
 			name: 'decorators',
 			scope: ['meta.decorator', 'punctuation.decorator', 'entity.name.function.decorator'],
 			settings: {
-				foreground: '#B38F00',
-			},
+				foreground: '#B38F00'
+			}
 		},
 		{
 			name: 'calls',
 			scope: ['variable.function'],
 			settings: {
-				foreground: '#171717',
-			},
+				foreground: '#171717'
+			}
 		},
 		{
 			name: 'punctuation',
@@ -446,11 +446,11 @@ const light: ThemeInput = {
 				'punctuation.definition.tag',
 				'punctuation.separator',
 				'punctuation.definition.string',
-				'punctuation.section.block',
+				'punctuation.section.block'
 			],
 			settings: {
-				foreground: '#171717',
-			},
+				foreground: '#171717'
+			}
 		},
 		{
 			name: 'yellow',
@@ -469,18 +469,18 @@ const light: ThemeInput = {
 				'punctuation.definition.list.begin.markdown',
 				'punctuation.definition.quote.begin.markdown',
 				'meta.separator.markdown',
-				'entity.name.section.markdown',
+				'entity.name.section.markdown'
 			],
 			settings: {
-				foreground: '#B38F00',
-			},
+				foreground: '#B38F00'
+			}
 		},
 		{
 			name: 'green',
 			scope: [],
 			settings: {
-				foreground: '#1B9E97',
-			},
+				foreground: '#1B9E97'
+			}
 		},
 		{
 			name: 'cyan',
@@ -489,48 +489,48 @@ const light: ThemeInput = {
 				'support.type.python',
 				'variable.legacy.builtin.python',
 				'support.constant.property-value.css',
-				'storage.modifier.attribute.swift',
+				'storage.modifier.attribute.swift'
 			],
 			settings: {
-				foreground: '#1B9E97',
-			},
+				foreground: '#1B9E97'
+			}
 		},
 		{
 			name: 'blue',
 			scope: ['constant.language.boolean.json'],
 			settings: {
-				foreground: '#0060F1',
-			},
+				foreground: '#0060F1'
+			}
 		},
 		{
 			name: 'purple',
 			scope: ['keyword.channel.go', 'keyword.other.platform.os.swift'],
 			settings: {
-				foreground: '#7D00CC',
-			},
+				foreground: '#7D00CC'
+			}
 		},
 		{
 			name: 'magenta',
 			scope: ['punctuation.definition.heading.markdown', 'support.type.property-name'],
 			settings: {
-				foreground: '#C31562',
-			},
+				foreground: '#C31562'
+			}
 		},
 		{
 			name: 'red',
 			scope: [],
 			settings: {
-				foreground: '#AF3029',
-			},
+				foreground: '#AF3029'
+			}
 		},
 		{
 			name: 'orange',
 			scope: [],
 			settings: {
-				foreground: '#C55D17',
-			},
-		},
-	],
+				foreground: '#C55D17'
+			}
+		}
+	]
 };
 
 export default light;

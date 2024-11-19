@@ -17,14 +17,14 @@ const schema = v.object({
 type Options = v.InferInput<typeof schema>;
 
 const init = new Command('init')
-	.description('Initializes the configuration file')
-	.option('--path <path>', 'Path to install the blocks')
-	.option('--repos [repos...]', 'Repository to install the blocks from')
+	.description('Initializes your project with a configuration file.')
+	.option('--path <path>', 'Path to install the blocks.')
+	.option('--repos [repos...]', 'Repository to install the blocks from.')
 	.option(
 		'--no-watermark',
 		'Will not add a watermark to each file upon adding it to your project.'
 	)
-	.option('--tests', 'Will include tests along with the functions.')
+	.option('--tests', 'Will include tests with the blocks.')
 	.action(async (opts) => {
 		const options = v.parse(schema, opts);
 
