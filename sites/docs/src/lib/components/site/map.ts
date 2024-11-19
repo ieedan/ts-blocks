@@ -6,6 +6,9 @@ export type Category = {
 export type Route = {
 	name: string;
 	href: string;
+	activeForSubdirectories?: boolean;
+	hide?: boolean;
+	routes?: Route[];
 };
 
 const categories: Category[] = [
@@ -31,7 +34,18 @@ const categories: Category[] = [
 			},
 			{
 				name: 'Setup',
-				href: '/docs/setup'
+				href: '/docs/setup',
+				activeForSubdirectories: true,
+				routes: [
+					{
+						name: 'Project Setup',
+						href: '/docs/setup/project'
+					},
+					{
+						name: 'Registry Setup',
+						href: '/docs/setup/registry'
+					}
+				]
 			},
 			{
 				name: 'CLI',

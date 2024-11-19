@@ -1,7 +1,36 @@
 <script lang="ts">
 	import { ScrollArea } from '$lib/components/ui/scroll-area';
 	import { page } from '$app/stores';
-	import { categories } from '$lib/components/site/map';
+	import { categories, type Route } from '$lib/components/site/map';
+	import * as Pagination from '$lib/components/ui/pagination';
+	import { active, checkIsActive } from '$lib/ts/actions/active';
+	import * as Breadcrumb from '$lib/components/ui/breadcrumb';
+
+	type CurrentDoc = {
+		route: Route;
+		next?: Route;
+		previous?: Route;
+	};
+
+	const getCurrentDoc = (url: URL): CurrentDoc | undefined => {
+		const routes: Route[] = [];
+		categories.filter((a) => a.name !== 'routes').map((cat) => routes.push(...cat.routes));
+
+		for (let i = 0; i < routes.length; i++) {
+			const route = routes[i];
+
+			if (
+				checkIsActive(new URL(route.href, $page.url.origin).toString(), {
+					activeForSubdirectories: route.activeForSubdirectories ?? false,
+					url
+				})
+			) {
+				return { route, next: routes[i + 1], previous: routes[i - 1] };
+			}
+		}
+	};
+
+	const currentDoc = $derived(getCurrentDoc($page.url));
 
 	let { children } = $props();
 </script>
@@ -15,11 +44,14 @@
 				<div class="flex flex-col gap-1 w-full">
 					<span class="text-sm font-semibold">{name}</span>
 					<div class="flex flex-col gap-1">
-						{#each routes as { name, href }}
+						{#each routes as { name, href, activeForSubdirectories }}
 							<a
 								class="data-[active=true]:text-primary text-muted-foreground"
 								{href}
-								data-active={$page.url.pathname.endsWith(href)}
+								use:active={{
+									url: $page.url,
+									activeForSubdirectories: activeForSubdirectories ?? false
+								}}
 							>
 								{name}
 							</a>
@@ -30,6 +62,37 @@
 		</ScrollArea>
 	</aside>
 	<div class="flex flex-col gap-5 py-8 w-full flex-grow max-w-2xl">
+		<Breadcrumb.Root>
+			<Breadcrumb.List>
+				<Breadcrumb.Item>
+					<Breadcrumb.Link href="/docs">Docs</Breadcrumb.Link>
+				</Breadcrumb.Item>
+				<Breadcrumb.Separator />
+				{#if currentDoc}
+					<Breadcrumb.Item>
+						<Breadcrumb.Page>{currentDoc.route.name}</Breadcrumb.Page>
+					</Breadcrumb.Item>
+				{/if}
+			</Breadcrumb.List>
+		</Breadcrumb.Root>
 		{@render children?.()}
+		{#if currentDoc}
+			<div class="flex w-full justify-between place-items-center">
+				<div>
+					{#if currentDoc.previous}
+						<Pagination.Previous href={currentDoc.previous.href}>
+							{currentDoc.previous.name}
+						</Pagination.Previous>
+					{/if}
+				</div>
+				<div>
+					{#if currentDoc.next}
+						<Pagination.Next href={currentDoc.next.href}>
+							{currentDoc.next.name}
+						</Pagination.Next>
+					{/if}
+				</div>
+			</div>
+		{/if}
 	</div>
 </div>

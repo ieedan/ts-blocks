@@ -68,6 +68,38 @@ const _add = async (blockNames: string[], options: Options) => {
 	// we just want to override all others if supplied via the CLI
 	if (options.repo) repoPaths = [options.repo];
 
+	// resolve repos for blocks
+	for (const blockSpecifier of blockNames) {
+		// we are only getting repos for blocks that specified repos
+		if (!blockSpecifier.startsWith('github')) continue;
+
+		const [providerName, owner, repoName, ...rest] = blockSpecifier.split('/');
+
+		let repo: string;
+		// if rest is greater than 2 it isn't the block specifier so it is part of the path
+		if (rest.length > 2) {
+			repo = `${providerName}/${owner}/${repoName}/${rest.join('/')}`;
+		} else {
+			repo = `${providerName}/${owner}/${repoName}`;
+		}
+
+		if (!repoPaths.find((repoPath) => repoPath === repo)) {
+			if (!options.allow) {
+				const result = await confirm({
+					message: `Allow ${color.cyan('jsrepo')} to download and run code from ${color.cyan(repo)}?`,
+					initialValue: true,
+				});
+
+				if (isCancel(result) || !result) {
+					cancel('Canceled!');
+					process.exit(0);
+				}
+			}
+
+			repoPaths.push(repo);
+		}
+	}
+
 	if (!options.allow && options.repo) {
 		const result = await confirm({
 			message: `Allow ${color.cyan('jsrepo')} to download and run code from ${color.cyan(options.repo)}?`,
@@ -84,6 +116,7 @@ const _add = async (blockNames: string[], options: Options) => {
 
 	if (!options.verbose) loading.start(`Fetching blocks from ${color.cyan(repoPaths.join(', '))}`);
 
+	// get blocks from each repo
 	for (const repo of repoPaths) {
 		const providerInfo: gitProviders.Info = (await gitProviders.getProviderInfo(repo)).match(
 			(info) => info,
@@ -126,6 +159,7 @@ const _add = async (blockNames: string[], options: Options) => {
 
 	let installingBlockNames = blockNames;
 
+	// if no blocks are provided prompt the user for what blocks they want
 	if (installingBlockNames.length === 0) {
 		const promptResult = await multiselect({
 			message: 'Select which blocks to add.',
@@ -177,12 +211,13 @@ const _add = async (blockNames: string[], options: Options) => {
 	const devDeps: Set<string> = new Set<string>();
 	const deps: Set<string> = new Set<string>();
 
-	for (const { name: specifier, block } of installingBlocks) {
+	for (const { block } of installingBlocks) {
+		const fullSpecifier = `${block.sourceRepo.url}/${block.category}/${block.name}`;
 		const watermark = getWatermark(context.package.version, block.sourceRepo.url);
 
 		const providerInfo = block.sourceRepo;
 
-		verbose(`Attempting to add ${specifier}`);
+		verbose(`Attempting to add ${fullSpecifier}`);
 
 		const directory = path.join(config.path, block.category);
 
@@ -205,8 +240,8 @@ const _add = async (blockNames: string[], options: Options) => {
 		}
 
 		tasks.push({
-			loadingMessage: `Adding ${specifier}`,
-			completedMessage: `Added ${specifier}`,
+			loadingMessage: `Adding ${fullSpecifier}`,
+			completedMessage: `Added ${fullSpecifier}`,
 			run: async () => {
 				// in case the directory didn't already exist
 				fs.mkdirSync(directory, { recursive: true });
@@ -220,7 +255,9 @@ const _add = async (blockNames: string[], options: Options) => {
 
 					if (!response.ok) {
 						loading.stop(color.red(`Error fetching ${color.bold(rawUrl.href)}`));
-						program.error(color.red(`There was an error trying to get ${specifier}`));
+						program.error(
+							color.red(`There was an error trying to get ${fullSpecifier}`)
+						);
 					}
 
 					return await response.text();
@@ -412,6 +449,7 @@ const getBlocks = async (
 				);
 			}
 
+			// check every repo for the block and return the first block found
 			for (const repo of repoPaths) {
 				// we unwrap because we already checked this
 				const providerInfo = (await gitProviders.getProviderInfo(repo)).unwrap();
@@ -427,52 +465,6 @@ const getBlocks = async (
 				break;
 			}
 		} else {
-			const [providerName, owner, repoName, ...rest] = blockSpecifier.split('/');
-
-			let repo: string;
-			// if rest is greater than 2 it isn't the block specifier so it is part of the path
-			if (rest.length > 2) {
-				repo = `${providerName}/${owner}/${repoName}/${rest.join('/')}`;
-			} else {
-				repo = `${providerName}/${owner}/${repoName}`;
-			}
-
-			const providerInfo = (await gitProviders.getProviderInfo(repo)).match(
-				(val) => val,
-				(err) => program.error(color.red(err))
-			);
-
-			const manifestUrl = await providerInfo.provider.resolveRaw(providerInfo, OUTPUT_FILE);
-
-			if (!options.allow) {
-				const result = await confirm({
-					message: `Allow ${color.cyan('jsrepo')} to download and run code from ${color.cyan(repo)}?`,
-					initialValue: true,
-				});
-
-				if (isCancel(result) || !result) {
-					cancel('Canceled!');
-					process.exit(0);
-				}
-			}
-
-			const categories = (await gitProviders.getManifest(manifestUrl)).match(
-				(val) => val,
-				(err) => program.error(color.red(err))
-			);
-
-			for (const category of categories) {
-				for (const block of category.blocks) {
-					blocksMap.set(
-						`${providerInfo.name}/${providerInfo.owner}/${providerInfo.repoName}/${category.name}/${block.name}`,
-						{
-							...block,
-							sourceRepo: providerInfo,
-						}
-					);
-				}
-			}
-
 			block = blocksMap.get(blockSpecifier);
 		}
 
@@ -486,7 +478,7 @@ const getBlocks = async (
 
 		if (block.localDependencies && block.localDependencies.length > 0) {
 			const subDeps = await getBlocks(
-				block.localDependencies.filter((dep) => blocks.has(dep)),
+				block.localDependencies.filter((dep) => !blocks.has(dep)),
 				blocksMap,
 				repoPaths,
 				options

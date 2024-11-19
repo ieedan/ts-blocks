@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { Code, CodeSpan, DocHeader, Jsrepo, Link, SubHeading } from '$lib/components/site/docs';
 	import { Snippet } from '$lib/components/ui/snippet';
+
+	let { data } = $props();
 </script>
 
 <DocHeader title="Registry Setup" description="Create your own registry to share your code." />
@@ -108,6 +110,60 @@
 <Snippet
 	command="execute"
 	args={['jsrepo', 'add', '--repo', 'github/<owner>/<repo>/<category>/<name>']}
+/>
+<SubHeading>Dependencies</SubHeading>
+<p>
+	Your blocks can depend on other blocks under the same directory of your project and they will also
+	be added when users add that block.
+</p>
+<p>
+	<span class="font-serif text-sm">blocks/utils/math/add.ts</span>
+</p>
+<Code
+	lang="ts"
+	code={`import { print } from "../print"; // import the print block
+
+const add = (a: number, b: number): number => {
+  print(\`result is: \${a + b}\`)
+}`}
+/>
+<p>
+	Your blocks can also depend on npm packages and they will be installed when users add your block.
+</p>
+<Code
+	lang="ts"
+	code={`import { print } from "../print"; // import the print block
+import color from "chalk"; // import the chalk package
+
+const add = (a: number, b: number): number => {
+  print(\`result is: \${color.cyan(\`\${a + b}\`)}\`)
+}`}
+/>
+<p>If you now add <CodeSpan>utils/math</CodeSpan> you will get the following output:</p>
+<Snippet command="execute" args={['jsrepo', 'add', 'utils/math']} />
+<Code
+	showCopy={false}
+	showLines={false}
+	code={`┌   jsrepo  v${data.version} 
+│
+◇  Retrieved blocks from github/<owner>/<name>
+│
+◇  Added github/<owner>/<name>/utils/math
+│
+◇  Added github/<owner>/<name>/utils/print
+│
+◇  Would you like to install dependencies?
+│  Yes
+│
+◇  Installed chalk
+│
+├  Next Steps ────────────────────────────┐
+│                                         │
+│  Import the blocks from \`src/blocks\`    │
+│                                         │
+├─────────────────────────────────────────┘
+│
+└  All done!`}
 />
 <SubHeading>Examples</SubHeading>
 <ul>
