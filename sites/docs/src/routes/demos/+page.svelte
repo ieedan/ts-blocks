@@ -19,6 +19,7 @@
 			autoplay
 			muted
 			aspectRatio="16:9"
+			controls
 		/>
 	</div>
 </main>

@@ -24,6 +24,7 @@
 		src,
 		autoplay,
 		aspectRatio,
+		controls = false,
 		...rest
 	}: Props = $props();
 
@@ -61,6 +62,7 @@
 	{/if}
 	<video
 		bind:this={ref}
+		{controls}
 		onloadedmetadata={(e) => {
 			width = e.currentTarget.videoWidth;
 			height = e.currentTarget.videoHeight;
@@ -78,7 +80,7 @@
 		<source {src} />
 		<track kind="captions" />
 	</video>
-	{#if !loading}
+	{#if !loading && !controls}
 		<button
 			onmousedown={togglePlay}
 			ontouchstart={togglePlay}
