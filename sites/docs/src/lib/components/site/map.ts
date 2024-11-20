@@ -50,6 +50,10 @@ const categories: Category[] = [
 			{
 				name: 'CLI',
 				href: '/docs/cli'
+			},
+			{
+				name: 'Language Support',
+				href: '/docs/language-support'
 			}
 		]
 	}
