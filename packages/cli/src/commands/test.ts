@@ -1,21 +1,21 @@
-import fs from "node:fs";
-import path from "node:path";
-import { cancel, confirm, isCancel, outro, spinner } from "@clack/prompts";
-import color from "chalk";
-import { Argument, Command, program } from "commander";
-import { execa } from "execa";
-import { resolveCommand } from "package-manager-detector/commands";
-import { detect } from "package-manager-detector/detect";
-import { Project } from "ts-morph";
-import * as v from "valibot";
-import { context } from "..";
-import { getConfig } from "../config";
-import { INFO } from "../utils";
-import { type Block, categorySchema, isTestFile } from "../utils/build";
-import { getInstalledBlocks } from "../utils/get-installed-blocks";
-import * as gitProviders from "../utils/git-providers";
-import { OUTPUT_FILE } from "../utils/index";
-import { intro } from "../utils/prompts";
+import fs from 'node:fs';
+import path from 'node:path';
+import { cancel, confirm, isCancel, outro, spinner } from '@clack/prompts';
+import color from 'chalk';
+import { Argument, Command, program } from 'commander';
+import { execa } from 'execa';
+import { resolveCommand } from 'package-manager-detector/commands';
+import { detect } from 'package-manager-detector/detect';
+import { Project } from 'ts-morph';
+import * as v from 'valibot';
+import { context } from '..';
+import { getConfig } from '../config';
+import { INFO } from '../utils';
+import { type Block, categorySchema, isTestFile } from '../utils/build';
+import { getInstalledBlocks } from '../utils/get-installed-blocks';
+import * as gitProviders from '../utils/git-providers';
+import { OUTPUT_FILE } from '../utils/index';
+import { intro } from '../utils/prompts';
 
 const schema = v.object({
 	debug: v.boolean(),
@@ -27,14 +27,14 @@ const schema = v.object({
 
 type Options = v.InferInput<typeof schema>;
 
-const test = new Command("test")
-	.description("Tests local blocks against most recent remote tests.")
-	.addArgument(new Argument("[blocks...]", "The blocks you want to test.").default([]))
-	.option("--verbose", "Include debug logs.", false)
-	.option("-A, --allow", "Allow jsrepo to download code from the provided repo.", false)
-	.option("--repo <repo>", "Repository to download the blocks from.")
-	.option("--debug", "Leaves the temp test file around for debugging upon failure.", false)
-	.option("--cwd <path>", "The current working directory.", process.cwd())
+const test = new Command('test')
+	.description('Tests local blocks against most recent remote tests.')
+	.addArgument(new Argument('[blocks...]', 'The blocks you want to test.').default([]))
+	.option('--verbose', 'Include debug logs.', false)
+	.option('-A, --allow', 'Allow jsrepo to download code from the provided repo.', false)
+	.option('--repo <repo>', 'Repository to download the blocks from.')
+	.option('--debug', 'Leaves the temp test file around for debugging upon failure.', false)
+	.option('--cwd <path>', 'The current working directory.', process.cwd())
 	.action(async (blockNames, opts) => {
 		const options = v.parse(schema, opts);
 
@@ -70,19 +70,19 @@ const _test = async (blockNames: string[], options: Options) => {
 
 	if (!options.allow && options.repo) {
 		const result = await confirm({
-			message: `Allow ${color.cyan("jsrepo")} to download and run code from ${color.cyan(options.repo)}?`,
+			message: `Allow ${color.cyan('jsrepo')} to download and run code from ${color.cyan(options.repo)}?`,
 			initialValue: true,
 		});
 
 		if (isCancel(result) || !result) {
-			cancel("Canceled!");
+			cancel('Canceled!');
 			process.exit(0);
 		}
 	}
 
-	verbose(`Fetching blocks from ${color.cyan(repoPaths.join(", "))}`);
+	verbose(`Fetching blocks from ${color.cyan(repoPaths.join(', '))}`);
 
-	if (!options.verbose) loading.start(`Fetching blocks from ${color.cyan(repoPaths.join(", "))}`);
+	if (!options.verbose) loading.start(`Fetching blocks from ${color.cyan(repoPaths.join(', '))}`);
 
 	for (const repo of repoPaths) {
 		const providerInfo: gitProviders.Info = (await gitProviders.getProviderInfo(repo)).match(
@@ -123,11 +123,13 @@ const _test = async (blockNames: string[], options: Options) => {
 		}
 	}
 
-	verbose(`Retrieved blocks from ${color.cyan(repoPaths.join(", "))}`);
+	verbose(`Retrieved blocks from ${color.cyan(repoPaths.join(', '))}`);
 
-	if (!options.verbose) loading.stop(`Retrieved blocks from ${color.cyan(repoPaths.join(", "))}`);
+	if (!options.verbose) loading.stop(`Retrieved blocks from ${color.cyan(repoPaths.join(', '))}`);
 
-	const tempTestDirectory = path.join(options.cwd, `blocks-tests-temp-${Date.now()}`);
+	const tempTestDirectory = path.resolve(
+		path.join(options.cwd, `blocks-tests-temp-${Date.now()}`)
+	);
 
 	verbose(`Trying to create the temp directory ${color.bold(tempTestDirectory)}.`);
 
@@ -137,7 +139,9 @@ const _test = async (blockNames: string[], options: Options) => {
 		fs.rmSync(tempTestDirectory, { recursive: true, force: true });
 	};
 
-	const installedBlocks = getInstalledBlocks(blocksMap, config, options.cwd).map((val) => val.specifier);
+	const installedBlocks = getInstalledBlocks(blocksMap, config, options.cwd).map(
+		(val) => val.specifier
+	);
 
 	let testingBlocks = blockNames;
 
@@ -148,7 +152,7 @@ const _test = async (blockNames: string[], options: Options) => {
 
 	if (testingBlocks.length === 0) {
 		cleanUp();
-		program.error(color.red("There were no blocks found in your project!"));
+		program.error(color.red('There were no blocks found in your project!'));
 	}
 
 	const testingBlocksMapped: { name: string; block: RemoteBlock }[] = [];
@@ -157,7 +161,7 @@ const _test = async (blockNames: string[], options: Options) => {
 		let block: RemoteBlock | undefined = undefined;
 
 		// if the block starts with github (or another provider) we know it has been resolved
-		if (!blockSpecifier.startsWith("github")) {
+		if (!blockSpecifier.startsWith('github')) {
 			for (const repo of repoPaths) {
 				// we unwrap because we already checked this
 				const providerInfo = (await gitProviders.getProviderInfo(repo)).unwrap();
@@ -174,12 +178,12 @@ const _test = async (blockNames: string[], options: Options) => {
 			}
 		} else {
 			if (repoPaths.length === 0) {
-				const [providerName, owner, repoName, ...rest] = blockSpecifier.split("/");
+				const [providerName, owner, repoName, ...rest] = blockSpecifier.split('/');
 
 				let repo: string;
 				// if rest is greater than 2 it isn't the block specifier so it is part of the path
 				if (rest.length > 2) {
-					repo = `${providerName}/${owner}/${repoName}/${rest.join("/")}`;
+					repo = `${providerName}/${owner}/${repoName}/${rest.join('/')}`;
 				} else {
 					repo = `${providerName}/${owner}/${repoName}`;
 				}
@@ -189,7 +193,10 @@ const _test = async (blockNames: string[], options: Options) => {
 					(err) => program.error(color.red(err))
 				);
 
-				const manifestUrl = await providerInfo.provider.resolveRaw(providerInfo, OUTPUT_FILE);
+				const manifestUrl = await providerInfo.provider.resolveRaw(
+					providerInfo,
+					OUTPUT_FILE
+				);
 
 				const categories = (await gitProviders.getManifest(manifestUrl)).match(
 					(val) => val,
@@ -213,7 +220,9 @@ const _test = async (blockNames: string[], options: Options) => {
 		}
 
 		if (!block) {
-			program.error(color.red(`Invalid block! ${color.bold(blockSpecifier)} does not exist!`));
+			program.error(
+				color.red(`Invalid block! ${color.bold(blockSpecifier)} does not exist!`)
+			);
 		}
 
 		testingBlocksMapped.push({ name: blockSpecifier, block });
@@ -272,17 +281,28 @@ const _test = async (blockNames: string[], options: Options) => {
 				let newModuleSpecifier: string | undefined = undefined;
 
 				// if the module is relative resolve it relative to the new path of the tests
-				if (moduleSpecifier.startsWith(".")) {
+				if (moduleSpecifier.startsWith('.')) {
 					if (block.subdirectory) {
-						newModuleSpecifier = path.join("../", config.path, block.category, block.name, moduleSpecifier);
+						newModuleSpecifier = path.join(
+							'../',
+							config.path,
+							block.category,
+							block.name,
+							moduleSpecifier
+						);
 					} else {
-						newModuleSpecifier = path.join("../", config.path, block.category, moduleSpecifier);
+						newModuleSpecifier = path.join(
+							'../',
+							config.path,
+							block.category,
+							moduleSpecifier
+						);
 					}
 				}
 
 				if (newModuleSpecifier) {
 					// we need to add the replace so that paths are correctly translated on windows
-					importDeclaration.setModuleSpecifier(newModuleSpecifier.replaceAll(/\\/g, "/"));
+					importDeclaration.setModuleSpecifier(newModuleSpecifier.replaceAll(/\\/g, '/'));
 				}
 			}
 		}
@@ -296,15 +316,15 @@ const _test = async (blockNames: string[], options: Options) => {
 		}
 	}
 
-	verbose("Beginning testing");
+	verbose('Beginning testing');
 
 	const pm = await detect({ cwd: options.cwd });
 
 	if (pm == null) {
-		program.error(color.red("Could not detect package manager"));
+		program.error(color.red('Could not detect package manager'));
 	}
 
-	const resolved = resolveCommand(pm.agent, "execute", ["vitest", "run", tempTestDirectory]);
+	const resolved = resolveCommand(pm.agent, 'execute', ['vitest', 'run', tempTestDirectory]);
 
 	if (resolved == null) {
 		program.error(color.red(`Could not resolve add command for '${pm.agent}'.`));
@@ -312,28 +332,28 @@ const _test = async (blockNames: string[], options: Options) => {
 
 	const { command, args } = resolved;
 
-	const testCommand = `${command} ${args.join(" ")}`;
+	const testCommand = `${command} ${args.join(' ')}`;
 
 	const testingProcess = execa({
 		cwd: options.cwd,
-		stdio: ["ignore", "pipe", "pipe"],
+		stdio: ['ignore', 'pipe', 'pipe'],
 	})`${testCommand}`;
 
 	const handler = (data: string) => console.info(data.toString());
 
-	testingProcess.stdout.on("data", handler);
-	testingProcess.stderr.on("data", handler);
+	testingProcess.stdout.on('data', handler);
+	testingProcess.stderr.on('data', handler);
 
 	try {
 		await testingProcess;
 
 		cleanUp();
 
-		outro(color.green("All done!"));
+		outro(color.green('All done!'));
 	} catch (err) {
 		if (options.debug) {
 			console.info(
-				`${color.bold("--debug")} flag provided. Skipping cleanup. Run '${color.bold(
+				`${color.bold('--debug')} flag provided. Skipping cleanup. Run '${color.bold(
 					testCommand
 				)}' to retry tests.\n`
 			);
