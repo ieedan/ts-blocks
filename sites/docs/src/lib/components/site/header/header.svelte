@@ -6,6 +6,7 @@
 	import { categories } from '$lib/components/site/map';
 	import { page } from '$app/stores';
 	import { Menu } from 'lucide-svelte';
+	import { active } from '$lib/ts/actions/active';
 
 	type Props = {
 		version: string;
@@ -30,11 +31,14 @@
 								<span class="text-sm font-semibold">{name}</span>
 							{/if}
 							<div class="flex flex-col">
-								{#each routes as { name, href }}
+								{#each routes as { name, href, activeForSubdirectories }}
 									<a
 										class="data-[active=true]:text-primary text-muted-foreground"
 										{href}
-										data-active={$page.url.pathname.endsWith(href)}
+										use:active={{
+											activeForSubdirectories: activeForSubdirectories ?? false,
+											url: $page.url
+										}}
 									>
 										{name}
 									</a>
@@ -54,21 +58,37 @@
 				<a
 					href="/"
 					class="hover:text-primary text-muted-foreground transition-all data-[active=true]:text-primary"
-					data-active={$page.url.pathname === '/'}
+					use:active={{
+						activeForSubdirectories: false,
+						url: $page.url
+					}}
 				>
 					Home
 				</a>
 				<a
 					href="/docs"
 					class="hover:text-primary text-muted-foreground transition-all data-[active=true]:text-primary"
-					data-active={$page.url.pathname.startsWith('/docs')}
+					use:active={{
+						activeForSubdirectories: true,
+						url: $page.url
+					}}
 				>
 					Docs
+				</a>
+				<a
+					href="/demos"
+					class="hover:text-primary text-muted-foreground transition-all data-[active=true]:text-primary"
+					use:active={{
+						activeForSubdirectories: true,
+						url: $page.url
+					}}
+				>
+					Demos
 				</a>
 			</div>
 		</div>
 		<div class="flex place-items-center gap-1">
-			<Button href="https://github.com/ieedan/jsrepo" variant="ghost" size="icon">
+			<Button target="_blank" href="https://github.com/ieedan/jsrepo" variant="ghost" size="icon">
 				<Icons.GitHub />
 			</Button>
 			<LightSwitch />
