@@ -33,13 +33,13 @@ const diff = new Command("diff")
 	.option("-A, --allow", "Allow jsrepo to download code from the provided repo.", false)
 	.option("-E, --expand", "Expands the diff so you see everything.", false)
 	.option("--repo <repo>", "Repository to download the blocks from.")
-	.option("--cwd <path>", "The current working directory.", process.cwd())
 	.option(
 		"--max-unchanged <number>",
 		"Maximum unchanged lines that will show without being collapsed.",
 		(val) => Number.parseInt(val), // this is such a dumb api thing
 		3
 	)
+	.option("--cwd <path>", "The current working directory.", process.cwd())
 	.action(async (opts) => {
 		const options = v.parse(schema, opts);
 
