@@ -4,6 +4,7 @@
 
 # jsrepo
 
+
 ```bash
 npx jsrepo init
 ```
@@ -13,6 +14,13 @@ https://jsrepo.dev/about
 
 # Docs
 https://jsrepo.dev
+
+# Badge
+| Badge                                                   | 
+| ------------------------------------------------------- |
+| ![jsrepo](./sites/docs/static/badges/jsrepo.svg)        |
+| ![jsrepo](./sites/docs/static/badges/build/passing.svg) |
+| ![jsrepo](./sites/docs/static/badges/build/failing.svg) |
 
 # Demo
 
