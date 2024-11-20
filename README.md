@@ -15,12 +15,13 @@ https://jsrepo.dev/about
 # Docs
 https://jsrepo.dev
 
-# Badge
-| Badge                                                   | 
-| ------------------------------------------------------- |
-| ![jsrepo](./sites/docs/static/badges/jsrepo.svg)        |
-| ![jsrepo](./sites/docs/static/badges/build/passing.svg) |
-| ![jsrepo](./sites/docs/static/badges/build/failing.svg) |
+# Badges
+
+| Badge                                                   | URL                                         |
+| ------------------------------------------------------- | ------------------------------------------- |
+| ![jsrepo](./sites/docs/static/badges/jsrepo.svg)        | https://jsrepo.dev/badges/jsrepo.svg        |
+| ![jsrepo](./sites/docs/static/badges/build/passing.svg) | https://jsrepo.dev/badges/build/passing.svg |
+| ![jsrepo](./sites/docs/static/badges/build/failing.svg) | https://jsrepo.dev/badges/build/failing.svg |
 
 # Demo
 
