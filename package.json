@@ -10,13 +10,13 @@
     "test": "pnpm -F jsrepo test",
     "build:cli": "pnpm -F jsrepo build",
     "ci:release": "pnpm build:cli && changeset publish",
-		"changeset": "changeset",
+    "changeset": "changeset",
     "dev": "pnpm -F docs dev"
   },
   "keywords": [],
   "author": "Aidan Bleser",
   "license": "MIT",
   "devDependencies": {
-    "@changesets/cli": "^2.27.9"
+    "@changesets/cli": "^2.27.10"
   }
 }

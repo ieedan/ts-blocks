@@ -17,7 +17,7 @@
 
 <DocHeader title="Setup" description="Get started with jsrepo." />
 <SubHeading>Guides</SubHeading>
-<div class="grid md:grid-cols-2 grid-rows-2 gap-2">
+<div class="grid md:grid-cols-2 grid-rows-2 md:grid-rows-1 gap-2">
 	{#each guides as { name, href, description }}
 		<a
 			{href}

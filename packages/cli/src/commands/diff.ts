@@ -23,6 +23,7 @@ const schema = v.object({
 	expand: v.boolean(),
 	maxUnchanged: v.number(),
 	repo: v.optional(v.string()),
+	cwd: v.string(),
 });
 
 type Options = v.InferInput<typeof schema>;
@@ -38,6 +39,7 @@ const diff = new Command('diff')
 		(val) => Number.parseInt(val), // this is such a dumb api thing
 		3
 	)
+	.option('--cwd <path>', 'The current working directory.', process.cwd())
 	.action(async (opts) => {
 		const options = v.parse(schema, opts);
 
@@ -51,7 +53,7 @@ const _diff = async (options: Options) => {
 
 	const loading = spinner();
 
-	const config = getConfig().match(
+	const config = getConfig(options.cwd).match(
 		(val) => val,
 		(err) => program.error(color.red(err))
 	);
@@ -105,7 +107,7 @@ const _diff = async (options: Options) => {
 
 	loading.stop(`Retrieved blocks from ${color.cyan(repoPaths.join(', '))}`);
 
-	const installedBlocks = getInstalledBlocks(blocksMap, config);
+	const installedBlocks = getInstalledBlocks(blocksMap, config, options.cwd);
 
 	for (const blockSpecifier of installedBlocks) {
 		let found = false;
@@ -146,9 +148,13 @@ const _diff = async (options: Options) => {
 
 				let remoteContent = await response.text();
 
-				let localPath = path.join(config.path, block.category, file);
+				const directory = path.join(options.cwd, config.path, block.category);
+
+				let localPath = path.join(directory, file);
+				let prettyLocalPath = path.join(config.path, block.category, file);
 				if (block.subdirectory) {
-					localPath = path.join(config.path, block.category, block.name, file);
+					localPath = path.join(directory, block.name, file);
+					prettyLocalPath = path.join(config.path, block.category, block.name, file);
 				}
 
 				let fileContent = '';
@@ -177,7 +183,7 @@ const _diff = async (options: Options) => {
 					)
 					.replaceAll('\\', '/');
 
-				const to = localPath.replaceAll('\\', '/');
+				const to = prettyLocalPath.replaceAll('\\', '/');
 
 				const formattedDiff = formatDiff({
 					from,

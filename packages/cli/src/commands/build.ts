@@ -23,7 +23,7 @@ const build = new Command('build')
 	.option('--dirs [dirs...]', 'The directories containing the blocks.', ['./blocks'])
 	.option('--no-output', `Do not output a \`${OUTPUT_FILE}\` file.`)
 	.option('--verbose', 'Include debug logs.', false)
-	.option('--cwd <cwd>', 'The current working directory.', process.cwd())
+	.option('--cwd <path>', 'The current working directory.', process.cwd())
 	.action(async (opts) => {
 		const options = v.parse(schema, opts);
 

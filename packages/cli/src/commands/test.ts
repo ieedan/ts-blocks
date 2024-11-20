@@ -22,6 +22,7 @@ const schema = v.object({
 	verbose: v.boolean(),
 	repo: v.optional(v.string()),
 	allow: v.boolean(),
+	cwd: v.string(),
 });
 
 type Options = v.InferInput<typeof schema>;
@@ -33,6 +34,7 @@ const test = new Command('test')
 	.option('-A, --allow', 'Allow jsrepo to download code from the provided repo.', false)
 	.option('--repo <repo>', 'Repository to download the blocks from.')
 	.option('--debug', 'Leaves the temp test file around for debugging upon failure.', false)
+	.option('--cwd <path>', 'The current working directory.', process.cwd())
 	.action(async (blockNames, opts) => {
 		const options = v.parse(schema, opts);
 
@@ -52,7 +54,7 @@ const _test = async (blockNames: string[], options: Options) => {
 
 	verbose(`Attempting to test ${JSON.stringify(blockNames)}`);
 
-	const config = getConfig().match(
+	const config = getConfig(options.cwd).match(
 		(val) => val,
 		(err) => program.error(color.red(err))
 	);
@@ -125,7 +127,9 @@ const _test = async (blockNames: string[], options: Options) => {
 
 	if (!options.verbose) loading.stop(`Retrieved blocks from ${color.cyan(repoPaths.join(', '))}`);
 
-	const tempTestDirectory = `blocks-tests-temp-${Date.now()}`;
+	const tempTestDirectory = path.resolve(
+		path.join(options.cwd, `blocks-tests-temp-${Date.now()}`)
+	);
 
 	verbose(`Trying to create the temp directory ${color.bold(tempTestDirectory)}.`);
 
@@ -135,7 +139,9 @@ const _test = async (blockNames: string[], options: Options) => {
 		fs.rmSync(tempTestDirectory, { recursive: true, force: true });
 	};
 
-	const installedBlocks = getInstalledBlocks(blocksMap, config).map((val) => val.specifier);
+	const installedBlocks = getInstalledBlocks(blocksMap, config, options.cwd).map(
+		(val) => val.specifier
+	);
 
 	let testingBlocks = blockNames;
 
@@ -261,13 +267,6 @@ const _test = async (blockNames: string[], options: Options) => {
 			testFiles.push(destPath);
 		}
 
-		const directory = path.join(config.path, block.category);
-		let blockFilePath = path.join(directory, `${block.name}`);
-
-		blockFilePath = blockFilePath.replaceAll('\\', '/');
-
-		verbose(`${color.bold(specifier)} file path is ${color.bold(blockFilePath)}`);
-
 		const project = new Project();
 
 		// resolve imports for the block
@@ -319,7 +318,7 @@ const _test = async (blockNames: string[], options: Options) => {
 
 	verbose('Beginning testing');
 
-	const pm = await detect({ cwd: process.cwd() });
+	const pm = await detect({ cwd: options.cwd });
 
 	if (pm == null) {
 		program.error(color.red('Could not detect package manager'));
@@ -336,7 +335,7 @@ const _test = async (blockNames: string[], options: Options) => {
 	const testCommand = `${command} ${args.join(' ')}`;
 
 	const testingProcess = execa({
-		cwd: process.cwd(),
+		cwd: options.cwd,
 		stdio: ['ignore', 'pipe', 'pipe'],
 	})`${testCommand}`;
 

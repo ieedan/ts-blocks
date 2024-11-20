@@ -25,6 +25,7 @@ const schema = v.object({
 	verbose: v.boolean(),
 	repo: v.optional(v.string()),
 	allow: v.boolean(),
+	cwd: v.string(),
 });
 
 type Options = v.InferInput<typeof schema>;
@@ -35,6 +36,7 @@ const add = new Command('add')
 	.option('-A, --allow', 'Allow jsrepo to download code from the provided repo.', false)
 	.option('--repo <repo>', 'Repository to download the blocks from.')
 	.option('--verbose', 'Include debug logs.', false)
+	.option('--cwd <path>', 'The current working directory.', process.cwd())
 	.action(async (blockNames, opts) => {
 		const options = v.parse(schema, opts);
 
@@ -56,7 +58,7 @@ const _add = async (blockNames: string[], options: Options) => {
 
 	const loading = spinner();
 
-	const config = getConfig().match(
+	const config = getConfig(options.cwd).match(
 		(val) => val,
 		(err) => program.error(color.red(err))
 	);
@@ -155,7 +157,9 @@ const _add = async (blockNames: string[], options: Options) => {
 
 	if (!options.verbose) loading.stop(`Retrieved blocks from ${color.cyan(repoPaths.join(', '))}`);
 
-	const installedBlocks = getInstalledBlocks(blocksMap, config).map((val) => val.specifier);
+	const installedBlocks = getInstalledBlocks(blocksMap, config, options.cwd).map(
+		(val) => val.specifier
+	);
 
 	let installingBlockNames = blockNames;
 
@@ -219,7 +223,7 @@ const _add = async (blockNames: string[], options: Options) => {
 
 		verbose(`Attempting to add ${fullSpecifier}`);
 
-		const directory = path.join(config.path, block.category);
+		const directory = path.join(options.cwd, config.path, block.category);
 
 		verbose(`Creating directory ${color.bold(directory)}`);
 
@@ -270,9 +274,9 @@ const _add = async (blockNames: string[], options: Options) => {
 
 					let destPath: string;
 					if (block.subdirectory) {
-						destPath = path.join(config.path, block.category, block.name, sourceFile);
+						destPath = path.join(directory, block.name, sourceFile);
 					} else {
-						destPath = path.join(config.path, block.category, sourceFile);
+						destPath = path.join(directory, sourceFile);
 					}
 
 					const content = await getSourceFile(sourcePath);
@@ -304,7 +308,7 @@ const _add = async (blockNames: string[], options: Options) => {
 					verbose('Trying to include tests');
 
 					const { devDependencies } = JSON.parse(
-						fs.readFileSync('package.json').toString()
+						fs.readFileSync(path.join(options.cwd, 'package.json')).toString()
 					);
 
 					if (devDependencies.vitest === undefined) {
@@ -340,7 +344,7 @@ const _add = async (blockNames: string[], options: Options) => {
 		}
 
 		try {
-			await execa(add.command, [...add.args], { cwd: process.cwd() });
+			await execa(add.command, [...add.args], { cwd: options.cwd });
 		} catch {
 			program.error(
 				color.red(

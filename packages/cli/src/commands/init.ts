@@ -1,4 +1,5 @@
 import fs from 'node:fs';
+import path from 'node:path';
 import { cancel, confirm, isCancel, outro, spinner, text } from '@clack/prompts';
 import color from 'chalk';
 import { Command } from 'commander';
@@ -12,6 +13,7 @@ const schema = v.object({
 	tests: v.optional(v.boolean()),
 	repos: v.optional(v.array(v.string())),
 	watermark: v.boolean(),
+	cwd: v.string(),
 });
 
 type Options = v.InferInput<typeof schema>;
@@ -25,6 +27,7 @@ const init = new Command('init')
 		'Will not add a watermark to each file upon adding it to your project.'
 	)
 	.option('--tests', 'Will include tests with the blocks.')
+	.option('--cwd <path>', 'The current working directory.', process.cwd())
 	.action(async (opts) => {
 		const options = v.parse(schema, opts);
 
@@ -34,7 +37,7 @@ const init = new Command('init')
 const _init = async (options: Options) => {
 	intro(context.package.version);
 
-	const initialConfig = getConfig();
+	const initialConfig = getConfig(options.cwd);
 
 	const loading = spinner();
 
@@ -59,19 +62,17 @@ const _init = async (options: Options) => {
 		options.repos = initialConfig.isOk() ? initialConfig.unwrap().repos : [];
 
 		while (true) {
-			if (options.repos.length > 0) {
-				const confirmResult = await confirm({
-					message: 'Add another repo?',
-					initialValue: false,
-				});
+			const confirmResult = await confirm({
+				message: `Add ${options.repos.length > 0 ? 'another' : 'a'} repo?`,
+				initialValue: false,
+			});
 
-				if (isCancel(confirmResult)) {
-					cancel('Canceled!');
-					process.exit(0);
-				}
-
-				if (!confirmResult) break;
+			if (isCancel(confirmResult)) {
+				cancel('Canceled!');
+				process.exit(0);
 			}
+
+			if (!confirmResult) break;
 
 			const result = await text({
 				message: 'Where should we download the blocks from?',
@@ -105,9 +106,12 @@ const _init = async (options: Options) => {
 
 	loading.start(`Writing config to \`${CONFIG_NAME}\``);
 
-	fs.writeFileSync(CONFIG_NAME, `${JSON.stringify(config, null, '\t')}\n`);
+	fs.writeFileSync(
+		path.join(options.cwd, CONFIG_NAME),
+		`${JSON.stringify(config, null, '\t')}\n`
+	);
 
-	fs.mkdirSync(config.path, { recursive: true });
+	fs.mkdirSync(path.join(options.cwd, config.path), { recursive: true });
 
 	loading.stop(`Wrote config to \`${CONFIG_NAME}\`.`);
 
