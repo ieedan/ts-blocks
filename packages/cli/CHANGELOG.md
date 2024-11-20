@@ -1,5 +1,11 @@
 # jsrepo
 
+## 1.2.0
+
+### Minor Changes
+
+- dce42bb: Add `--cwd <path>` option to all CLI commands.
+
 ## 1.1.0
 
 ### Minor Changes
