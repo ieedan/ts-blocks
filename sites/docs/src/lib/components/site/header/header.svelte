@@ -22,6 +22,7 @@
 		<div class="flex place-items-center gap-6">
 			<Drawer.Root>
 				<Drawer.Trigger class="lg:hidden">
+					<span class="sr-only">Menu</span>
 					<Menu class="size-5" />
 				</Drawer.Trigger>
 				<Drawer.Content class="p-6 flex flex-col gap-4">
@@ -89,6 +90,7 @@
 		</div>
 		<div class="flex place-items-center gap-1">
 			<Button target="_blank" href="https://github.com/ieedan/jsrepo" variant="ghost" size="icon">
+				<span class="sr-only">GitHub</span>
 				<Icons.GitHub />
 			</Button>
 			<LightSwitch />
