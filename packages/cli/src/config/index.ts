@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import * as v from 'valibot';
 import { Err, Ok, type Result } from '../blocks/types/result';
+import path from 'node:path';
 
 const CONFIG_NAME = 'jsrepo.json';
 
@@ -12,12 +13,15 @@ const schema = v.object({
 	watermark: v.optional(v.boolean(), true),
 });
 
-const getConfig = (): Result<Config, string> => {
+const getConfig = (cwd: string): Result<Config, string> => {
 	if (!fs.existsSync(CONFIG_NAME)) {
 		return Err('Could not find your configuration file! Please run `npx jsrepo init`.');
 	}
 
-	const config = v.safeParse(schema, JSON.parse(fs.readFileSync(CONFIG_NAME).toString()));
+	const config = v.safeParse(
+		schema,
+		JSON.parse(fs.readFileSync(path.join(cwd, CONFIG_NAME)).toString())
+	);
 
 	if (!config.success) {
 		return Err(`There was an error reading your \`${CONFIG_NAME}\` file!`);

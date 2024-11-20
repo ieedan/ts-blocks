@@ -14,11 +14,15 @@ type InstalledBlock = {
  * @param config
  * @returns
  */
-const getInstalledBlocks = (blocks: Map<string, Block>, config: Config): InstalledBlock[] => {
+const getInstalledBlocks = (
+	blocks: Map<string, Block>,
+	config: Config,
+	cwd: string
+): InstalledBlock[] => {
 	const installedBlocks: InstalledBlock[] = [];
 
 	for (const [_, block] of blocks) {
-		const baseDir = path.join(config.path, block.category);
+		const baseDir = path.join(cwd, config.path, block.category);
 
 		let blockPath = path.join(baseDir, block.files[0]);
 		if (block.subdirectory) {
