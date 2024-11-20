@@ -8,6 +8,9 @@
 npx jsrepo init
 ```
 
+# About
+https://jsrepo.dev/about
+
 # Docs
 https://jsrepo.dev
 
