@@ -1,10 +1,9 @@
 <script lang="ts">
 	import { mode } from 'mode-watcher';
-	import type { HTMLAttributes } from 'svelte/elements';
 	import type { Props } from '.';
 	import { cn } from '$lib/utils';
 
-	let { class: className, ...rest }: Props & HTMLAttributes<SVGElement> = $props();
+	let { class: className, ...rest }: Props = $props();
 </script>
 
 {#if $mode === 'dark'}
