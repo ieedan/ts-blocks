@@ -22,6 +22,7 @@ Options:
   --repos [repos...]  Repositories to install the blocks from.
   --no-watermark      Will not add a watermark to each file upon adding it to your project.
   --tests             Will include tests with the blocks.
+  --cwd <path>        The current working directory. (default: ".")
   -h, --help          display help for command`}
 />
 <SubHeading>add</SubHeading>
@@ -44,6 +45,7 @@ Options:
   -A, --allow    Allow jsrepo to download code from the provided repo. (default: false)
   --repo <repo>  Repository to download the blocks from.
   --verbose      Include debug logs. (default: false)
+  --cwd <path>   The current working directory. (default: ".")
   -h, --help     display help for command`}
 />
 <SubHeading>build</SubHeading>
@@ -63,7 +65,7 @@ Options:
   --dirs [dirs...]  The directories containing the blocks. (default: ["./blocks"])
   --no-output       Do not output a \`jsrepo-manifest.json\` file.
   --verbose         Include debug logs. (default: false)
-  --cwd <cwd>       The current working directory. (default: ".")
+  --cwd <path>      The current working directory. (default: ".")
   -h, --help        display help for command`}
 />
 <SubHeading>test</SubHeading>
@@ -87,6 +89,7 @@ Options:
   -A, --allow    Allow jsrepo to download code from the provided repo. (default: false)
   --repo <repo>  Repository to download the blocks from
   --debug        Leaves the temp test file around for debugging upon failure. (default: false)
+  --cwd <path>   The current working directory. (default: ".")
   -h, --help     display help for command`}
 />
 <SubHeading>diff</SubHeading>
@@ -107,5 +110,6 @@ Options:
   -E, --expand              Expands the diff so you see everything. (default: false)
   --repo <repo>             Repository to download the blocks from.
   --max-unchanged <number>  Maximum unchanged lines that will show without being collapsed. (default: 3)
+  --cwd <path>              The current working directory. (default: ".")
   -h, --help                display help for command`}
 />

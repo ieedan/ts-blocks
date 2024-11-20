@@ -28,6 +28,9 @@
 ◇  Where should we add the blocks?
 │  src/blocks
 │
+◇  Add a repo?
+│  Yes
+│
 ◇  Where should we download the blocks from?
 │  github/ieedan/std
 │
