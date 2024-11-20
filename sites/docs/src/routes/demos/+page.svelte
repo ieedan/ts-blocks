@@ -4,10 +4,7 @@
 
 <svelte:head>
 	<title>jsrepo ~ Demos</title>
-	<meta
-		name="description"
-		content="jsrepo demos showing off the capabilities of the CLI."
-	/>
+	<meta name="description" content="jsrepo demos showing off the capabilities of the CLI." />
 </svelte:head>
 
 <main class="flex justify-center px-4">

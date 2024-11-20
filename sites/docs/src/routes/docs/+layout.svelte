@@ -77,7 +77,7 @@
 		</Breadcrumb.Root>
 		{@render children?.()}
 		{#if currentDoc}
-			<div class="flex w-full justify-between place-items-center">
+			<div class="flex w-full justify-between place-items-center pt-9">
 				<div>
 					{#if currentDoc.previous}
 						<Pagination.Previous href={currentDoc.previous.href}>

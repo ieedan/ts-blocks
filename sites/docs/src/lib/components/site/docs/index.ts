@@ -4,5 +4,6 @@ import Link from './link.svelte';
 import SubHeading from './sub-heading.svelte';
 import CodeSpan from './code-span.svelte';
 import Code from './code';
+import Blockquote from './blockquote.svelte';
 
-export { DocHeader, Jsrepo, Link, SubHeading, CodeSpan, Code };
+export { DocHeader, Jsrepo, Link, SubHeading, CodeSpan, Code, Blockquote };
