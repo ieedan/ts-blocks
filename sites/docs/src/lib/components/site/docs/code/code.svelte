@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { cn } from '$lib/utils';
 	import { onMount } from 'svelte';
-	import Copy from './copy.svelte';
+	import { CopyButton } from '$lib/components/site/docs/copy-button';
 	import { highlighter, THEMES, type Lang } from './highlighter';
 	import type { BundledLanguage, BundledTheme, HighlighterGeneric } from 'shiki';
 
@@ -60,7 +60,7 @@
 				copyButtonContainerClass
 			)}
 		>
-			<Copy {code} />
+			<CopyButton {code} />
 		</div>
 	{/if}
 </div>
