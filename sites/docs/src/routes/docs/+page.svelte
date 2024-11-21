@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { CodeSpan, DocHeader, SubHeading } from '$lib/components/site/docs';
 	import { Jsrepo, Link } from '$lib/components/site/docs';
+	import * as Accordion from '$lib/components/ui/accordion';
 </script>
 
 <DocHeader
@@ -12,10 +13,9 @@
 	your project and give up control.
 </p>
 <p>
-	Taking inspiration from tools like <Link target="_blank" href="https://ui.shadcn.com/">
-		shadcn-ui
-	</Link>, <Jsrepo /> allows you to only bring in what you need while making it almost as easy as just
-	installing an npm package.
+	Taking inspiration from <Link target="_blank" href="https://ui.shadcn.com/">shadcn-ui</Link>, <Jsrepo
+	/> allows you to only bring in what you need while making it almost as easy as just installing an npm
+	package.
 </p>
 <p>
 	When using <Jsrepo /> you add individual
@@ -39,3 +39,14 @@
 	this it will also resolve any inter-block dependencies as well as any remote dependencies in
 	<Link href="/docs/language-support">supported file types</Link>.
 </p>
+<div>
+	<SubHeading>FAQ</SubHeading>
+	<Accordion.Root type="single">
+		<Accordion.Item value="q-1">
+			<Accordion.Trigger>Who owns the registry?</Accordion.Trigger>
+			<Accordion.Content>
+				<p>You! Or someone else you know. Anyone can create a registry to be used by everyone!</p>
+			</Accordion.Content>
+		</Accordion.Item>
+	</Accordion.Root>
+</div>

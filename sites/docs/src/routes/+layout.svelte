@@ -15,4 +15,4 @@
 <ModeWatcher />
 <Header {...data} />
 {@render children()}
-<Footer {...data}/>
+<Footer {...data} />

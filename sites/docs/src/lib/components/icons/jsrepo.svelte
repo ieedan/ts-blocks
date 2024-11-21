@@ -10,7 +10,7 @@
 	viewBox="0 0 80 30"
 	fill="none"
 	xmlns="http://www.w3.org/2000/svg"
-    {...rest}
+	{...rest}
 >
 	<g clip-path="url(#clip0_373_27)">
 		<path d="M0 0H80V30H0V0Z" fill="#F7DF1E" />

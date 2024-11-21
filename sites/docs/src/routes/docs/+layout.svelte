@@ -61,7 +61,10 @@
 			{/each}
 		</ScrollArea>
 	</aside>
-	<div class="flex flex-col gap-5 py-8 w-full justify-between flex-grow max-w-2xl" style="min-height: calc(100svh - 56px)">
+	<div
+		class="flex flex-col gap-5 py-8 w-full justify-between flex-grow max-w-2xl"
+		style="min-height: calc(100svh - 56px)"
+	>
 		<div class="flex flex-col gap-5">
 			<Breadcrumb.Root>
 				<Breadcrumb.List>

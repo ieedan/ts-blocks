@@ -1,4 +1,3 @@
-import CopyButton from "./copy-button.svelte";
+import CopyButton from './copy-button.svelte';
 
-export { CopyButton }
-
+export { CopyButton };

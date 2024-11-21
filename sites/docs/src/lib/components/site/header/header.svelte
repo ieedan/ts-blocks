@@ -29,7 +29,7 @@
 				</Drawer.Trigger>
 				<Drawer.Content class="p-6 flex flex-col gap-4 place-items-start">
 					<div class="flex place-items-center gap-2">
-						<Icons.Jsrepo class="h-8"/> 
+						<Icons.Jsrepo class="h-8" />
 						<span class="text-sm text-muted-foreground">v{version}</span>
 					</div>
 					{#each categories as { name, routes }}
@@ -41,7 +41,7 @@
 								{#each routes as { name, href, activeForSubdirectories }}
 									<a
 										class="data-[active=true]:text-primary text-muted-foreground"
-										onclick={() => open = false}
+										onclick={() => (open = false)}
 										{href}
 										use:active={{
 											activeForSubdirectories: activeForSubdirectories ?? false,

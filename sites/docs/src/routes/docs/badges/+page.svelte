@@ -1,9 +1,5 @@
 <script lang="ts">
-	import {
-		DocHeader,
-		Link,
-		CopyButton
-	} from '$lib/components/site/docs';
+	import { DocHeader, Link, CopyButton } from '$lib/components/site/docs';
 	import * as Table from '$lib/components/ui/table';
 
 	const badges = [
@@ -35,7 +31,7 @@
 			<Table.Row>
 				<Table.Cell>
 					<div class="flex place-items-center gap-2">
-                        <!-- we slice off the domain so we just serve directly from static -->
+						<!-- we slice off the domain so we just serve directly from static -->
 						<img src={href.slice(18)} {alt} />
 					</div>
 				</Table.Cell>
