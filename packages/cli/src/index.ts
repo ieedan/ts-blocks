@@ -33,6 +33,7 @@ program
 	.addCommand(commands.init)
 	.addCommand(commands.test)
 	.addCommand(commands.build)
+	.addCommand(commands.update)
 	.addCommand(commands.diff);
 
 program.parse();

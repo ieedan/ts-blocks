@@ -6,6 +6,7 @@ import type { Block } from './build';
 type InstalledBlock = {
 	specifier: `${string}/${string}`;
 	path: string;
+	block: Block;
 };
 
 /** Finds installed blocks and returns them as `<category>/<name>`
@@ -33,6 +34,7 @@ const getInstalledBlocks = (
 			installedBlocks.push({
 				specifier: `${block.category}/${block.name}`,
 				path: blockPath,
+				block,
 			});
 	}
 

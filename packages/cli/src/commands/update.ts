@@ -3,6 +3,7 @@ import path from 'node:path';
 import { cancel, confirm, isCancel, multiselect, outro, spinner } from '@clack/prompts';
 import color from 'chalk';
 import { Command, program } from 'commander';
+import { diffLines } from 'diff';
 import { execa } from 'execa';
 import type { ResolvedCommand } from 'package-manager-detector';
 import { resolveCommand } from 'package-manager-detector/commands';
@@ -10,45 +11,52 @@ import { detect } from 'package-manager-detector/detect';
 import * as v from 'valibot';
 import { context } from '..';
 import { getConfig } from '../config';
-import { getBlocks } from '../utils/blocks/get-blocks';
-import { type Block, isTestFile } from '../utils/build';
+import { type RemoteBlock, getBlocks } from '../utils/blocks/get-blocks';
+import { isTestFile } from '../utils/build';
+import { formatDiff } from '../utils/diff';
 import { getInstalledBlocks } from '../utils/get-installed-blocks';
 import { getWatermark } from '../utils/get-watermark';
 import * as gitProviders from '../utils/git-providers';
-import { INFO } from '../utils/index';
+import { INFO, LEFT_BORDER } from '../utils/index';
 import { OUTPUT_FILE } from '../utils/index';
 import { languages } from '../utils/language-support';
 import { type Task, intro, nextSteps, runTasks } from '../utils/prompts';
 
 const schema = v.object({
 	yes: v.boolean(),
+	all: v.boolean(),
 	verbose: v.boolean(),
 	repo: v.optional(v.string()),
 	allow: v.boolean(),
 	cwd: v.string(),
+	expand: v.boolean(),
+	maxUnchanged: v.number(),
 });
 
 type Options = v.InferInput<typeof schema>;
 
-const add = new Command('add')
-	.argument(
-		'[blocks...]',
-		'Names of the blocks you want to add to your project. ex: (utils/math, github/ieedan/std/utils/math)'
-	)
+const update = new Command('update')
+	.argument('[blocks...]', 'Names of the blocks you want to update. ex: (utils/math)')
 	.option('-y, --yes', 'Skip confirmation prompt.', false)
+	.option('--all', 'Update all installed components.', false)
+	.option('-E, --expand', 'Expands the diff so you see everything.', false)
 	.option('-A, --allow', 'Allow jsrepo to download code from the provided repo.', false)
 	.option('--repo <repo>', 'Repository to download the blocks from.')
+	.option(
+		'--max-unchanged <number>',
+		'Maximum unchanged lines that will show without being collapsed.',
+		(val) => Number.parseInt(val), // this is such a dumb api thing
+		3
+	)
 	.option('--verbose', 'Include debug logs.', false)
 	.option('--cwd <path>', 'The current working directory.', process.cwd())
 	.action(async (blockNames, opts) => {
 		const options = v.parse(schema, opts);
 
-		await _add(blockNames, options);
+		await _update(blockNames, options);
 	});
 
-type RemoteBlock = Block & { sourceRepo: gitProviders.Info };
-
-const _add = async (blockNames: string[], options: Options) => {
+const _update = async (blockNames: string[], options: Options) => {
 	intro(context.package.version);
 
 	const verbose = (msg: string) => {
@@ -57,7 +65,7 @@ const _add = async (blockNames: string[], options: Options) => {
 		}
 	};
 
-	verbose(`Attempting to add ${JSON.stringify(blockNames)}`);
+	verbose(`Attempting to update ${JSON.stringify(blockNames)}`);
 
 	const loading = spinner();
 
@@ -76,32 +84,12 @@ const _add = async (blockNames: string[], options: Options) => {
 	// resolve repos for blocks
 	for (const blockSpecifier of blockNames) {
 		// we are only getting repos for blocks that specified repos
-		if (!blockSpecifier.startsWith('github')) continue;
-
-		const [providerName, owner, repoName, ...rest] = blockSpecifier.split('/');
-
-		let repo: string;
-		// if rest is greater than 2 it isn't the block specifier so it is part of the path
-		if (rest.length > 2) {
-			repo = `${providerName}/${owner}/${repoName}/${rest.join('/')}`;
-		} else {
-			repo = `${providerName}/${owner}/${repoName}`;
-		}
-
-		if (!repoPaths.find((repoPath) => repoPath === repo)) {
-			if (!options.allow) {
-				const result = await confirm({
-					message: `Allow ${color.cyan('jsrepo')} to download and run code from ${color.cyan(repo)}?`,
-					initialValue: true,
-				});
-
-				if (isCancel(result) || !result) {
-					cancel('Canceled!');
-					process.exit(0);
-				}
-			}
-
-			repoPaths.push(repo);
+		if (blockSpecifier.startsWith('github')) {
+			program.error(
+				color.red(
+					`Invalid value provided for block names \`${color.bold(blockSpecifier)}\`. Block names are expected to be provided in the format of \`${color.bold('<category>/<name>')}\``
+				)
+			);
 		}
 	}
 
@@ -160,38 +148,22 @@ const _add = async (blockNames: string[], options: Options) => {
 
 	if (!options.verbose) loading.stop(`Retrieved blocks from ${color.cyan(repoPaths.join(', '))}`);
 
-	const installedBlocks = getInstalledBlocks(blocksMap, config, options.cwd).map(
-		(val) => val.specifier
-	);
+	const installedBlocks = getInstalledBlocks(blocksMap, config, options.cwd);
 
-	let installingBlockNames = blockNames;
+	let updatingBlockNames = blockNames;
+
+	if (options.all) {
+		updatingBlockNames = installedBlocks.map((block) => block.specifier);
+	}
 
 	// if no blocks are provided prompt the user for what blocks they want
-	if (installingBlockNames.length === 0) {
+	if (updatingBlockNames.length === 0) {
 		const promptResult = await multiselect({
-			message: 'Select which blocks to add.',
-			options: Array.from(blocksMap.entries()).map(([key, value]) => {
-				const shortName = `${value.category}/${value.name}`;
-
-				const blockExists =
-					installedBlocks.findIndex((block) => block === shortName) !== -1;
-
-				let label: string;
-
-				// show the full repo if there are multiple repos
-				if (repoPaths.length > 1) {
-					label = `${color.cyan(
-						`${value.sourceRepo.name}/${value.sourceRepo.owner}/${value.sourceRepo.repoName}/${value.category}`
-					)}/${value.name}`;
-				} else {
-					label = `${color.cyan(value.category)}/${value.name}`;
-				}
-
+			message: 'Which blocks would you like to update?',
+			options: installedBlocks.map((block) => {
 				return {
-					label: blockExists ? color.gray(label) : label,
-					value: key,
-					// show hint for `Installed` if block is already installed
-					hint: blockExists ? 'Installed' : undefined,
+					label: `${color.cyan(block.block.category)}/${block.block.name}`,
+					value: block.specifier,
 				};
 			}),
 			required: true,
@@ -202,14 +174,12 @@ const _add = async (blockNames: string[], options: Options) => {
 			process.exit(0);
 		}
 
-		installingBlockNames = promptResult as string[];
+		updatingBlockNames = promptResult as string[];
 	}
 
-	verbose(`Installing blocks ${color.cyan(installingBlockNames.join(', '))}`);
+	verbose(`Preparing to update ${color.cyan(updatingBlockNames.join(', '))}`);
 
-	if (options.verbose) console.log('Blocks map: ', blocksMap);
-
-	const installingBlocks = (await getBlocks(installingBlockNames, blocksMap, repoPaths)).match(
+	const updatingBlocks = (await getBlocks(updatingBlockNames, blocksMap, repoPaths)).match(
 		(val) => val,
 		program.error
 	);
@@ -221,115 +191,157 @@ const _add = async (blockNames: string[], options: Options) => {
 	const devDeps: Set<string> = new Set<string>();
 	const deps: Set<string> = new Set<string>();
 
-	for (const { block } of installingBlocks) {
+	for (const { block } of updatingBlocks) {
 		const fullSpecifier = `${block.sourceRepo.url}/${block.category}/${block.name}`;
+
 		const watermark = getWatermark(context.package.version, block.sourceRepo.url);
 
 		const providerInfo = block.sourceRepo;
 
-		verbose(`Setting up ${fullSpecifier}`);
+		verbose(`Attempting to add ${fullSpecifier}`);
 
 		const directory = path.join(options.cwd, config.path, block.category);
 
-		const blockExists =
-			(!block.subdirectory && fs.existsSync(path.join(directory, block.files[0]))) ||
-			(block.subdirectory && fs.existsSync(path.join(directory, block.name)));
+		const files: { content: string; destPath: string; fileName: string }[] = [];
 
-		if (blockExists && !options.yes) {
-			const result = await confirm({
-				message: `${color.bold(block.name)} already exists in your project would you like to overwrite it?`,
-				initialValue: false,
+		const getSourceFile = async (filePath: string): Promise<string> => {
+			const rawUrl = await providerInfo.provider.resolveRaw(providerInfo, filePath);
+
+			const response = await fetch(rawUrl);
+
+			if (!response.ok) {
+				loading.stop(color.red(`Error fetching ${color.bold(rawUrl.href)}`));
+				program.error(color.red(`There was an error trying to get ${fullSpecifier}`));
+			}
+
+			return await response.text();
+		};
+
+		for (const sourceFile of block.files) {
+			if (!config.includeTests && isTestFile(sourceFile)) continue;
+
+			const sourcePath = path.join(block.directory, sourceFile);
+
+			let destPath: string;
+			if (block.subdirectory) {
+				destPath = path.join(directory, block.name, sourceFile);
+			} else {
+				destPath = path.join(directory, sourceFile);
+			}
+
+			const content = await getSourceFile(sourcePath);
+
+			fs.mkdirSync(destPath.slice(0, destPath.length - sourceFile.length), {
+				recursive: true,
 			});
 
-			if (isCancel(result) || !result) {
-				cancel('Canceled!');
-				process.exit(0);
+			files.push({ content, destPath, fileName: sourceFile });
+		}
+
+		process.stdout.write(`${LEFT_BORDER}\n`);
+
+		process.stdout.write(`${LEFT_BORDER}  ${fullSpecifier}\n`);
+
+		for (const file of files) {
+			let remoteContent: string = file.content;
+
+			if (config.watermark) {
+				const lang = languages.find((lang) => lang.matches(file.destPath));
+
+				if (lang) {
+					const comment = lang.comment(watermark);
+
+					remoteContent = `${comment}\n\n${remoteContent}`;
+				}
+			}
+
+			let acceptedChanges = options.yes;
+
+			if (!options.yes) {
+				process.stdout.write(`${LEFT_BORDER}\n`);
+
+				let localContent = '';
+				if (fs.existsSync(file.destPath)) {
+					localContent = fs.readFileSync(file.destPath).toString();
+				}
+
+				const changes = diffLines(localContent, remoteContent);
+
+				const from = path
+					.join(
+						`${providerInfo.name}/${providerInfo.owner}/${providerInfo.repoName}`,
+						file.fileName
+					)
+					.replaceAll('\\', '/');
+
+				const to = path.relative(options.cwd, file.destPath).replaceAll('\\', '/');
+
+				const formattedDiff = formatDiff({
+					from,
+					to,
+					changes,
+					expand: options.expand,
+					maxUnchanged: options.maxUnchanged,
+					colorAdded: color.greenBright,
+					colorRemoved: color.redBright,
+					colorCharsAdded: color.bgGreenBright,
+					colorCharsRemoved: color.bgRedBright,
+					prefix: () => `${LEFT_BORDER}  `,
+					onUnchanged: ({ from, to, prefix }) =>
+						`${prefix?.() ?? ''}${color.cyan(from)} → ${color.gray(to)} ${color.gray('(unchanged)')}\n`,
+					intro: ({ from, to, changes, prefix }) => {
+						const totalChanges = changes.filter((a) => a.added).length;
+
+						return `${prefix?.() ?? ''}${color.cyan(from)} → ${color.gray(to)} (${totalChanges} change${
+							totalChanges === 1 ? '' : 's'
+						})\n${prefix?.() ?? ''}\n`;
+					},
+				});
+
+				process.stdout.write(formattedDiff);
+
+				// if there are no changes then don't ask
+				if (changes.length > 1) {
+					const confirmResult = await confirm({
+						message: 'Accept changes?',
+						initialValue: true,
+					});
+
+					if (isCancel(confirmResult)) {
+						cancel('Canceled!');
+						process.exit(0);
+					}
+
+					acceptedChanges = confirmResult;
+				}
+			}
+
+			if (acceptedChanges) {
+				loading.start(`Writing changes to ${color.cyan(file.destPath)}`);
+				fs.writeFileSync(file.destPath, remoteContent);
+				loading.stop(`Wrote changes to ${color.cyan(file.destPath)}.`);
 			}
 		}
 
-		tasks.push({
-			loadingMessage: `Adding ${fullSpecifier}`,
-			completedMessage: `Added ${fullSpecifier}`,
-			run: async () => {
-				verbose(`Creating directory ${color.bold(directory)}`);
-				// in case the directory didn't already exist
-				fs.mkdirSync(directory, { recursive: true });
+		if (config.includeTests) {
+			verbose('Trying to include tests');
 
-				const files: { content: string; destPath: string }[] = [];
+			const { devDependencies } = JSON.parse(
+				fs.readFileSync(path.join(options.cwd, 'package.json')).toString()
+			);
 
-				const getSourceFile = async (filePath: string) => {
-					const rawUrl = await providerInfo.provider.resolveRaw(providerInfo, filePath);
+			if (devDependencies.vitest === undefined) {
+				devDeps.add('vitest');
+			}
+		}
 
-					const response = await fetch(rawUrl);
+		for (const dep of block.devDependencies) {
+			devDeps.add(dep);
+		}
 
-					if (!response.ok) {
-						loading.stop(color.red(`Error fetching ${color.bold(rawUrl.href)}`));
-						program.error(
-							color.red(`There was an error trying to get ${fullSpecifier}`)
-						);
-					}
-
-					return await response.text();
-				};
-
-				for (const sourceFile of block.files) {
-					if (!config.includeTests && isTestFile(sourceFile)) continue;
-
-					const sourcePath = path.join(block.directory, sourceFile);
-
-					let destPath: string;
-					if (block.subdirectory) {
-						destPath = path.join(directory, block.name, sourceFile);
-					} else {
-						destPath = path.join(directory, sourceFile);
-					}
-
-					const content = await getSourceFile(sourcePath);
-
-					fs.mkdirSync(destPath.slice(0, destPath.length - sourceFile.length), {
-						recursive: true,
-					});
-
-					files.push({ content, destPath });
-				}
-
-				for (const file of files) {
-					let content: string = file.content;
-
-					if (config.watermark) {
-						const lang = languages.find((lang) => lang.matches(file.destPath));
-
-						if (lang) {
-							const comment = lang.comment(watermark);
-
-							content = `${comment}\n\n${content}`;
-						}
-					}
-
-					fs.writeFileSync(file.destPath, content);
-				}
-
-				if (config.includeTests) {
-					verbose('Trying to include tests');
-
-					const { devDependencies } = JSON.parse(
-						fs.readFileSync(path.join(options.cwd, 'package.json')).toString()
-					);
-
-					if (devDependencies.vitest === undefined) {
-						devDeps.add('vitest');
-					}
-				}
-
-				for (const dep of block.devDependencies) {
-					devDeps.add(dep);
-				}
-
-				for (const dep of block.dependencies) {
-					deps.add(dep);
-				}
-			},
-		});
+		for (const dep of block.dependencies) {
+			deps.add(dep);
+		}
 	}
 
 	await runTasks(tasks, { verbose: options.verbose });
@@ -429,4 +441,4 @@ const _add = async (blockNames: string[], options: Options) => {
 	outro(color.green('All done!'));
 };
 
-export { add };
+export { update };

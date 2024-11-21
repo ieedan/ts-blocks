@@ -7,7 +7,7 @@ import { diffLines } from 'diff';
 import * as v from 'valibot';
 import { context } from '..';
 import { getConfig } from '../config';
-import { OUTPUT_FILE } from '../utils';
+import { LEFT_BORDER, OUTPUT_FILE } from '../utils';
 import { type Block, isTestFile } from '../utils/build';
 import { formatDiff } from '../utils/diff';
 import { getInstalledBlocks } from '../utils/get-installed-blocks';
@@ -15,8 +15,6 @@ import { getWatermark } from '../utils/get-watermark';
 import * as gitProviders from '../utils/git-providers';
 import { languages } from '../utils/language-support';
 import { intro } from '../utils/prompts';
-
-const L = color.gray('│');
 
 const schema = v.object({
 	allow: v.boolean(),
@@ -122,19 +120,19 @@ const _diff = async (options: Options) => {
 
 			if (block === undefined) continue;
 
+			const watermark = getWatermark(context.package.version, repo);
+
 			found = true;
 
-			process.stdout.write(`${L}\n`);
+			process.stdout.write(`${LEFT_BORDER}\n`);
 
-			process.stdout.write(`${L}  ${fullSpecifier}\n`);
-
-			fullSpecifier;
+			process.stdout.write(`${LEFT_BORDER}  ${fullSpecifier}\n`);
 
 			for (const file of block.files) {
 				// skip test files if not included
 				if (!config.includeTests && isTestFile(file)) continue;
 
-				process.stdout.write(`${L}\n`);
+				process.stdout.write(`${LEFT_BORDER}\n`);
 
 				const sourcePath = path.join(block.directory, file);
 
@@ -166,8 +164,6 @@ const _diff = async (options: Options) => {
 					const lang = languages.find((lang) => lang.matches(sourcePath));
 
 					if (lang) {
-						const watermark = getWatermark(context.package.version, repo);
-
 						const comment = lang.comment(watermark);
 
 						remoteContent = `${comment}\n\n${remoteContent}`;
@@ -195,7 +191,7 @@ const _diff = async (options: Options) => {
 					colorRemoved: color.redBright,
 					colorCharsAdded: color.bgGreenBright,
 					colorCharsRemoved: color.bgRedBright,
-					prefix: () => `${L}  `,
+					prefix: () => `${LEFT_BORDER}  `,
 					onUnchanged: ({ from, to, prefix }) =>
 						`${prefix?.() ?? ''}${color.cyan(from)} → ${color.gray(to)} ${color.gray('(unchanged)')}\n`,
 					intro: ({ from, to, changes, prefix }) => {
