@@ -22,7 +22,7 @@ jobs:
             dir_names: 'true'
             dir_names_max_depth: '2' # truncates the path to packages/package-name
             files: |
-                packages/cli
+                packages/**
 
         - name: Install dependencies
           run: pnpm install
