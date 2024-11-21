@@ -9,10 +9,10 @@ import { detect } from 'package-manager-detector/detect';
 import { Project } from 'ts-morph';
 import * as v from 'valibot';
 import { context } from '..';
-import { getConfig } from '../utils/config';
 import { INFO } from '../utils';
+import { getInstalled } from '../utils/blocks';
 import { type Block, categorySchema, isTestFile } from '../utils/build';
-import { getInstalledBlocks } from '../utils/get-installed-blocks';
+import { getConfig } from '../utils/config';
 import * as gitProviders from '../utils/git-providers';
 import { OUTPUT_FILE } from '../utils/index';
 import { intro } from '../utils/prompts';
@@ -139,7 +139,7 @@ const _test = async (blockNames: string[], options: Options) => {
 		fs.rmSync(tempTestDirectory, { recursive: true, force: true });
 	};
 
-	const installedBlocks = getInstalledBlocks(blocksMap, config, options.cwd).map(
+	const installedBlocks = getInstalled(blocksMap, config, options.cwd).map(
 		(val) => val.specifier
 	);
 

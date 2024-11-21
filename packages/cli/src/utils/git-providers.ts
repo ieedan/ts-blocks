@@ -1,5 +1,6 @@
 import { Octokit } from 'octokit';
 import * as v from 'valibot';
+import type { RemoteBlock } from './blocks';
 import { Err, Ok, type Result } from './blocks/types/result';
 import { type Category, categorySchema } from './build';
 import { OUTPUT_FILE } from './index';
@@ -109,32 +110,71 @@ const github: Provider = {
 		repoPath.toLowerCase().startsWith('github'),
 };
 
+const providers = [github];
+
 const getProviderInfo = async (repo: string): Promise<Result<Info, string>> => {
-	if (github.matches(repo)) {
-		return Ok(await github.info(repo));
+	const provider = providers.find((provider) => provider.matches(repo));
+	if (provider) {
+		return Ok(await provider.info(repo));
 	}
 
 	return Err('Only GitHub repositories are supported at this time!');
 };
 
 const getManifest = async (url: URL): Promise<Result<Category[], string>> => {
+	const errorMessage = (err: string): Result<never, string> => {
+		return Err(
+			`There was an error fetching the \`${OUTPUT_FILE}\` from the repository \`${url.href}\` make sure the target repository has a \`${OUTPUT_FILE}\` in its root.\n Error: ${err}`
+		);
+	};
 	try {
 		const response = await fetch(url);
 
 		if (!response.ok) {
-			return Err(
-				`There was an error fetching the \`${OUTPUT_FILE}\` from the repository \`${url.href}\` make sure the target repository has a \`${OUTPUT_FILE}\` in its root?`
-			);
+			return errorMessage(`${response.status} ${response.text}`);
 		}
 
 		const categories = v.parse(v.array(categorySchema), await response.json());
 
 		return Ok(categories);
-	} catch {
-		return Err(
-			`There was an error fetching the \`${OUTPUT_FILE}\` from the repository \`${url.href}\` make sure the target repository has a \`${OUTPUT_FILE}\` in its root?`
-		);
+	} catch (err) {
+		return errorMessage(`${err}`);
 	}
 };
 
-export { github, getProviderInfo, getManifest };
+const fetchBlocks = async (
+	...repos: string[]
+): Promise<Result<Map<string, RemoteBlock>, { message: string; repo: string }>> => {
+	const blocksMap = new Map<string, RemoteBlock>();
+	for (const repo of repos) {
+		const getProviderResult = await getProviderInfo(repo);
+
+		if (getProviderResult.isErr()) return Err({ message: getProviderResult.unwrapErr(), repo });
+
+		const providerInfo = getProviderResult.unwrap();
+
+		const manifestUrl = await providerInfo.provider.resolveRaw(providerInfo, OUTPUT_FILE);
+
+		const getManifestResult = await getManifest(manifestUrl);
+
+		if (getManifestResult.isErr()) return Err({ message: getManifestResult.unwrapErr(), repo });
+
+		const categories = getManifestResult.unwrap();
+
+		for (const category of categories) {
+			for (const block of category.blocks) {
+				blocksMap.set(
+					`${providerInfo.name}/${providerInfo.owner}/${providerInfo.repoName}/${category.name}/${block.name}`,
+					{
+						...block,
+						sourceRepo: providerInfo,
+					}
+				);
+			}
+		}
+	}
+
+	return Ok(blocksMap);
+};
+
+export { github, getProviderInfo, getManifest, fetchBlocks };

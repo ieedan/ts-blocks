@@ -1,11 +1,11 @@
+import fs from 'node:fs';
+import path from 'node:path';
 import color from 'chalk';
 import { Err, Ok, type Result } from './blocks/types/result';
 import { mapToArray } from './blocks/utils/map-to-array';
 import type { Block } from './build';
-import * as gitProviders from './git-providers';
-import fs from 'node:fs';
-import path from 'node:path';
 import type { Config } from './config';
+import * as gitProviders from './git-providers';
 
 export type RemoteBlock = Block & { sourceRepo: gitProviders.Info };
 

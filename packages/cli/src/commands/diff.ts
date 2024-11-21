@@ -6,16 +6,15 @@ import { Command, program } from 'commander';
 import { diffLines } from 'diff';
 import * as v from 'valibot';
 import { context } from '..';
-import { getConfig } from '../utils/config';
-import { OUTPUT_FILE } from '../utils';
-import { type Block, isTestFile } from '../utils/build';
-import { formatDiff } from '../utils/diff';
+import * as ascii from '../utils/ascii';
 import { getInstalled } from '../utils/blocks';
+import { type Block, isTestFile } from '../utils/build';
+import { getConfig } from '../utils/config';
+import { formatDiff } from '../utils/diff';
 import { getWatermark } from '../utils/get-watermark';
 import * as gitProviders from '../utils/git-providers';
 import { languages } from '../utils/language-support';
 import { intro } from '../utils/prompts';
-import * as ascii from '../utils/ascii';
 
 const schema = v.object({
 	allow: v.boolean(),
@@ -57,8 +56,6 @@ const _diff = async (options: Options) => {
 		(err) => program.error(color.red(err))
 	);
 
-	const blocksMap: Map<string, RemoteBlock> = new Map();
-
 	let repoPaths = config.repos;
 
 	// we just want to override all others if supplied via the CLI
@@ -78,31 +75,15 @@ const _diff = async (options: Options) => {
 
 	loading.start(`Fetching blocks from ${color.cyan(repoPaths.join(', '))}`);
 
-	for (const repo of repoPaths) {
-		const providerInfo: gitProviders.Info = (await gitProviders.getProviderInfo(repo)).match(
-			(info) => info,
-			(err) => program.error(color.red(err))
-		);
-
-		const manifestUrl = await providerInfo.provider.resolveRaw(providerInfo, OUTPUT_FILE);
-
-		const categories = (await gitProviders.getManifest(manifestUrl)).match(
-			(val) => val,
-			(err) => program.error(color.red(err))
-		);
-
-		for (const category of categories) {
-			for (const block of category.blocks) {
-				blocksMap.set(
-					`${providerInfo.name}/${providerInfo.owner}/${providerInfo.repoName}/${category.name}/${block.name}`,
-					{
-						...block,
-						sourceRepo: providerInfo,
-					}
-				);
-			}
+	const blocksMap: Map<string, RemoteBlock> = (
+		await gitProviders.fetchBlocks(...repoPaths)
+	).match(
+		(val) => val,
+		({ repo, message }) => {
+			loading.stop(`Failed fetching blocks from ${color.cyan(repo)}`);
+			program.error(color.red(message));
 		}
-	}
+	);
 
 	loading.stop(`Retrieved blocks from ${color.cyan(repoPaths.join(', '))}`);
 

@@ -1,8 +1,8 @@
 import { intro, spinner } from '@clack/prompts';
 import color from 'chalk';
+import * as ascii from './ascii';
 import { rightPad, rightPadMin } from './blocks/utils/pad';
 import { stripAsni } from './blocks/utils/strip-ansi';
-import * as ascii from './ascii';
 
 export type Task = {
 	loadingMessage: string;

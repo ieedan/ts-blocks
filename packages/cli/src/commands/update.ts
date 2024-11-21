@@ -10,17 +10,16 @@ import { resolveCommand } from 'package-manager-detector/commands';
 import { detect } from 'package-manager-detector/detect';
 import * as v from 'valibot';
 import { context } from '..';
-import { getConfig } from '../utils/config';
-import { type RemoteBlock, resolveTree, getInstalled } from '../utils/blocks';
+import * as ascii from '../utils/ascii';
+import { type RemoteBlock, getInstalled, resolveTree } from '../utils/blocks';
 import { isTestFile } from '../utils/build';
+import { getConfig } from '../utils/config';
 import { formatDiff } from '../utils/diff';
 import { getWatermark } from '../utils/get-watermark';
 import * as gitProviders from '../utils/git-providers';
 import { INFO } from '../utils/index';
-import { OUTPUT_FILE } from '../utils/index';
 import { languages } from '../utils/language-support';
 import { type Task, intro, nextSteps, runTasks } from '../utils/prompts';
-import * as ascii from '../utils/ascii';
 
 const schema = v.object({
 	yes: v.boolean(),
@@ -74,8 +73,6 @@ const _update = async (blockNames: string[], options: Options) => {
 		(err) => program.error(color.red(err))
 	);
 
-	const blocksMap: Map<string, RemoteBlock> = new Map();
-
 	let repoPaths = config.repos;
 
 	// we just want to override all others if supplied via the CLI
@@ -109,44 +106,19 @@ const _update = async (blockNames: string[], options: Options) => {
 
 	if (!options.verbose) loading.start(`Fetching blocks from ${color.cyan(repoPaths.join(', '))}`);
 
-	// get blocks from each repo
-	for (const repo of repoPaths) {
-		const providerInfo: gitProviders.Info = (await gitProviders.getProviderInfo(repo)).match(
-			(info) => info,
-			(err) => {
-				loading.stop(`Failed fetching blocks from ${color.cyan(repo)}`);
-				program.error(color.red(err));
-			}
-		);
-
-		const manifestUrl = await providerInfo.provider.resolveRaw(providerInfo, OUTPUT_FILE);
-
-		verbose(`Got info for provider ${color.cyan(providerInfo.name)}`);
-
-		const categories = (await gitProviders.getManifest(manifestUrl)).match(
-			(val) => val,
-			(err) => {
-				loading.stop(`Failed fetching blocks from ${color.cyan(repo)}`);
-				program.error(color.red(err));
-			}
-		);
-
-		for (const category of categories) {
-			for (const block of category.blocks) {
-				blocksMap.set(
-					`${providerInfo.name}/${providerInfo.owner}/${providerInfo.repoName}/${category.name}/${block.name}`,
-					{
-						...block,
-						sourceRepo: providerInfo,
-					}
-				);
-			}
+	const blocksMap: Map<string, RemoteBlock> = (
+		await gitProviders.fetchBlocks(...repoPaths)
+	).match(
+		(val) => val,
+		({ repo, message }) => {
+			loading.stop(`Failed fetching blocks from ${color.cyan(repo)}`);
+			program.error(color.red(message));
 		}
-	}
-
-	verbose(`Retrieved blocks from ${color.cyan(repoPaths.join(', '))}`);
+	);
 
 	if (!options.verbose) loading.stop(`Retrieved blocks from ${color.cyan(repoPaths.join(', '))}`);
+
+	verbose(`Retrieved blocks from ${color.cyan(repoPaths.join(', '))}`);
 
 	const installedBlocks = getInstalled(blocksMap, config, options.cwd);
 
