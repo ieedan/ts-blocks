@@ -60,6 +60,7 @@ const LANGS = [
 	'tsx' satisfies BundledLanguage,
 	'vb' satisfies BundledLanguage,
 	'xml' satisfies BundledLanguage,
+	'yml' satisfies BundledLanguage,
 	'yaml' satisfies BundledLanguage,
 	'zig' satisfies BundledLanguage,
 	'csv' satisfies BundledLanguage,

@@ -5,5 +5,6 @@ import SubHeading from './sub-heading.svelte';
 import CodeSpan from './code-span.svelte';
 import Code from './code';
 import Blockquote from './blockquote.svelte';
+import { CopyButton } from './copy-button';
 
-export { DocHeader, Jsrepo, Link, SubHeading, CodeSpan, Code, Blockquote };
+export { DocHeader, Jsrepo, Link, SubHeading, CodeSpan, Code, Blockquote, CopyButton };

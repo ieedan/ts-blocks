@@ -4,13 +4,13 @@
 	import type { Snippet } from 'svelte';
 	import * as Icons from '$lib/components/icons';
 
-	type LangSupport = {
+	type Support = {
 		logo?: (opts: { size: number }) => ReturnType<Snippet>;
 		name: string;
 		status: '✅' | '⌛️' | '🚫';
 	};
 
-	const support: LangSupport[] = [
+	const support: Support[] = [
 		{
 			logo: typescript,
 			name: '*.ts',
