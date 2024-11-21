@@ -64,7 +64,7 @@ const solveRight = ({ angle, opposite, adjacent, hypotenuse }: SolveOptions): Ri
 		angle,
 		opposite,
 		adjacent,
-		hypotenuse,
+		hypotenuse
 	};
 };
 
