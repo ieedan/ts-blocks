@@ -193,6 +193,8 @@ const _diff = async (options: Options) => {
 					maxUnchanged: options.maxUnchanged,
 					colorAdded: color.greenBright,
 					colorRemoved: color.redBright,
+					colorCharsAdded: color.bgGreenBright,
+					colorCharsRemoved: color.bgRedBright,
 					prefix: () => `${L}  `,
 					onUnchanged: ({ from, to, prefix }) =>
 						`${prefix?.() ?? ''}${color.cyan(from)} → ${color.gray(to)} ${color.gray('(unchanged)')}\n`,
