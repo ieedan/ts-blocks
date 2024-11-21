@@ -1,5 +1,11 @@
 # jsrepo
 
+## 1.2.1
+
+### Patch Changes
+
+- b1dee7f: Remove `npx jsrepo` from error message when no config is provided.
+
 ## 1.2.0
 
 ### Minor Changes
