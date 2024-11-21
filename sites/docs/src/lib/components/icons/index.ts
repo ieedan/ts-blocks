@@ -5,6 +5,7 @@ import Svelte from './svelte.svelte';
 import React from './react.svelte';
 import JavaScript from './javascript.svelte';
 import Vue from './vue.svelte';
+import Jsrepo from './jsrepo.svelte';
 
 export interface Props extends HTMLAttributes<SVGElement> {
 	class?: string;
@@ -12,4 +13,4 @@ export interface Props extends HTMLAttributes<SVGElement> {
 	height?: number;
 }
 
-export { GitHub, TypeScript, Svelte, React, JavaScript, Vue };
+export { GitHub, TypeScript, Svelte, React, JavaScript, Vue, Jsrepo };

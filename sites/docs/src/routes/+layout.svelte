@@ -5,6 +5,7 @@
 	import '../app.css';
 	import { Header } from '$lib/components/site/header';
 	import { pmContext } from '$lib/ts/context';
+	import { Footer } from '$lib/components/site/footer';
 
 	pmContext.init('npm');
 
@@ -14,3 +15,4 @@
 <ModeWatcher />
 <Header {...data} />
 {@render children()}
+<Footer {...data}/>

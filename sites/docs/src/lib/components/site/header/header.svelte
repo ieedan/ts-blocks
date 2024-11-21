@@ -13,19 +13,25 @@
 	};
 
 	let { version }: Props = $props();
+
+	let open = $state(false);
 </script>
 
 <header
-	class="py-2 px-6 flex place-items-center justify-center border-b border-border h-14 sticky top-0 bg-background z-20"
+	class="py-2 px-6 flex place-items-center justify-center border-b border-border h-14 sticky top-0 bg-background z-40"
 >
 	<div class="flex place-items-center justify-between max-w-screen-2xl w-full">
 		<div class="flex place-items-center gap-6">
-			<Drawer.Root>
+			<Drawer.Root bind:open>
 				<Drawer.Trigger class="lg:hidden">
 					<span class="sr-only">Menu</span>
 					<Menu class="size-5" />
 				</Drawer.Trigger>
-				<Drawer.Content class="p-6 flex flex-col gap-4">
+				<Drawer.Content class="p-6 flex flex-col gap-4 place-items-start">
+					<div class="flex place-items-center gap-2">
+						<Icons.Jsrepo class="h-8"/> 
+						<span class="text-sm text-muted-foreground">v{version}</span>
+					</div>
 					{#each categories as { name, routes }}
 						<div class="flex flex-col gap-1 w-full">
 							{#if name !== 'routes'}
@@ -35,6 +41,7 @@
 								{#each routes as { name, href, activeForSubdirectories }}
 									<a
 										class="data-[active=true]:text-primary text-muted-foreground"
+										onclick={() => open = false}
 										{href}
 										use:active={{
 											activeForSubdirectories: activeForSubdirectories ?? false,
@@ -55,7 +62,7 @@
 				</h1>
 				<span class="text-base font-serif text-muted-foreground">v{version}</span>
 			</a>
-			<div class="flex place-items-center gap-4">
+			<div class="place-items-center gap-4 hidden lg:flex">
 				<a
 					href="/"
 					class="hover:text-primary text-muted-foreground transition-all data-[active=true]:text-primary"

@@ -61,21 +61,23 @@
 			{/each}
 		</ScrollArea>
 	</aside>
-	<div class="flex flex-col gap-5 py-8 w-full flex-grow max-w-2xl">
-		<Breadcrumb.Root>
-			<Breadcrumb.List>
-				<Breadcrumb.Item>
-					<Breadcrumb.Link href="/docs">Docs</Breadcrumb.Link>
-				</Breadcrumb.Item>
-				<Breadcrumb.Separator />
-				{#if currentDoc}
+	<div class="flex flex-col gap-5 py-8 w-full justify-between flex-grow max-w-2xl" style="min-height: calc(100svh - 56px)">
+		<div class="flex flex-col gap-5">
+			<Breadcrumb.Root>
+				<Breadcrumb.List>
 					<Breadcrumb.Item>
-						<Breadcrumb.Page>{currentDoc.route.name}</Breadcrumb.Page>
+						<Breadcrumb.Link href="/docs">Docs</Breadcrumb.Link>
 					</Breadcrumb.Item>
-				{/if}
-			</Breadcrumb.List>
-		</Breadcrumb.Root>
-		{@render children?.()}
+					<Breadcrumb.Separator />
+					{#if currentDoc}
+						<Breadcrumb.Item>
+							<Breadcrumb.Page>{currentDoc.route.name}</Breadcrumb.Page>
+						</Breadcrumb.Item>
+					{/if}
+				</Breadcrumb.List>
+			</Breadcrumb.Root>
+			{@render children?.()}
+		</div>
 		{#if currentDoc}
 			<div class="flex w-full justify-between place-items-center pt-9">
 				<div>
