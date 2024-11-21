@@ -1,5 +1,11 @@
 # jsrepo
 
+## 1.2.3
+
+### Patch Changes
+
+- 909d942: Fixed an issue where block subdeps would be added twice.
+
 ## 1.2.2
 
 ### Patch Changes
