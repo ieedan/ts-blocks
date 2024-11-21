@@ -1,8 +1,7 @@
 {
-  "name": "project",
+  "name": "registry",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
   "scripts": {
     "build": "jsrepo build --dirs ./src",
     "test": "vitest"
