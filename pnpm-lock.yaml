@@ -15,6 +15,16 @@ importers:
         specifier: ^0.0.30
         version: 0.0.30
 
+  examples/registry:
+    dependencies:
+      chalk:
+        specifier: ^5.3.0
+        version: 5.3.0
+    devDependencies:
+      vitest:
+        specifier: ^2.1.5
+        version: 2.1.5(@types/node@22.9.0)
+
   packages/cli:
     dependencies:
       '@clack/prompts':

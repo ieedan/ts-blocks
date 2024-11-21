@@ -19,10 +19,44 @@ type Options = {
 	colorRemoved?: (line: string) => string;
 	/** Color the added lines */
 	colorAdded?: (line: string) => string;
+	/** Color the removed chars */
+	colorCharsRemoved?: (line: string) => string;
+	/** Color the added chars */
+	colorCharsAdded?: (line: string) => string;
 	/** Prefixes each line with the string returned from this function. */
 	prefix: () => string;
 	intro: (options: Options) => string;
 	onUnchanged: (options: Options) => string;
+};
+
+/** Check if a character is whitespace
+ *
+ * @param str
+ * @returns
+ */
+const isWhitespace = (str: string) => /^\s+$/g.test(str);
+
+/** We need to add a newline at the end of each change to make sure
+ * the next change can start correctly. So we take off just 1.
+ *
+ * @param str
+ * @returns
+ */
+const trimSingleNewLine = (str: string): string => {
+	let i = str.length - 1;
+	while (isWhitespace(str[i]) && i >= 0) {
+		if (str[i] === '\n') {
+			if (str[i - 1] === '\r') {
+				return str.slice(0, i - 1);
+			}
+
+			return str.slice(0, i);
+		}
+
+		i--;
+	}
+
+	return str;
 };
 
 const formatDiff = ({
@@ -33,6 +67,8 @@ const formatDiff = ({
 	maxUnchanged = 5,
 	colorRemoved = color.red,
 	colorAdded = color.green,
+	colorCharsRemoved = color.bgRed,
+	colorCharsAdded = color.bgGreen,
 	prefix,
 	onUnchanged,
 	intro,
@@ -85,7 +121,7 @@ const formatDiff = ({
 			// show collapsed
 			if (!expand && change.count !== undefined && change.count > maxUnchanged) {
 				const prevLineOffset = lineOffset;
-				const ls = lines.get(change.value.trimEnd());
+				const ls = lines.get(trimSingleNewLine(change.value));
 
 				let shownLines = 0;
 
@@ -136,7 +172,7 @@ const formatDiff = ({
 
 			// show expanded
 
-			result += `${lines.join(lines.get(change.value.trimEnd()), {
+			result += `${lines.join(lines.get(trimSingleNewLine(change.value)), {
 				prefix: linePrefix,
 			})}\n`;
 			lineOffset += change.count ?? 0;
@@ -144,23 +180,40 @@ const formatDiff = ({
 			continue;
 		}
 
-		const colorChange = (change: Change) => {
+		const colorLineChange = (change: Change) => {
 			if (change.added) {
-				return colorAdded(change.value.trimEnd());
+				return colorAdded(trimSingleNewLine(change.value));
 			}
 
 			if (change.removed) {
-				return colorRemoved(change.value.trimEnd());
+				return colorRemoved(trimSingleNewLine(change.value));
 			}
 
 			return change.value;
 		};
 
-		if (change.removed && change.count === 1) {
+		const colorCharChange = (change: Change) => {
+			if (change.added) {
+				return colorCharsAdded(trimSingleNewLine(change.value));
+			}
+
+			if (change.removed) {
+				return colorCharsRemoved(trimSingleNewLine(change.value));
+			}
+
+			return change.value;
+		};
+
+		if (
+			change.removed &&
+			change.count === 1 &&
+			changes[i + 1]?.added &&
+			changes[i + 1]?.count === 1
+		) {
 			// single line change
 			const diffedChars = diffChars(change.value, changes[i + 1].value);
 
-			const sentence = diffedChars.map((chg) => colorChange(chg)).join('');
+			const sentence = diffedChars.map((chg) => colorCharChange(chg)).join('');
 
 			result += `${linePrefix(0)}${sentence}`;
 
@@ -168,12 +221,24 @@ const formatDiff = ({
 
 			i++;
 		} else {
-			result += `${lines.join(lines.get(colorChange(change)), {
-				prefix: linePrefix,
-			})}\n`;
+			if (isWhitespace(change.value)) {
+				// adds some spaces to make sure that you can see the change
+				result += `${lines.join(lines.get(colorCharChange(change)), {
+					prefix: (line) =>
+						`${linePrefix(line)}${colorCharChange({ removed: true, value: '   ', added: false })}`,
+				})}\n`;
 
-			if (!change.removed) {
-				lineOffset += change.count ?? 0;
+				if (!change.removed) {
+					lineOffset += change.count ?? 0;
+				}
+			} else {
+				result += `${lines.join(lines.get(colorLineChange(change)), {
+					prefix: linePrefix,
+				})}\n`;
+
+				if (!change.removed) {
+					lineOffset += change.count ?? 0;
+				}
 			}
 		}
 	}
