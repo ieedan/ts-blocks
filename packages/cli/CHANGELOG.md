@@ -1,5 +1,11 @@
 # jsrepo
 
+## 1.2.2
+
+### Patch Changes
+
+- bb07833: No noteworthy changes.
+
 ## 1.2.1
 
 ### Patch Changes
