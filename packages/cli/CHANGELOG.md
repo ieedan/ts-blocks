@@ -1,5 +1,12 @@
 # jsrepo
 
+## 1.2.4
+
+### Patch Changes
+
+- 31921ab: Fixes line numbers on `diff` command. Previously there were issues when there were changes that add or removed multiple lines of whitespace now they are fixed.
+- 7bb7084: Adds different coloring for single line changes to make them more discernable in `diff`.
+
 ## 1.2.3
 
 ### Patch Changes
