@@ -1,7 +1,7 @@
 /*
-	jsrepo 1.1.0
+	jsrepo 1.2.1
 	Installed from github/ieedan/std
-	11-20-2024
+	11-21-2024
 */
 
 /** Solves the GCF (Greatest Common Factor) using the **Euclidean Algorithm**
@@ -17,6 +17,8 @@
  * ```
  */
 const gcf = (a: number, b: number): number => {
+	if (a === 0 || b === 0) throw new Error('Cannot get the GCF of 0');
+
 	// if they are negative we really just want the same thing
 	let num1: number = Math.abs(a);
 	let num2: number = Math.abs(b);

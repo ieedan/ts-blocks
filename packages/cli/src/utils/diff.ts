@@ -1,8 +1,8 @@
 import color from 'chalk';
 import { type Change, diffChars } from 'diff';
-import { arraySum } from '../blocks/utilities/array-sum';
-import * as lines from '../blocks/utilities/lines';
-import { leftPadMin } from '../blocks/utilities/pad';
+import { arraySum } from '../blocks/utils/array-sum';
+import * as lines from '../blocks/utils/lines';
+import { leftPadMin } from '../blocks/utils/pad';
 
 type Options = {
 	/** The source file */
