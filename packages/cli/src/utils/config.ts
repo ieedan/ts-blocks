@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import * as v from 'valibot';
-import { Err, Ok, type Result } from '../blocks/types/result';
+import { Err, Ok, type Result } from './blocks/types/result';
 
 const CONFIG_NAME = 'jsrepo.json';
 

@@ -7,7 +7,7 @@ import * as sv from 'svelte/compiler';
 import { Project } from 'ts-morph';
 import validatePackageName from 'validate-npm-package-name';
 import { WARN } from '.';
-import { Ok, type Result } from '../blocks/types/result';
+import { Ok, type Result } from './blocks/types/result';
 import { findNearestPackageJson } from './package';
 import { parsePackageName } from './parse-package-name';
 

@@ -1,8 +1,11 @@
 import color from 'chalk';
-import { Err, Ok, type Result } from '../../blocks/types/result';
-import { mapToArray } from '../../blocks/utils/map-to-array';
-import type { Block } from '../build';
-import * as gitProviders from '../git-providers';
+import { Err, Ok, type Result } from './blocks/types/result';
+import { mapToArray } from './blocks/utils/map-to-array';
+import type { Block } from './build';
+import * as gitProviders from './git-providers';
+import fs from 'node:fs';
+import path from 'node:path';
+import type { Config } from './config';
 
 export type RemoteBlock = Block & { sourceRepo: gitProviders.Info };
 
@@ -12,7 +15,7 @@ export type InstallingBlock = {
 	block: RemoteBlock;
 };
 
-const getBlocks = async (
+const resolveTree = async (
 	blockSpecifiers: string[],
 	blocksMap: Map<string, RemoteBlock>,
 	repoPaths: string[]
@@ -62,7 +65,7 @@ const getBlocks = async (
 		blocks.set(fullSpecifier, { name: fullSpecifier, subDependency: false, block });
 
 		if (block.localDependencies && block.localDependencies.length > 0) {
-			const subDeps = await getBlocks(
+			const subDeps = await resolveTree(
 				block.localDependencies.filter((dep) => !blocks.has(dep)),
 				blocksMap,
 				repoPaths
@@ -79,4 +82,42 @@ const getBlocks = async (
 	return Ok(mapToArray(blocks, (_, val) => val));
 };
 
-export { getBlocks };
+type InstalledBlock = {
+	specifier: `${string}/${string}`;
+	path: string;
+	block: Block;
+};
+
+/** Finds installed blocks and returns them as `<category>/<name>`
+ *
+ * @param blocks
+ * @param config
+ * @returns
+ */
+const getInstalled = (
+	blocks: Map<string, Block>,
+	config: Config,
+	cwd: string
+): InstalledBlock[] => {
+	const installedBlocks: InstalledBlock[] = [];
+
+	for (const [_, block] of blocks) {
+		const baseDir = path.join(cwd, config.path, block.category);
+
+		let blockPath = path.join(baseDir, block.files[0]);
+		if (block.subdirectory) {
+			blockPath = path.join(baseDir, block.name);
+		}
+
+		if (fs.existsSync(blockPath))
+			installedBlocks.push({
+				specifier: `${block.category}/${block.name}`,
+				path: blockPath,
+				block,
+			});
+	}
+
+	return installedBlocks;
+};
+
+export { resolveTree, getInstalled };

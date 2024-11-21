@@ -6,15 +6,16 @@ import { Command, program } from 'commander';
 import { diffLines } from 'diff';
 import * as v from 'valibot';
 import { context } from '..';
-import { getConfig } from '../config';
-import { LEFT_BORDER, OUTPUT_FILE } from '../utils';
+import { getConfig } from '../utils/config';
+import { OUTPUT_FILE } from '../utils';
 import { type Block, isTestFile } from '../utils/build';
 import { formatDiff } from '../utils/diff';
-import { getInstalledBlocks } from '../utils/get-installed-blocks';
+import { getInstalled } from '../utils/blocks';
 import { getWatermark } from '../utils/get-watermark';
 import * as gitProviders from '../utils/git-providers';
 import { languages } from '../utils/language-support';
 import { intro } from '../utils/prompts';
+import * as ascii from '../utils/ascii';
 
 const schema = v.object({
 	allow: v.boolean(),
@@ -105,7 +106,7 @@ const _diff = async (options: Options) => {
 
 	loading.stop(`Retrieved blocks from ${color.cyan(repoPaths.join(', '))}`);
 
-	const installedBlocks = getInstalledBlocks(blocksMap, config, options.cwd);
+	const installedBlocks = getInstalled(blocksMap, config, options.cwd);
 
 	for (const blockSpecifier of installedBlocks) {
 		let found = false;
@@ -124,15 +125,15 @@ const _diff = async (options: Options) => {
 
 			found = true;
 
-			process.stdout.write(`${LEFT_BORDER}\n`);
+			process.stdout.write(`${ascii.VERTICAL_LINE}\n`);
 
-			process.stdout.write(`${LEFT_BORDER}  ${fullSpecifier}\n`);
+			process.stdout.write(`${ascii.VERTICAL_LINE}  ${fullSpecifier}\n`);
 
 			for (const file of block.files) {
 				// skip test files if not included
 				if (!config.includeTests && isTestFile(file)) continue;
 
-				process.stdout.write(`${LEFT_BORDER}\n`);
+				process.stdout.write(`${ascii.VERTICAL_LINE}\n`);
 
 				const sourcePath = path.join(block.directory, file);
 
@@ -191,7 +192,7 @@ const _diff = async (options: Options) => {
 					colorRemoved: color.redBright,
 					colorCharsAdded: color.bgGreenBright,
 					colorCharsRemoved: color.bgRedBright,
-					prefix: () => `${LEFT_BORDER}  `,
+					prefix: () => `${ascii.VERTICAL_LINE}  `,
 					onUnchanged: ({ from, to, prefix }) =>
 						`${prefix?.() ?? ''}${color.cyan(from)} → ${color.gray(to)} ${color.gray('(unchanged)')}\n`,
 					intro: ({ from, to, changes, prefix }) => {

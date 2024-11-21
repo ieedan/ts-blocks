@@ -10,17 +10,17 @@ import { resolveCommand } from 'package-manager-detector/commands';
 import { detect } from 'package-manager-detector/detect';
 import * as v from 'valibot';
 import { context } from '..';
-import { getConfig } from '../config';
-import { type RemoteBlock, getBlocks } from '../utils/blocks/get-blocks';
+import { getConfig } from '../utils/config';
+import { type RemoteBlock, resolveTree, getInstalled } from '../utils/blocks';
 import { isTestFile } from '../utils/build';
 import { formatDiff } from '../utils/diff';
-import { getInstalledBlocks } from '../utils/get-installed-blocks';
 import { getWatermark } from '../utils/get-watermark';
 import * as gitProviders from '../utils/git-providers';
-import { INFO, LEFT_BORDER } from '../utils/index';
+import { INFO } from '../utils/index';
 import { OUTPUT_FILE } from '../utils/index';
 import { languages } from '../utils/language-support';
 import { type Task, intro, nextSteps, runTasks } from '../utils/prompts';
+import * as ascii from '../utils/ascii';
 
 const schema = v.object({
 	yes: v.boolean(),
@@ -148,7 +148,7 @@ const _update = async (blockNames: string[], options: Options) => {
 
 	if (!options.verbose) loading.stop(`Retrieved blocks from ${color.cyan(repoPaths.join(', '))}`);
 
-	const installedBlocks = getInstalledBlocks(blocksMap, config, options.cwd);
+	const installedBlocks = getInstalled(blocksMap, config, options.cwd);
 
 	let updatingBlockNames = blockNames;
 
@@ -179,7 +179,7 @@ const _update = async (blockNames: string[], options: Options) => {
 
 	verbose(`Preparing to update ${color.cyan(updatingBlockNames.join(', '))}`);
 
-	const updatingBlocks = (await getBlocks(updatingBlockNames, blocksMap, repoPaths)).match(
+	const updatingBlocks = (await resolveTree(updatingBlockNames, blocksMap, repoPaths)).match(
 		(val) => val,
 		program.error
 	);
@@ -238,9 +238,9 @@ const _update = async (blockNames: string[], options: Options) => {
 			files.push({ content, destPath, fileName: sourceFile });
 		}
 
-		process.stdout.write(`${LEFT_BORDER}\n`);
+		process.stdout.write(`${ascii.VERTICAL_LINE}\n`);
 
-		process.stdout.write(`${LEFT_BORDER}  ${fullSpecifier}\n`);
+		process.stdout.write(`${ascii.VERTICAL_LINE}  ${fullSpecifier}\n`);
 
 		for (const file of files) {
 			let remoteContent: string = file.content;
@@ -258,7 +258,7 @@ const _update = async (blockNames: string[], options: Options) => {
 			let acceptedChanges = options.yes;
 
 			if (!options.yes) {
-				process.stdout.write(`${LEFT_BORDER}\n`);
+				process.stdout.write(`${ascii.VERTICAL_LINE}\n`);
 
 				let localContent = '';
 				if (fs.existsSync(file.destPath)) {
@@ -286,7 +286,7 @@ const _update = async (blockNames: string[], options: Options) => {
 					colorRemoved: color.redBright,
 					colorCharsAdded: color.bgGreenBright,
 					colorCharsRemoved: color.bgRedBright,
-					prefix: () => `${LEFT_BORDER}  `,
+					prefix: () => `${ascii.VERTICAL_LINE}  `,
 					onUnchanged: ({ from, to, prefix }) =>
 						`${prefix?.() ?? ''}${color.cyan(from)} → ${color.gray(to)} ${color.gray('(unchanged)')}\n`,
 					intro: ({ from, to, changes, prefix }) => {

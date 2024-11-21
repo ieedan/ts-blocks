@@ -9,7 +9,7 @@ import { detect } from 'package-manager-detector/detect';
 import { Project } from 'ts-morph';
 import * as v from 'valibot';
 import { context } from '..';
-import { getConfig } from '../config';
+import { getConfig } from '../utils/config';
 import { INFO } from '../utils';
 import { type Block, categorySchema, isTestFile } from '../utils/build';
 import { getInstalledBlocks } from '../utils/get-installed-blocks';

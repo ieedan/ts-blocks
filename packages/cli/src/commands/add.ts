@@ -9,10 +9,9 @@ import { resolveCommand } from 'package-manager-detector/commands';
 import { detect } from 'package-manager-detector/detect';
 import * as v from 'valibot';
 import { context } from '..';
-import { getConfig } from '../config';
-import { getBlocks } from '../utils/blocks/get-blocks';
+import { getConfig } from '../utils/config';
+import { resolveTree, getInstalled } from '../utils/blocks';
 import { type Block, isTestFile } from '../utils/build';
-import { getInstalledBlocks } from '../utils/get-installed-blocks';
 import { getWatermark } from '../utils/get-watermark';
 import * as gitProviders from '../utils/git-providers';
 import { INFO } from '../utils/index';
@@ -160,7 +159,7 @@ const _add = async (blockNames: string[], options: Options) => {
 
 	if (!options.verbose) loading.stop(`Retrieved blocks from ${color.cyan(repoPaths.join(', '))}`);
 
-	const installedBlocks = getInstalledBlocks(blocksMap, config, options.cwd).map(
+	const installedBlocks = getInstalled(blocksMap, config, options.cwd).map(
 		(val) => val.specifier
 	);
 
@@ -209,7 +208,7 @@ const _add = async (blockNames: string[], options: Options) => {
 
 	if (options.verbose) console.log('Blocks map: ', blocksMap);
 
-	const installingBlocks = (await getBlocks(installingBlockNames, blocksMap, repoPaths)).match(
+	const installingBlocks = (await resolveTree(installingBlockNames, blocksMap, repoPaths)).match(
 		(val) => val,
 		program.error
 	);
