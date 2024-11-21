@@ -34,7 +34,7 @@ type Options = {
  * @param str
  * @returns
  */
-const isWhitespace = (str: string) => /\s/g.test(str);
+const isWhitespace = (str: string) => /^\s+$/g.test(str);
 
 /** We need to add a newline at the end of each change to make sure
  * the next change can start correctly. So we take off just 1.
@@ -204,7 +204,12 @@ const formatDiff = ({
 			return change.value;
 		};
 
-		if (change.removed && change.count === 1) {
+		if (
+			change.removed &&
+			change.count === 1 &&
+			changes[i + 1]?.added &&
+			changes[i + 1]?.count === 1
+		) {
 			// single line change
 			const diffedChars = diffChars(change.value, changes[i + 1].value);
 
@@ -216,12 +221,24 @@ const formatDiff = ({
 
 			i++;
 		} else {
-			result += `${lines.join(lines.get(colorLineChange(change)), {
-				prefix: linePrefix,
-			})}\n`;
+			if (isWhitespace(change.value)) {
+				// adds some spaces to make sure that you can see the change
+				result += `${lines.join(lines.get(colorCharChange(change)), {
+					prefix: (line) =>
+						`${linePrefix(line)}${colorCharChange({ removed: true, value: '   ', added: false })}`,
+				})}\n`;
 
-			if (!change.removed) {
-				lineOffset += change.count ?? 0;
+				if (!change.removed) {
+					lineOffset += change.count ?? 0;
+				}
+			} else {
+				result += `${lines.join(lines.get(colorLineChange(change)), {
+					prefix: linePrefix,
+				})}\n`;
+
+				if (!change.removed) {
+					lineOffset += change.count ?? 0;
+				}
 			}
 		}
 	}

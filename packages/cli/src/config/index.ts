@@ -14,7 +14,7 @@ const schema = v.object({
 });
 
 const getConfig = (cwd: string): Result<Config, string> => {
-	if (!fs.existsSync(CONFIG_NAME)) {
+	if (!fs.existsSync(path.join(cwd, CONFIG_NAME))) {
 		return Err('Could not find your configuration file! Please run `init`.');
 	}
 
