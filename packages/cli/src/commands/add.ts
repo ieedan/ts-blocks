@@ -478,7 +478,9 @@ const getBlocks = async (
 			);
 		}
 
-		blocks.set(blockSpecifier, { name: blockSpecifier, subDependency: false, block });
+		const fullSpecifier = `${block.sourceRepo.url}/${block.category}/${block.name}`;
+
+		blocks.set(fullSpecifier, { name: fullSpecifier, subDependency: false, block });
 
 		if (block.localDependencies && block.localDependencies.length > 0) {
 			const subDeps = await getBlocks(
