@@ -1,0 +1,8 @@
+# project example
+
+Test this example on your own registry. Initialize the `jsrepo.json` add components etc.
+
+You can run `index.ts` with:
+```bash
+pnpm start
+``` 
