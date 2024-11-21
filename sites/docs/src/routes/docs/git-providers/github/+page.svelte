@@ -57,7 +57,7 @@ https://github.com/ieedan/std/tree/next # branch reference
 	<CodeSpan>https://github.com</CodeSpan>.
 </p>
 <p>Example:</p>
-<Snippet command="execute" args={['jsrepo', 'add', 'github/ieedan/std/utilities/math']} />
+<Snippet command="execute" args={['jsrepo', 'add', 'github/ieedan/std/utils/math']} />
 <p>
 	In the <CodeSpan>jsrepo.json</CodeSpan>:
 </p>

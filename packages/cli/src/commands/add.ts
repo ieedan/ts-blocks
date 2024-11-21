@@ -9,7 +9,7 @@ import { resolveCommand } from 'package-manager-detector/commands';
 import { detect } from 'package-manager-detector/detect';
 import * as v from 'valibot';
 import { context } from '..';
-import { mapToArray } from '../blocks/utilities/map-to-array';
+import { mapToArray } from '../blocks/utils/map-to-array';
 import { getConfig } from '../config';
 import { type Block, isTestFile } from '../utils/build';
 import { getInstalledBlocks } from '../utils/get-installed-blocks';

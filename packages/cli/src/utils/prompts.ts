@@ -1,7 +1,7 @@
 import { intro, spinner } from '@clack/prompts';
 import color from 'chalk';
-import { rightPad, rightPadMin } from '../blocks/utilities/pad';
-import { stripAsni } from '../blocks/utilities/strip-ansi';
+import { rightPad, rightPadMin } from '../blocks/utils/pad';
+import { stripAsni } from '../blocks/utils/strip-ansi';
 
 const VERTICAL_BORDER = color.gray('│');
 const HORIZONTAL_BORDER = color.gray('─');

@@ -1,7 +1,7 @@
 /*
-	jsrepo 1.1.0
+	jsrepo 1.2.1
 	Installed from github/ieedan/std
-	11-20-2024
+	11-21-2024
 */
 
 import { gcf } from './gcf';

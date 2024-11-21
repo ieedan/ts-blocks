@@ -1,7 +1,7 @@
 /*
-	jsrepo 1.0.0-next.18
+	jsrepo 1.2.1
 	Installed from github/ieedan/std
-	11-18-2024
+	11-21-2024
 */
 
 /** Calculates the sum of all elements in the array based on the provided function.
