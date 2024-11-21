@@ -56,6 +56,11 @@ const categories: Category[] = [
 				href: '/docs/language-support'
 			},
 			{
+				name: 'Git Providers',
+				href: '/docs/git-providers',
+				activeForSubdirectories: true,
+			},
+			{
 				name: 'About',
 				href: '/docs/about'
 			}

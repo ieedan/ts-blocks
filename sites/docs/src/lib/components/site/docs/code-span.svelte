@@ -3,11 +3,13 @@
 
 	type Props = {
 		children: Snippet<[]>;
+		class?: string;
 	};
+	import { cn } from '$lib/utils';
 
-	let { children }: Props = $props();
+	let { children, class: className }: Props = $props();
 </script>
 
-<span class="bg-secondary p-1 rounded-md font-serif text-sm text-nowrap">
+<span class={cn('bg-secondary p-1 rounded-md font-serif text-sm text-nowrap', className)}>
 	{@render children()}
 </span>
