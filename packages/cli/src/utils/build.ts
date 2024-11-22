@@ -33,12 +33,17 @@ const TEST_SUFFIXES = ['.test.ts', '_test.ts', '.test.js', '_test.js'] as const;
 const isTestFile = (file: string): boolean =>
 	TEST_SUFFIXES.find((suffix) => file.endsWith(suffix)) !== undefined;
 
+type Options = {
+	cwd: string;
+	excludeDeps: string[];
+};
+
 /** Using the provided path to the blocks folder builds the blocks into categories and also resolves dependencies
  *
  * @param blocksPath
  * @returns
  */
-const buildBlocksDirectory = (blocksPath: string, cwd: string): Category[] => {
+const buildBlocksDirectory = (blocksPath: string, { cwd, excludeDeps }: Options): Category[] => {
 	let paths: string[];
 
 	try {
@@ -88,7 +93,12 @@ const buildBlocksDirectory = (blocksPath: string, cwd: string): Category[] => {
 				);
 
 				const { dependencies, devDependencies, local } = lang
-					.resolveDependencies(blockDir, categoryName, false)
+					.resolveDependencies({
+						filePath: blockDir,
+						category: categoryName,
+						isSubDir: false,
+						excludeDeps,
+					})
 					.match(
 						(val) => val,
 						(err) => {
@@ -140,7 +150,12 @@ const buildBlocksDirectory = (blocksPath: string, cwd: string): Category[] => {
 					}
 
 					const { local, dependencies, devDependencies } = lang
-						.resolveDependencies(path.join(blockDir, f), categoryName, true)
+						.resolveDependencies({
+							filePath: path.join(blockDir, f),
+							category: categoryName,
+							isSubDir: true,
+							excludeDeps,
+						})
 						.match(
 							(val) => val,
 							(err) => {

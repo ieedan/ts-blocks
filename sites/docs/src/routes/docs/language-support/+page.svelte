@@ -39,7 +39,7 @@
 		{
 			logo: vue,
 			name: '*.vue',
-			status: '🚫'
+			status: '✅'
 		}
 	];
 </script>

@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import { builtinModules } from 'node:module';
 import path from 'node:path';
+import * as v from '@vue/compiler-sfc';
 import color from 'chalk';
 import { walk } from 'estree-walker';
 import * as sv from 'svelte/compiler';
@@ -17,15 +18,18 @@ export type ResolvedDependencies = {
 	dependencies: string[];
 };
 
+export type ResolveDependencyOptions = {
+	filePath: string;
+	category: string;
+	isSubDir: boolean;
+	excludeDeps: string[];
+};
+
 export type Lang = {
 	/** Matches the supported file types */
 	matches: (fileName: string) => boolean;
 	/** Reads the file and gets any dependencies from its imports */
-	resolveDependencies: (
-		filePath: string,
-		category: string,
-		isSubDir: boolean
-	) => Result<ResolvedDependencies, string>;
+	resolveDependencies: (opts: ResolveDependencyOptions) => Result<ResolvedDependencies, string>;
 	/** Returns a multiline comment containing the content */
 	comment: (content: string) => string;
 };
@@ -36,7 +40,7 @@ const typescript: Lang = {
 		fileName.endsWith('.js') ||
 		fileName.endsWith('.tsx') ||
 		fileName.endsWith('.jsx'),
-	resolveDependencies: (filePath, category, isSubDir) => {
+	resolveDependencies: ({ filePath, category, isSubDir, excludeDeps }) => {
 		const project = new Project();
 
 		const blockFile = project.addSourceFileAtPath(filePath);
@@ -61,7 +65,11 @@ const typescript: Lang = {
 			.filter((declaration) => !declaration.getModuleSpecifierValue().startsWith('.'))
 			.map((declaration) => declaration.getModuleSpecifierValue());
 
-		const { devDependencies, dependencies } = resolveRemoteDeps(Array.from(deps), filePath);
+		const { devDependencies, dependencies } = resolveRemoteDeps(
+			Array.from(deps),
+			filePath,
+			excludeDeps
+		);
 
 		return Ok({
 			local: Array.from(localDeps),
@@ -74,7 +82,7 @@ const typescript: Lang = {
 
 const svelte: Lang = {
 	matches: (fileName) => fileName.endsWith('.svelte'),
-	resolveDependencies: (filePath, category, isSubDir) => {
+	resolveDependencies: ({ filePath, category, isSubDir, excludeDeps }) => {
 		const sourceCode = fs.readFileSync(filePath).toString();
 
 		const root = sv.parse(sourceCode, { modern: true });
@@ -106,7 +114,53 @@ const svelte: Lang = {
 			},
 		});
 
-		const { devDependencies, dependencies } = resolveRemoteDeps(Array.from(deps), filePath);
+		const { devDependencies, dependencies } = resolveRemoteDeps(Array.from(deps), filePath, [
+			'svelte',
+			...excludeDeps,
+		]);
+
+		return Ok({
+			dependencies,
+			devDependencies,
+			local: Array.from(localDeps),
+		} satisfies ResolvedDependencies);
+	},
+	comment: (content) => `<!--\n${content}\n-->`,
+};
+
+const vue: Lang = {
+	matches: (fileName) => fileName.endsWith('.vue'),
+	resolveDependencies: ({ filePath, category, isSubDir, excludeDeps }) => {
+		const sourceCode = fs.readFileSync(filePath).toString();
+
+		const parsed = v.parse(sourceCode);
+
+		if (!parsed.descriptor.script?.content && !parsed.descriptor.scriptSetup?.content)
+			return Ok({ dependencies: [], devDependencies: [], local: [] });
+
+		const localDeps = new Set<string>();
+		const deps = new Set<string>();
+
+		const compiled = v.compileScript(parsed.descriptor, { id: 'shut-it' }); // you need this id to remove a warning
+
+		if (!compiled.imports) return Ok({ dependencies: [], devDependencies: [], local: [] });
+
+		const imports = Object.values(compiled.imports);
+
+		for (const imp of imports) {
+			if (imp.source.startsWith('.')) {
+				const localDep = resolveLocalImport(imp.source, category, isSubDir);
+
+				if (localDep) localDeps.add(localDep);
+			} else {
+				deps.add(imp.source);
+			}
+		}
+
+		const { devDependencies, dependencies } = resolveRemoteDeps(Array.from(deps), filePath, [
+			'vue',
+			...excludeDeps,
+		]);
 
 		return Ok({
 			dependencies,
@@ -136,7 +190,7 @@ const resolveLocalImport = (
 	const segments = mod.replaceAll('../', '').split('/');
 
 	// invalid path
-	if (segments.length !== 2) return undefined;
+	if (segments.length < 2) return undefined;
 
 	return `${segments[0]}/${segments[1]}`;
 };
@@ -148,7 +202,9 @@ const resolveLocalImport = (
  * @param filePath
  * @returns
  */
-const resolveRemoteDeps = (deps: string[], filePath: string) => {
+const resolveRemoteDeps = (deps: string[], filePath: string, doNotInstall: string[] = []) => {
+	const exemptDeps = new Set(doNotInstall);
+
 	const filteredDeps = deps.filter(
 		(dep) => !builtinModules.includes(dep) && !dep.startsWith('node:')
 	);
@@ -181,6 +237,8 @@ const resolveRemoteDeps = (deps: string[], filePath: string) => {
 				continue;
 			}
 
+			if (exemptDeps.has(depInfo.name)) continue;
+
 			let version: string | undefined = undefined;
 			if (packageDependencies !== undefined) {
 				version = packageDependencies[depInfo.name];
@@ -211,6 +269,6 @@ const resolveRemoteDeps = (deps: string[], filePath: string) => {
 	};
 };
 
-const languages: Lang[] = [typescript, svelte];
+const languages: Lang[] = [typescript, svelte, vue];
 
 export { typescript, languages };

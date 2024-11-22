@@ -11,6 +11,7 @@ import { intro } from '../utils/prompts';
 
 const schema = v.object({
 	dirs: v.array(v.string()),
+	excludeDeps: v.array(v.string()),
 	output: v.boolean(),
 	verbose: v.boolean(),
 	cwd: v.string(),
@@ -21,6 +22,7 @@ type Options = v.InferInput<typeof schema>;
 const build = new Command('build')
 	.description(`Builds the provided --dirs in the project root into a \`${OUTPUT_FILE}\` file.`)
 	.option('--dirs [dirs...]', 'The directories containing the blocks.', ['./blocks'])
+	.option('--exclude-deps [deps...]', 'Dependencies that should not be added.', [])
 	.option('--no-output', `Do not output a \`${OUTPUT_FILE}\` file.`)
 	.option('--verbose', 'Include debug logs.', false)
 	.option('--cwd <path>', 'The current working directory.', process.cwd())
@@ -48,7 +50,9 @@ const _build = async (options: Options) => {
 
 		if (options.output && fs.existsSync(outFile)) fs.rmSync(outFile);
 
-		categories.push(...buildBlocksDirectory(dirPath, options.cwd));
+		categories.push(
+			...buildBlocksDirectory(dirPath, { cwd: options.cwd, excludeDeps: options.excludeDeps })
+		);
 
 		loading.stop(`Built ${color.cyan(dirPath)}`);
 	}
