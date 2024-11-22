@@ -2,4 +2,4 @@
 "jsrepo": patch
 ---
 
-For `*.svelte` files imports from 'svelte' will not longer result in `svelte` being added as a dependency.
+When `*.svelte` files import 'svelte' it will not longer result in `svelte` being added as a dependency.
