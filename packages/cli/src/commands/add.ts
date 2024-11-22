@@ -3,8 +3,6 @@ import path from 'node:path';
 import { cancel, confirm, isCancel, multiselect, outro, spinner } from '@clack/prompts';
 import color from 'chalk';
 import { Command, program } from 'commander';
-import { execa } from 'execa';
-import type { ResolvedCommand } from 'package-manager-detector';
 import { resolveCommand } from 'package-manager-detector/commands';
 import { detect } from 'package-manager-detector/detect';
 import * as v from 'valibot';
@@ -12,6 +10,7 @@ import { context } from '..';
 import { getInstalled, resolveTree } from '../utils/blocks';
 import { type Block, isTestFile } from '../utils/build';
 import { getConfig } from '../utils/config';
+import { installDependencies } from '../utils/dependencies';
 import { getWatermark } from '../utils/get-watermark';
 import * as gitProviders from '../utils/git-providers';
 import { INFO } from '../utils/index';
@@ -305,36 +304,7 @@ const _add = async (blockNames: string[], options: Options) => {
 		});
 	}
 
-	await runTasks(tasks, { verbose: options.verbose });
-
-	const installDependencies = async (deps: string[], dev: boolean) => {
-		if (!options.verbose) loading.start(`Installing dependencies with ${color.cyan(pm)}`);
-
-		let add: ResolvedCommand | null;
-		if (dev) {
-			add = resolveCommand(pm, 'install', [...deps, '-D']);
-		} else {
-			add = resolveCommand(pm, 'install', [...deps]);
-		}
-
-		if (add == null) {
-			program.error(color.red(`Could not resolve add command for '${pm}'.`));
-		}
-
-		try {
-			await execa(add.command, [...add.args], { cwd: options.cwd });
-		} catch {
-			program.error(
-				color.red(
-					`Failed to install ${color.bold('vitest')}! Failed while running '${color.bold(
-						`${add.command} ${add.args.join(' ')}`
-					)}'`
-				)
-			);
-		}
-
-		if (!options.verbose) loading.stop(`Installed ${color.cyan(deps.join(', '))}`);
-	};
+	await runTasks(tasks, { verbose: options.verbose ? verbose : undefined });
 
 	const hasDependencies = deps.size > 0 || devDeps.size > 0;
 
@@ -356,11 +326,51 @@ const _add = async (blockNames: string[], options: Options) => {
 
 		if (install) {
 			if (deps.size > 0) {
-				await installDependencies(Array.from(deps), false);
+				if (!options.verbose)
+					loading.start(`Installing dependencies with ${color.cyan(pm)}`);
+
+				(
+					await installDependencies({
+						pm,
+						deps: Array.from(deps),
+						dev: false,
+						cwd: options.cwd,
+					})
+				).match(
+					(installed) => {
+						if (!options.verbose)
+							loading.stop(`Installed ${color.cyan(installed.join(', '))}`);
+					},
+					(err) => {
+						if (!options.verbose) loading.stop('Failed to install dependencies');
+
+						program.error(err);
+					}
+				);
 			}
 
 			if (devDeps.size > 0) {
-				await installDependencies(Array.from(devDeps), true);
+				if (!options.verbose)
+					loading.start(`Installing dependencies with ${color.cyan(pm)}`);
+
+				(
+					await installDependencies({
+						pm,
+						deps: Array.from(devDeps),
+						dev: true,
+						cwd: options.cwd,
+					})
+				).match(
+					(installed) => {
+						if (!options.verbose)
+							loading.stop(`Installed ${color.cyan(installed.join(', '))}`);
+					},
+					(err) => {
+						if (!options.verbose) loading.stop('Failed to install dev dependencies');
+
+						program.error(err);
+					}
+				);
 			}
 		}
 

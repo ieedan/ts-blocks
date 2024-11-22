@@ -10,20 +10,32 @@ export type Task = {
 	run: () => Promise<void>;
 };
 
-const runTasks = async (tasks: Task[], { verbose = false }) => {
+type TaskOptions = {
+	verbose?: (msg: string) => void;
+};
+
+const runTasks = async (tasks: Task[], { verbose = undefined }: TaskOptions) => {
 	const loading = spinner();
 
 	for (const task of tasks) {
-		// we don't want this to clear logs when in verbose mode
-		if (!verbose) loading.start(task.loadingMessage);
+		if (verbose) {
+			verbose(task.loadingMessage);
+		} else {
+			loading.start(task.loadingMessage);
+		}
 
 		try {
 			await task.run();
 		} catch (err) {
+			loading.stop(`Error while ${task.loadingMessage}`);
 			console.error(err);
 		}
 
-		if (!verbose) loading.stop(task.completedMessage);
+		if (verbose) {
+			verbose(task.completedMessage);
+		} else {
+			loading.stop(task.completedMessage);
+		}
 	}
 };
 

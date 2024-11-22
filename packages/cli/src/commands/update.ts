@@ -4,8 +4,6 @@ import { cancel, confirm, isCancel, multiselect, outro, spinner } from '@clack/p
 import color from 'chalk';
 import { Command, program } from 'commander';
 import { diffLines } from 'diff';
-import { execa } from 'execa';
-import type { ResolvedCommand } from 'package-manager-detector';
 import { resolveCommand } from 'package-manager-detector/commands';
 import { detect } from 'package-manager-detector/detect';
 import * as v from 'valibot';
@@ -14,6 +12,7 @@ import * as ascii from '../utils/ascii';
 import { type RemoteBlock, getInstalled, resolveTree } from '../utils/blocks';
 import { isTestFile } from '../utils/build';
 import { getConfig } from '../utils/config';
+import { installDependencies } from '../utils/dependencies';
 import { formatDiff } from '../utils/diff';
 import { getWatermark } from '../utils/get-watermark';
 import * as gitProviders from '../utils/git-providers';
@@ -291,9 +290,18 @@ const _update = async (blockNames: string[], options: Options) => {
 			}
 
 			if (acceptedChanges) {
-				loading.start(`Writing changes to ${color.cyan(file.destPath)}`);
-				fs.writeFileSync(file.destPath, remoteContent);
-				loading.stop(`Wrote changes to ${color.cyan(file.destPath)}.`);
+				await runTasks(
+					[
+						{
+							loadingMessage: `Writing changes to ${color.cyan(file.destPath)}`,
+							completedMessage: `Wrote changes to ${color.cyan(file.destPath)}.`,
+							run: async () => fs.writeFileSync(file.destPath, remoteContent),
+						},
+					],
+					{
+						verbose: options.verbose ? verbose : undefined,
+					}
+				);
 			}
 		}
 
@@ -318,36 +326,7 @@ const _update = async (blockNames: string[], options: Options) => {
 		}
 	}
 
-	await runTasks(tasks, { verbose: options.verbose });
-
-	const installDependencies = async (deps: string[], dev: boolean) => {
-		if (!options.verbose) loading.start(`Installing dependencies with ${color.cyan(pm)}`);
-
-		let add: ResolvedCommand | null;
-		if (dev) {
-			add = resolveCommand(pm, 'install', [...deps, '-D']);
-		} else {
-			add = resolveCommand(pm, 'install', [...deps]);
-		}
-
-		if (add == null) {
-			program.error(color.red(`Could not resolve add command for '${pm}'.`));
-		}
-
-		try {
-			await execa(add.command, [...add.args], { cwd: options.cwd });
-		} catch {
-			program.error(
-				color.red(
-					`Failed to install ${color.bold('vitest')}! Failed while running '${color.bold(
-						`${add.command} ${add.args.join(' ')}`
-					)}'`
-				)
-			);
-		}
-
-		if (!options.verbose) loading.stop(`Installed ${color.cyan(deps.join(', '))}`);
-	};
+	await runTasks(tasks, { verbose: options.verbose ? verbose : undefined });
 
 	const hasDependencies = deps.size > 0 || devDeps.size > 0;
 
@@ -369,11 +348,51 @@ const _update = async (blockNames: string[], options: Options) => {
 
 		if (install) {
 			if (deps.size > 0) {
-				await installDependencies(Array.from(deps), false);
+				if (!options.verbose)
+					loading.start(`Installing dependencies with ${color.cyan(pm)}`);
+
+				(
+					await installDependencies({
+						pm,
+						deps: Array.from(deps),
+						dev: false,
+						cwd: options.cwd,
+					})
+				).match(
+					(installed) => {
+						if (!options.verbose)
+							loading.stop(`Installed ${color.cyan(installed.join(', '))}`);
+					},
+					(err) => {
+						if (!options.verbose) loading.stop('Failed to install dependencies');
+
+						program.error(err);
+					}
+				);
 			}
 
 			if (devDeps.size > 0) {
-				await installDependencies(Array.from(devDeps), true);
+				if (!options.verbose)
+					loading.start(`Installing dependencies with ${color.cyan(pm)}`);
+
+				(
+					await installDependencies({
+						pm,
+						deps: Array.from(devDeps),
+						dev: true,
+						cwd: options.cwd,
+					})
+				).match(
+					(installed) => {
+						if (!options.verbose)
+							loading.stop(`Installed ${color.cyan(installed.join(', '))}`);
+					},
+					(err) => {
+						if (!options.verbose) loading.stop('Failed to install dev dependencies');
+
+						program.error(err);
+					}
+				);
 			}
 		}
 
