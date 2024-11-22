@@ -1,5 +1,16 @@
 # jsrepo
 
+## 1.4.0
+
+### Minor Changes
+
+- fb29892: **vue** support! 🎉
+- 48a17aa: Add `--exclude-deps` flag to `build`. This allows you to prevent certain dependencies from being added during the build.
+
+### Patch Changes
+
+- 48a17aa: When `*.svelte` files import 'svelte' it will not longer result in `svelte` being added as a dependency.
+
 ## 1.3.1
 
 ### Patch Changes
