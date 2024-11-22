@@ -1,11 +1,11 @@
 import fs from 'node:fs';
-import path from 'node:path';
 import { cancel, confirm, isCancel, outro, spinner } from '@clack/prompts';
 import color from 'chalk';
 import { Argument, Command, program } from 'commander';
 import { execa } from 'execa';
 import { resolveCommand } from 'package-manager-detector/commands';
 import { detect } from 'package-manager-detector/detect';
+import path from 'pathe';
 import { Project } from 'ts-morph';
 import * as v from 'valibot';
 import { context } from '..';

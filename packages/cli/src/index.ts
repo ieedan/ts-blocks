@@ -1,7 +1,7 @@
 import fs from 'node:fs';
-import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { program } from 'commander';
+import path from 'pathe';
 import * as commands from './commands';
 import type { CLIContext } from './utils/context';
 

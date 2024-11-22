@@ -1,8 +1,8 @@
 import fs from 'node:fs';
-import path from 'node:path';
 import { outro, spinner } from '@clack/prompts';
 import color from 'chalk';
 import { Command } from 'commander';
+import path from 'pathe';
 import * as v from 'valibot';
 import { context } from '..';
 import { type Category, buildBlocksDirectory } from '../utils/build';

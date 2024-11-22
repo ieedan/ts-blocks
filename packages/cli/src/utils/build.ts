@@ -1,7 +1,7 @@
 import fs from 'node:fs';
-import path from 'node:path';
 import color from 'chalk';
 import { program } from 'commander';
+import path from 'pathe';
 import * as v from 'valibot';
 import * as ascii from './ascii';
 import { languages } from './language-support';

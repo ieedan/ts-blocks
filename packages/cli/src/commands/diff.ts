@@ -1,9 +1,9 @@
 import fs from 'node:fs';
-import path from 'node:path';
 import { cancel, confirm, isCancel, outro, spinner } from '@clack/prompts';
 import color from 'chalk';
 import { Command, program } from 'commander';
 import { diffLines } from 'diff';
+import path from 'pathe';
 import * as v from 'valibot';
 import { context } from '..';
 import * as ascii from '../utils/ascii';
@@ -156,18 +156,14 @@ const _diff = async (options: Options) => {
 
 				const changes = diffLines(fileContent, remoteContent);
 
-				const from = path
-					.join(
-						`${providerInfo.name}/${providerInfo.owner}/${providerInfo.repoName}`,
-						sourcePath
-					)
-					.replaceAll('\\', '/');
-
-				const to = prettyLocalPath.replaceAll('\\', '/');
+				const from = path.join(
+					`${providerInfo.name}/${providerInfo.owner}/${providerInfo.repoName}`,
+					sourcePath
+				);
 
 				const formattedDiff = formatDiff({
 					from,
-					to,
+					to: prettyLocalPath,
 					changes,
 					expand: options.expand,
 					maxUnchanged: options.maxUnchanged,

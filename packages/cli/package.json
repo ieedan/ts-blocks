@@ -6,10 +6,7 @@
 		"type": "git",
 		"url": "git+https://github.com/ieedan/jsrepo"
 	},
-	"keywords": [
-		"repo",
-		"cli"
-	],
+	"keywords": ["repo", "cli"],
 	"author": "Aidan Bleser",
 	"license": "MIT",
 	"bugs": {
@@ -57,6 +54,7 @@
 		"execa": "^9.5.1",
 		"octokit": "^4.0.2",
 		"package-manager-detector": "^0.2.4",
+		"pathe": "^1.1.2",
 		"svelte": "^5.2.3",
 		"ts-morph": "^24.0.0",
 		"valibot": "^0.42.1",
