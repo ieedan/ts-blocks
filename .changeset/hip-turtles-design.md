@@ -1,0 +1,5 @@
+---
+"jsrepo": minor
+---
+
+**vue** support! 🎉
