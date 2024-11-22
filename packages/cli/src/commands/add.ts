@@ -114,6 +114,14 @@ const _add = async (blockNames: string[], options: Options) => {
 		}
 	}
 
+	if (repoPaths.length === 0) {
+		program.error(
+			color.red(
+				`There were no repos present in your config and you didn't provide the \`${color.bold('--repo')}\` flag with a repo.`
+			)
+		);
+	}
+
 	verbose(`Fetching blocks from ${color.cyan(repoPaths.join(', '))}`);
 
 	if (!options.verbose) loading.start(`Fetching blocks from ${color.cyan(repoPaths.join(', '))}`);

@@ -66,7 +66,7 @@ const _init = async (options: Options) => {
 		while (true) {
 			const confirmResult = await confirm({
 				message: `Add ${options.repos.length > 0 ? 'another' : 'a'} repo?`,
-				initialValue: false,
+				initialValue: options.repos.length === 0, // default to yes for first repo
 			});
 
 			if (isCancel(confirmResult)) {
