@@ -1,5 +1,11 @@
 # jsrepo
 
+## 1.3.1
+
+### Patch Changes
+
+- 6a531fc: Fix arg ordering for test command.
+
 ## 1.3.0
 
 ### Minor Changes
