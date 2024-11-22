@@ -18,15 +18,18 @@ export type ResolvedDependencies = {
 	dependencies: string[];
 };
 
+export type ResolveDependencyOptions = {
+	filePath: string;
+	category: string;
+	isSubDir: boolean;
+	excludeDeps: string[];
+};
+
 export type Lang = {
 	/** Matches the supported file types */
 	matches: (fileName: string) => boolean;
 	/** Reads the file and gets any dependencies from its imports */
-	resolveDependencies: (
-		filePath: string,
-		category: string,
-		isSubDir: boolean
-	) => Result<ResolvedDependencies, string>;
+	resolveDependencies: (opts: ResolveDependencyOptions) => Result<ResolvedDependencies, string>;
 	/** Returns a multiline comment containing the content */
 	comment: (content: string) => string;
 };
@@ -37,7 +40,7 @@ const typescript: Lang = {
 		fileName.endsWith('.js') ||
 		fileName.endsWith('.tsx') ||
 		fileName.endsWith('.jsx'),
-	resolveDependencies: (filePath, category, isSubDir) => {
+	resolveDependencies: ({ filePath, category, isSubDir, excludeDeps }) => {
 		const project = new Project();
 
 		const blockFile = project.addSourceFileAtPath(filePath);
@@ -62,7 +65,11 @@ const typescript: Lang = {
 			.filter((declaration) => !declaration.getModuleSpecifierValue().startsWith('.'))
 			.map((declaration) => declaration.getModuleSpecifierValue());
 
-		const { devDependencies, dependencies } = resolveRemoteDeps(Array.from(deps), filePath);
+		const { devDependencies, dependencies } = resolveRemoteDeps(
+			Array.from(deps),
+			filePath,
+			excludeDeps
+		);
 
 		return Ok({
 			local: Array.from(localDeps),
@@ -75,7 +82,7 @@ const typescript: Lang = {
 
 const svelte: Lang = {
 	matches: (fileName) => fileName.endsWith('.svelte'),
-	resolveDependencies: (filePath, category, isSubDir) => {
+	resolveDependencies: ({ filePath, category, isSubDir, excludeDeps }) => {
 		const sourceCode = fs.readFileSync(filePath).toString();
 
 		const root = sv.parse(sourceCode, { modern: true });
@@ -109,6 +116,7 @@ const svelte: Lang = {
 
 		const { devDependencies, dependencies } = resolveRemoteDeps(Array.from(deps), filePath, [
 			'svelte',
+			...excludeDeps,
 		]);
 
 		return Ok({
@@ -122,7 +130,7 @@ const svelte: Lang = {
 
 const vue: Lang = {
 	matches: (fileName) => fileName.endsWith('.vue'),
-	resolveDependencies: (filePath, category, isSubDir) => {
+	resolveDependencies: ({ filePath, category, isSubDir, excludeDeps }) => {
 		const sourceCode = fs.readFileSync(filePath).toString();
 
 		const parsed = v.parse(sourceCode);
@@ -151,6 +159,7 @@ const vue: Lang = {
 
 		const { devDependencies, dependencies } = resolveRemoteDeps(Array.from(deps), filePath, [
 			'vue',
+			...excludeDeps,
 		]);
 
 		return Ok({
