@@ -165,6 +165,30 @@ const add = (a: number, b: number): number => {
 │
 └  All done!`}
 />
+<SubHeading>Excluded Dependencies</SubHeading>
+<p>
+	By default in <CodeSpan>*.svelte</CodeSpan> and <CodeSpan>*.vue</CodeSpan> files importing from
+	<CodeSpan>'svelte'</CodeSpan> or <CodeSpan>'vue'</CodeSpan> will not result in the respective frameworks
+	being added as a dependency.
+</p>
+<p>
+	This is because it's pretty easy to assume anyone adding either of those file types to their
+	project will already have Svelte or Vue installed.
+</p>
+<p>
+	However if you are using a <CodeSpan>*.jsx</CodeSpan> based language we don't assume anything for you.
+	There are a lot of different library's that use <CodeSpan>*.jsx</CodeSpan> so we'd be making an ass
+	of ourselves.
+</p>
+<p>
+	Instead when running the <CodeSpan>build</CodeSpan> command you can provide the
+	<CodeSpan>--exclude-deps</CodeSpan> flag:
+</p>
+<Snippet command="execute" args={['jsrepo', 'build', '--exclude-deps', 'react', 'next']} />
+<p>
+	By providing that flag it tells <Jsrepo /> to ignore those dependencies and skip adding them to the
+	manifest file.
+</p>
 <SubHeading>Examples</SubHeading>
 <ul>
 	<li>
