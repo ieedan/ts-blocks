@@ -38,15 +38,41 @@ Options:
 	code={`Usage: jsrepo add [options] [blocks...]
 
 Arguments:
-  blocks         Names of the blocks you want to add to your project.
+  blocks         Names of the blocks you want to add to your project. ex: (utils/math, github/ieedan/std/utils/math)
 
 Options:
-  -y, --yes      Skip confirmation prompt. (default: false)
-  -A, --allow    Allow jsrepo to download code from the provided repo. (default: false)
   --repo <repo>  Repository to download the blocks from.
+  -A, --allow    Allow jsrepo to download code from the provided repo. (default: false)
+  -y, --yes      Skip confirmation prompt. (default: false)
   --verbose      Include debug logs. (default: false)
   --cwd <path>   The current working directory. (default: ".")
   -h, --help     display help for command`}
+/>
+<SubHeading>update</SubHeading>
+<p>
+	The <CodeSpan>update</CodeSpan> command helps you update blocks already installed in your project.
+	When updating the CLI will take you over every changed file and show you a diff so you can what changed
+	and decide whether or not to accept the change.
+</p>
+<Snippet command="execute" args={['jsrepo', 'update', '<category>/<name>']} />
+<Code
+	showLines={false}
+	showCopy={false}
+	code={`Usage: jsrepo update [options] [blocks...]
+
+Arguments:
+  blocks                    Names of the blocks you want to update. ex: (utils/math)
+
+Options:
+  --all                     Update all installed components. (default: false)
+  -E, --expand              Expands the diff so you see everything. (default: false)
+  --max-unchanged <number>  Maximum unchanged lines that will show without being collapsed. (default: 3)
+  --repo <repo>             Repository to download the blocks from.
+  -A, --allow               Allow jsrepo to download code from the provided repo. (default: false)
+  -y, --yes                 Skip confirmation prompt. (default: false)
+  --verbose                 Include debug logs. (default: false)
+  --cwd <path>              The current working directory. (default: ".")
+  -h, --help                display help for command`}
 />
 <SubHeading>build</SubHeading>
 <p>
@@ -85,10 +111,10 @@ Arguments:
   blocks         The blocks you want to test. (default: [])
 
 Options:
-  --verbose      Include debug logs. (default: false)
-  -A, --allow    Allow jsrepo to download code from the provided repo. (default: false)
   --repo <repo>  Repository to download the blocks from
+  -A, --allow    Allow jsrepo to download code from the provided repo. (default: false)
   --debug        Leaves the temp test file around for debugging upon failure. (default: false)
+  --verbose      Include debug logs. (default: false)
   --cwd <path>   The current working directory. (default: ".")
   -h, --help     display help for command`}
 />
@@ -106,10 +132,10 @@ Options:
 Compares local blocks to the blocks in the provided repository.
 
 Options:
-  -A, --allow               Allow jsrepo to download code from the provided repo. (default: false)
   -E, --expand              Expands the diff so you see everything. (default: false)
-  --repo <repo>             Repository to download the blocks from.
   --max-unchanged <number>  Maximum unchanged lines that will show without being collapsed. (default: 3)
+  --repo <repo>             Repository to download the blocks from.
+  -A, --allow               Allow jsrepo to download code from the provided repo. (default: false)
   --cwd <path>              The current working directory. (default: ".")
   -h, --help                display help for command`}
 />
