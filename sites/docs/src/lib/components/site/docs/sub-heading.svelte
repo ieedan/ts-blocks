@@ -2,7 +2,6 @@
 	import { page } from '$app/stores';
 	import { onThisPage } from '$lib/ts/on-this-page';
 	import { onMount, type Snippet } from 'svelte';
-	import Page from '../../../../routes/+page.svelte';
 
 	type Props = {
 		children: Snippet<[]>;

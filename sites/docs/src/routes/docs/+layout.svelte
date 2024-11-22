@@ -36,19 +36,11 @@
 
 	const pageMap = onThisPage.init({ headings: new Map() });
 
-	let top = $state(0);
-
-	const isInView = (el: HTMLElement | undefined, scrolled: number): boolean => {
-		if (el === undefined) return false;
-
-		return el.offsetHeight + el.offsetTop <= scrolled;
-	};
-
 	onNavigate(() => ($pageMap.curr = undefined));
 
 	const pageHeadings = $derived($pageMap.headings.get($page.url.pathname));
 
-	// svelte-ignore state_referenced_locally its just an initial value
+	// svelte-ignore state_referenced_locally
 	let activeHeading = $state<string | undefined>(
 		pageHeadings ? pageHeadings[0]?.el.innerText : undefined
 	);
@@ -71,8 +63,6 @@
 
 	let { children } = $props();
 </script>
-
-<svelte:window onscroll={(e) => (top = e.currentTarget.scrollY)} />
 
 <div class="container flex-1 items-start lg:grid lg:grid-cols-[240px_minmax(0,1fr)] lg:gap-10">
 	<aside
@@ -141,14 +131,10 @@
 			{/if}
 		</div>
 		<div class="xl:flex flex-col hidden py-8 -mt-10 gap-3 sticky top-14 h-[calc(100vh-3.5rem)]">
-			{#if ($pageMap.headings.get($page.url.pathname) ?? []).length > 0}
-				{@const headings = $pageMap.headings.get($page.url.pathname) ?? []}
-				{@const inView = top + window.innerHeight - 56}
+			{#if pageHeadings && pageHeadings.length > 0}
 				<p class="font-semibold text-sm">On This Page</p>
 				<div class="flex flex-col gap-1">
-					{#each headings as heading, i}
-						{@const headingInView = isInView(heading.el, inView)}
-						{@const nextInView = isInView(headings[i + 1]?.el, inView)}
+					{#each pageHeadings as heading}
 						<a
 							href="#{heading.el.innerText}"
 							class="text-muted-foreground text-sm hover:text-primary transition-all data-[active=true]:text-primary"
