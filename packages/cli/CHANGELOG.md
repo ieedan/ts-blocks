@@ -1,5 +1,11 @@
 # jsrepo
 
+## 1.4.2
+
+### Patch Changes
+
+- fb39985: Bump deps.
+
 ## 1.4.1
 
 ### Patch Changes
