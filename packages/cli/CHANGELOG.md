@@ -1,5 +1,11 @@
 # jsrepo
 
+## 1.4.1
+
+### Patch Changes
+
+- 5b83b5b: Use `pathe` instead of `node:path`.
+
 ## 1.4.0
 
 ### Minor Changes
