@@ -165,7 +165,7 @@ const add = (a: number, b: number): number => {
 │
 └  All done!`}
 />
-<SubHeading>Excluded Dependencies</SubHeading>
+<SubHeading>Excluding Dependencies</SubHeading>
 <p>
 	By default in <CodeSpan>*.svelte</CodeSpan> and <CodeSpan>*.vue</CodeSpan> files importing from
 	<CodeSpan>'svelte'</CodeSpan> or <CodeSpan>'vue'</CodeSpan> will not result in the respective frameworks
@@ -176,7 +176,7 @@ const add = (a: number, b: number): number => {
 	project will already have Svelte or Vue installed.
 </p>
 <p>
-	However if you are using a <CodeSpan>*.jsx</CodeSpan> based language we don't assume anything for you.
+	However if you are using a <CodeSpan>*.jsx</CodeSpan> based framework we don't assume anything for you.
 	There are a lot of different library's that use <CodeSpan>*.jsx</CodeSpan> so we'd be making an ass
 	of ourselves.
 </p>
