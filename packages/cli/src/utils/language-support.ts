@@ -6,7 +6,7 @@ import { walk } from 'estree-walker';
 import * as sv from 'svelte/compiler';
 import { Project } from 'ts-morph';
 import validatePackageName from 'validate-npm-package-name';
-import { WARN } from '.';
+import * as ascii from './ascii';
 import { Ok, type Result } from './blocks/types/result';
 import { findNearestPackageJson } from './package';
 import { parsePackageName } from './parse-package-name';
@@ -167,7 +167,7 @@ const resolveRemoteDeps = (deps: string[], filePath: string) => {
 
 			if (parsed.isErr()) {
 				console.warn(
-					`${WARN} Skipped adding import \`${color.cyan(dep)}\`. Reason: Couldn't parse package name`
+					`${ascii.WARN} Skipped adding import \`${color.cyan(dep)}\`. Reason: Couldn't parse package name`
 				);
 				continue;
 			}
@@ -176,7 +176,7 @@ const resolveRemoteDeps = (deps: string[], filePath: string) => {
 
 			if (!validatePackageName(depInfo.name).validForNewPackages) {
 				console.warn(
-					`${WARN} Skipped adding import \`${color.cyan(dep)}\`. Reason: Not a valid package name`
+					`${ascii.WARN} Skipped adding import \`${color.cyan(dep)}\`. Reason: Not a valid package name`
 				);
 				continue;
 			}

@@ -16,7 +16,6 @@ import { installDependencies } from '../utils/dependencies';
 import { formatDiff } from '../utils/diff';
 import { getWatermark } from '../utils/get-watermark';
 import * as gitProviders from '../utils/git-providers';
-import { INFO } from '../utils/index';
 import { languages } from '../utils/language-support';
 import { type Task, intro, nextSteps, runTasks } from '../utils/prompts';
 
@@ -61,7 +60,7 @@ const update = new Command('update')
 const _update = async (blockNames: string[], options: Options) => {
 	const verbose = (msg: string) => {
 		if (options.verbose) {
-			console.info(`${INFO} ${msg}`);
+			console.info(`${ascii.INFO} ${msg}`);
 		}
 	};
 

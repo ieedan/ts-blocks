@@ -1,4 +1,4 @@
-import type { Block, Category } from './build';
+export const OUTPUT_FILE = 'jsrepo-manifest.json';
 
 export interface CLIContext {
 	/** The package.json of the CLI */

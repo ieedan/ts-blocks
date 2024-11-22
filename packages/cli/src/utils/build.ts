@@ -3,7 +3,7 @@ import path from 'node:path';
 import color from 'chalk';
 import { program } from 'commander';
 import * as v from 'valibot';
-import { WARN } from '.';
+import * as ascii from './ascii';
 import { languages } from './language-support';
 
 export const blockSchema = v.object({
@@ -73,7 +73,7 @@ const buildBlocksDirectory = (blocksPath: string, cwd: string): Category[] => {
 
 				if (!lang) {
 					console.warn(
-						`${WARN} Skipped \`${color.bold(blockDir)}\` \`${color.bold(
+						`${ascii.WARN} Skipped \`${color.bold(blockDir)}\` \`${color.bold(
 							path.parse(file).ext
 						)}\` files are not currently supported!`
 					);
@@ -132,7 +132,7 @@ const buildBlocksDirectory = (blocksPath: string, cwd: string): Category[] => {
 
 					if (!lang) {
 						console.warn(
-							`${WARN} Skipped \`${color.bold(path.join(blockDir, f))}\` \`${color.bold(
+							`${ascii.WARN} Skipped \`${color.bold(path.join(blockDir, f))}\` \`${color.bold(
 								path.parse(file).ext
 							)}\` files are not currently supported!`
 						);

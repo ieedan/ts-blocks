@@ -7,13 +7,13 @@ import { resolveCommand } from 'package-manager-detector/commands';
 import { detect } from 'package-manager-detector/detect';
 import * as v from 'valibot';
 import { context } from '..';
+import * as ascii from '../utils/ascii';
 import { getInstalled, resolveTree } from '../utils/blocks';
 import { type Block, isTestFile } from '../utils/build';
 import { getConfig } from '../utils/config';
 import { installDependencies } from '../utils/dependencies';
 import { getWatermark } from '../utils/get-watermark';
 import * as gitProviders from '../utils/git-providers';
-import { INFO } from '../utils/index';
 import { languages } from '../utils/language-support';
 import { type Task, intro, nextSteps, runTasks } from '../utils/prompts';
 
@@ -52,7 +52,7 @@ type RemoteBlock = Block & { sourceRepo: gitProviders.Info };
 const _add = async (blockNames: string[], options: Options) => {
 	const verbose = (msg: string) => {
 		if (options.verbose) {
-			console.info(`${INFO} ${msg}`);
+			console.info(`${ascii.INFO} ${msg}`);
 		}
 	};
 

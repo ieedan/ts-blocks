@@ -3,7 +3,7 @@ import * as v from 'valibot';
 import type { RemoteBlock } from './blocks';
 import { Err, Ok, type Result } from './blocks/types/result';
 import { type Category, categorySchema } from './build';
-import { OUTPUT_FILE } from './index';
+import { OUTPUT_FILE } from './context';
 
 const octokit = new Octokit({});
 

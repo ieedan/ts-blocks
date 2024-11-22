@@ -9,12 +9,12 @@ import { detect } from 'package-manager-detector/detect';
 import { Project } from 'ts-morph';
 import * as v from 'valibot';
 import { context } from '..';
-import { INFO } from '../utils';
+import * as ascii from '../utils/ascii';
 import { getInstalled } from '../utils/blocks';
 import { type Block, categorySchema, isTestFile } from '../utils/build';
 import { getConfig } from '../utils/config';
+import { OUTPUT_FILE } from '../utils/context';
 import * as gitProviders from '../utils/git-providers';
-import { OUTPUT_FILE } from '../utils/index';
 import { intro } from '../utils/prompts';
 
 const schema = v.object({
@@ -50,7 +50,7 @@ type RemoteBlock = Block & { sourceRepo: gitProviders.Info };
 const _test = async (blockNames: string[], options: Options) => {
 	const verbose = (msg: string) => {
 		if (options.verbose) {
-			console.info(`${INFO} ${msg}`);
+			console.info(`${ascii.INFO} ${msg}`);
 		}
 	};
 

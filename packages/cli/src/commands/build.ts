@@ -5,8 +5,8 @@ import color from 'chalk';
 import { Command } from 'commander';
 import * as v from 'valibot';
 import { context } from '..';
-import { OUTPUT_FILE } from '../utils';
 import { type Category, buildBlocksDirectory } from '../utils/build';
+import { OUTPUT_FILE } from '../utils/context';
 import { intro } from '../utils/prompts';
 
 const schema = v.object({
