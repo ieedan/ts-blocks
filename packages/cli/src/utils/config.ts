@@ -1,5 +1,5 @@
 import fs from 'node:fs';
-import path from 'node:path';
+import path from 'pathe';
 import * as v from 'valibot';
 import { Err, Ok, type Result } from './blocks/types/result';
 

@@ -1,11 +1,11 @@
 import fs from 'node:fs';
-import path from 'node:path';
 import { cancel, confirm, isCancel, multiselect, outro, spinner } from '@clack/prompts';
 import color from 'chalk';
 import { Command, program } from 'commander';
 import { diffLines } from 'diff';
 import { resolveCommand } from 'package-manager-detector/commands';
 import { detect } from 'package-manager-detector/detect';
+import path from 'pathe';
 import * as v from 'valibot';
 import { context } from '..';
 import * as ascii from '../utils/ascii';
@@ -239,14 +239,12 @@ const _update = async (blockNames: string[], options: Options) => {
 
 				const changes = diffLines(localContent, remoteContent);
 
-				const from = path
-					.join(
-						`${providerInfo.name}/${providerInfo.owner}/${providerInfo.repoName}`,
-						file.fileName
-					)
-					.replaceAll('\\', '/');
+				const from = path.join(
+					`${providerInfo.name}/${providerInfo.owner}/${providerInfo.repoName}`,
+					file.fileName
+				);
 
-				const to = path.relative(options.cwd, file.destPath).replaceAll('\\', '/');
+				const to = path.relative(options.cwd, file.destPath);
 
 				const formattedDiff = formatDiff({
 					from,

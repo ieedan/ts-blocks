@@ -1,6 +1,6 @@
 import fs from 'node:fs';
-import path from 'node:path';
 import color from 'chalk';
+import path from 'pathe';
 import { Err, Ok, type Result } from './blocks/types/result';
 import { mapToArray } from './blocks/utils/map-to-array';
 import type { Block } from './build';

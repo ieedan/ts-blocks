@@ -1,9 +1,9 @@
 import fs from 'node:fs';
 import { builtinModules } from 'node:module';
-import path from 'node:path';
 import * as v from '@vue/compiler-sfc';
 import color from 'chalk';
 import { walk } from 'estree-walker';
+import path from 'pathe';
 import * as sv from 'svelte/compiler';
 import { Project } from 'ts-morph';
 import validatePackageName from 'validate-npm-package-name';

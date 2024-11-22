@@ -1,5 +1,5 @@
 import fs from 'node:fs';
-import path from 'node:path';
+import path from 'pathe';
 
 const findNearestPackageJson = (startDir: string, until: string): string | undefined => {
 	const packagePath = path.join(startDir, 'package.json');
