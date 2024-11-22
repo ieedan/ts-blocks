@@ -46,6 +46,10 @@
 	});
 </script>
 
-<h2 id={ref?.innerText} bind:this={ref} class="border-b border-border py-2 text-2xl font-bold scroll-m-16">
+<h2
+	id={ref?.innerText}
+	bind:this={ref}
+	class="border-b border-border py-2 text-2xl font-bold scroll-m-16"
+>
 	{@render children()}
 </h2>

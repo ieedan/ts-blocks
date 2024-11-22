@@ -7,7 +7,6 @@
 	import * as Breadcrumb from '$lib/components/ui/breadcrumb';
 	import { onThisPage } from '$lib/ts/on-this-page';
 	import { onNavigate } from '$app/navigation';
-	import { onMount } from 'svelte';
 
 	type CurrentDoc = {
 		route: Route;
@@ -63,7 +62,7 @@
 					}
 				}
 			});
-			
+
 			pageHeadings.forEach((heading) => {
 				observer.observe(heading.el);
 			});
@@ -145,7 +144,7 @@
 			{#if ($pageMap.headings.get($page.url.pathname) ?? []).length > 0}
 				{@const headings = $pageMap.headings.get($page.url.pathname) ?? []}
 				{@const inView = top + window.innerHeight - 56}
-				<p class="font-semibold text-sm">On This Page {activeHeading}</p>
+				<p class="font-semibold text-sm">On This Page</p>
 				<div class="flex flex-col gap-1">
 					{#each headings as heading, i}
 						{@const headingInView = isInView(heading.el, inView)}

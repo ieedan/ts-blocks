@@ -176,9 +176,9 @@ const add = (a: number, b: number): number => {
 	project will already have Svelte or Vue installed.
 </p>
 <p>
-	However if you are using a <CodeSpan>*.jsx</CodeSpan> based framework we don't assume anything for you.
-	There are a lot of different library's that use <CodeSpan>*.jsx</CodeSpan> so we'd be making an ass
-	of ourselves.
+	However if you are using a <CodeSpan>*.jsx</CodeSpan> based framework we don't assume anything for
+	you. There are a lot of different library's that use <CodeSpan>*.jsx</CodeSpan> so we'd be making an
+	ass of ourselves.
 </p>
 <p>
 	Instead when running the <CodeSpan>build</CodeSpan> command you can provide the
