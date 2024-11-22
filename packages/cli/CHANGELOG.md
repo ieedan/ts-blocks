@@ -1,5 +1,11 @@
 # jsrepo
 
+## 1.3.0
+
+### Minor Changes
+
+- 3d4d754: Add `update` command. `update` allows you to update components with a nice ui for seeing the differences.
+
 ## 1.2.4
 
 ### Patch Changes
