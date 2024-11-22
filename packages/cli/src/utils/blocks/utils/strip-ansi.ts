@@ -1,5 +1,5 @@
 /*
-	jsrepo 1.2.3
+	jsrepo 1.2.4
 	Installed from github/ieedan/std
 	11-21-2024
 */

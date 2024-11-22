@@ -41,7 +41,7 @@ Arguments:
   blocks         Names of the blocks you want to add to your project.
 
 Options:
-  -y, --yes      Add and install any required dependencies. (default: false)
+  -y, --yes      Skip confirmation prompt. (default: false)
   -A, --allow    Allow jsrepo to download code from the provided repo. (default: false)
   --repo <repo>  Repository to download the blocks from.
   --verbose      Include debug logs. (default: false)

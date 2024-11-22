@@ -5,14 +5,14 @@ import color from 'chalk';
 import { Command } from 'commander';
 import * as v from 'valibot';
 import { context } from '..';
-import { OUTPUT_FILE } from '../utils';
 import { type Category, buildBlocksDirectory } from '../utils/build';
+import { OUTPUT_FILE } from '../utils/context';
 import { intro } from '../utils/prompts';
 
 const schema = v.object({
-	verbose: v.boolean(),
-	output: v.boolean(),
 	dirs: v.array(v.string()),
+	output: v.boolean(),
+	verbose: v.boolean(),
 	cwd: v.string(),
 });
 
@@ -27,12 +27,14 @@ const build = new Command('build')
 	.action(async (opts) => {
 		const options = v.parse(schema, opts);
 
+		intro(context.package.version);
+
 		await _build(options);
+
+		outro(color.green('All done!'));
 	});
 
 const _build = async (options: Options) => {
-	intro(context.package.version);
-
 	const loading = spinner();
 
 	const categories: Category[] = [];
@@ -72,8 +74,6 @@ const _build = async (options: Options) => {
 	} else {
 		loading.stop('Built successfully!');
 	}
-
-	outro(color.green('All done!'));
 };
 
 export { build };

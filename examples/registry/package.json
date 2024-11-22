@@ -10,6 +10,7 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "jsrepo": "^1.2.4",
     "vitest": "^2.1.5"
   },
   "dependencies": {

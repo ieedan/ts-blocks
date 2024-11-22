@@ -3,14 +3,22 @@
  * @module
  */
 
-import { Err, Ok } from '../blocks/types/result';
+import { Err, Ok, type Result } from './blocks/types/result';
 
 // Parsed a scoped package name into name, version, and path.
 const RE_SCOPED = /^(@[^\/]+\/[^@\/]+)(?:@([^\/]+))?(\/.*)?$/;
 // Parsed a non-scoped package name into name, version, path
 const RE_NON_SCOPED = /^([^@\/]+)(?:@([^\/]+))?(\/.*)?$/;
 
-const parsePackageName = (input: string) => {
+export type Package = {
+	/** Name of the package as it would be installed from npm */
+	name: string;
+	/** Version of the package */
+	version: string;
+	path: string;
+};
+
+const parsePackageName = (input: string): Result<Package, string> => {
 	const m = RE_SCOPED.exec(input) || RE_NON_SCOPED.exec(input);
 
 	if (!m) return Err(`invalid package name: ${input}`);

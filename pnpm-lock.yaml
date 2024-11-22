@@ -15,12 +15,27 @@ importers:
         specifier: ^0.0.30
         version: 0.0.30
 
+  examples/project:
+    devDependencies:
+      jsrepo:
+        specifier: ^1.2.4
+        version: 1.2.4(typescript@5.6.3)
+      tsup:
+        specifier: ^8.3.5
+        version: 8.3.5(jiti@1.21.6)(postcss@8.4.49)(typescript@5.6.3)(yaml@2.6.0)
+      typescript:
+        specifier: ^5.6.3
+        version: 5.6.3
+
   examples/registry:
     dependencies:
       chalk:
         specifier: ^5.3.0
         version: 5.3.0
     devDependencies:
+      jsrepo:
+        specifier: ^1.2.4
+        version: 1.2.4(typescript@5.6.3)
       vitest:
         specifier: ^2.1.5
         version: 2.1.5(@types/node@22.9.0)
@@ -1888,6 +1903,10 @@ packages:
 
   jsonfile@4.0.0:
     resolution: {integrity: sha512-m6F1R3z8jjlf2imQHS2Qez5sjKWQzbuuhuJ/FKYFRZvPE3PuHcSMVZzfsLhGVOkfd20obL5SWEBew5ShlquNxg==}
+
+  jsrepo@1.2.4:
+    resolution: {integrity: sha512-4yKZiUJRNwi+GLjm2aJCfji8wtVe0O/hV0QcvuMrnVS2QzY1bdn1x+CBIDx57AU2zOtVkoXUrdUNIiTwm3iqwg==}
+    hasBin: true
 
   keyv@4.5.4:
     resolution: {integrity: sha512-oxVHkHR/EJf2CNXnWxRLW6mg7JyCCUcG0DtEGmL2ctUo1PNTin1PUil+r/+4r5MpVgC/fn1kjsx7mjSujKqIpw==}
@@ -4563,6 +4582,24 @@ snapshots:
   jsonfile@4.0.0:
     optionalDependencies:
       graceful-fs: 4.2.11
+
+  jsrepo@1.2.4(typescript@5.6.3):
+    dependencies:
+      '@clack/prompts': 0.8.1
+      ansi-regex: 6.1.0
+      chalk: 5.3.0
+      commander: 12.1.0
+      diff: 7.0.0
+      estree-walker: 3.0.3
+      execa: 9.5.1
+      octokit: 4.0.2
+      package-manager-detector: 0.2.4
+      svelte: 5.2.3
+      ts-morph: 24.0.0
+      valibot: 0.42.1(typescript@5.6.3)
+      validate-npm-package-name: 6.0.0
+    transitivePeerDependencies:
+      - typescript
 
   keyv@4.5.4:
     dependencies:

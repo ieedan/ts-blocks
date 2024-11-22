@@ -6,23 +6,21 @@ import { Command, program } from 'commander';
 import { diffLines } from 'diff';
 import * as v from 'valibot';
 import { context } from '..';
-import { getConfig } from '../config';
-import { OUTPUT_FILE } from '../utils';
+import * as ascii from '../utils/ascii';
+import { getInstalled } from '../utils/blocks';
 import { type Block, isTestFile } from '../utils/build';
+import { getConfig } from '../utils/config';
 import { formatDiff } from '../utils/diff';
-import { getInstalledBlocks } from '../utils/get-installed-blocks';
 import { getWatermark } from '../utils/get-watermark';
 import * as gitProviders from '../utils/git-providers';
 import { languages } from '../utils/language-support';
 import { intro } from '../utils/prompts';
 
-const L = color.gray('│');
-
 const schema = v.object({
-	allow: v.boolean(),
 	expand: v.boolean(),
 	maxUnchanged: v.number(),
 	repo: v.optional(v.string()),
+	allow: v.boolean(),
 	cwd: v.string(),
 });
 
@@ -30,35 +28,35 @@ type Options = v.InferInput<typeof schema>;
 
 const diff = new Command('diff')
 	.description('Compares local blocks to the blocks in the provided repository.')
-	.option('-A, --allow', 'Allow jsrepo to download code from the provided repo.', false)
 	.option('-E, --expand', 'Expands the diff so you see everything.', false)
-	.option('--repo <repo>', 'Repository to download the blocks from.')
 	.option(
 		'--max-unchanged <number>',
 		'Maximum unchanged lines that will show without being collapsed.',
 		(val) => Number.parseInt(val), // this is such a dumb api thing
 		3
 	)
+	.option('--repo <repo>', 'Repository to download the blocks from.')
+	.option('-A, --allow', 'Allow jsrepo to download code from the provided repo.', false)
 	.option('--cwd <path>', 'The current working directory.', process.cwd())
 	.action(async (opts) => {
 		const options = v.parse(schema, opts);
 
+		intro(context.package.version);
+
 		await _diff(options);
+
+		outro(color.green('All done!'));
 	});
 
 type RemoteBlock = Block & { sourceRepo: gitProviders.Info };
 
 const _diff = async (options: Options) => {
-	intro(context.package.version);
-
 	const loading = spinner();
 
 	const config = getConfig(options.cwd).match(
 		(val) => val,
 		(err) => program.error(color.red(err))
 	);
-
-	const blocksMap: Map<string, RemoteBlock> = new Map();
 
 	let repoPaths = config.repos;
 
@@ -79,35 +77,19 @@ const _diff = async (options: Options) => {
 
 	loading.start(`Fetching blocks from ${color.cyan(repoPaths.join(', '))}`);
 
-	for (const repo of repoPaths) {
-		const providerInfo: gitProviders.Info = (await gitProviders.getProviderInfo(repo)).match(
-			(info) => info,
-			(err) => program.error(color.red(err))
-		);
-
-		const manifestUrl = await providerInfo.provider.resolveRaw(providerInfo, OUTPUT_FILE);
-
-		const categories = (await gitProviders.getManifest(manifestUrl)).match(
-			(val) => val,
-			(err) => program.error(color.red(err))
-		);
-
-		for (const category of categories) {
-			for (const block of category.blocks) {
-				blocksMap.set(
-					`${providerInfo.name}/${providerInfo.owner}/${providerInfo.repoName}/${category.name}/${block.name}`,
-					{
-						...block,
-						sourceRepo: providerInfo,
-					}
-				);
-			}
+	const blocksMap: Map<string, RemoteBlock> = (
+		await gitProviders.fetchBlocks(...repoPaths)
+	).match(
+		(val) => val,
+		({ repo, message }) => {
+			loading.stop(`Failed fetching blocks from ${color.cyan(repo)}`);
+			program.error(color.red(message));
 		}
-	}
+	);
 
 	loading.stop(`Retrieved blocks from ${color.cyan(repoPaths.join(', '))}`);
 
-	const installedBlocks = getInstalledBlocks(blocksMap, config, options.cwd);
+	const installedBlocks = getInstalled(blocksMap, config, options.cwd);
 
 	for (const blockSpecifier of installedBlocks) {
 		let found = false;
@@ -122,19 +104,19 @@ const _diff = async (options: Options) => {
 
 			if (block === undefined) continue;
 
+			const watermark = getWatermark(context.package.version, repo);
+
 			found = true;
 
-			process.stdout.write(`${L}\n`);
+			process.stdout.write(`${ascii.VERTICAL_LINE}\n`);
 
-			process.stdout.write(`${L}  ${fullSpecifier}\n`);
-
-			fullSpecifier;
+			process.stdout.write(`${ascii.VERTICAL_LINE}  ${fullSpecifier}\n`);
 
 			for (const file of block.files) {
 				// skip test files if not included
 				if (!config.includeTests && isTestFile(file)) continue;
 
-				process.stdout.write(`${L}\n`);
+				process.stdout.write(`${ascii.VERTICAL_LINE}\n`);
 
 				const sourcePath = path.join(block.directory, file);
 
@@ -166,8 +148,6 @@ const _diff = async (options: Options) => {
 					const lang = languages.find((lang) => lang.matches(sourcePath));
 
 					if (lang) {
-						const watermark = getWatermark(context.package.version, repo);
-
 						const comment = lang.comment(watermark);
 
 						remoteContent = `${comment}\n\n${remoteContent}`;
@@ -195,7 +175,7 @@ const _diff = async (options: Options) => {
 					colorRemoved: color.redBright,
 					colorCharsAdded: color.bgGreenBright,
 					colorCharsRemoved: color.bgRedBright,
-					prefix: () => `${L}  `,
+					prefix: () => `${ascii.VERTICAL_LINE}  `,
 					onUnchanged: ({ from, to, prefix }) =>
 						`${prefix?.() ?? ''}${color.cyan(from)} → ${color.gray(to)} ${color.gray('(unchanged)')}\n`,
 					intro: ({ from, to, changes, prefix }) => {
@@ -219,8 +199,6 @@ const _diff = async (options: Options) => {
 			);
 		}
 	}
-
-	outro(color.green('All done!'));
 };
 
 export { diff };
