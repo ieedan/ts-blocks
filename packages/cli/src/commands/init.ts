@@ -10,9 +10,9 @@ import { intro } from '../utils/prompts';
 
 const schema = v.object({
 	path: v.optional(v.string()),
-	tests: v.optional(v.boolean()),
 	repos: v.optional(v.array(v.string())),
 	watermark: v.boolean(),
+	tests: v.optional(v.boolean()),
 	cwd: v.string(),
 });
 
@@ -31,12 +31,14 @@ const init = new Command('init')
 	.action(async (opts) => {
 		const options = v.parse(schema, opts);
 
+		intro(context.package.version);
+
 		await _init(options);
+
+		outro(color.green('All done!'));
 	});
 
 const _init = async (options: Options) => {
-	intro(context.package.version);
-
 	const initialConfig = getConfig(options.cwd);
 
 	const loading = spinner();
@@ -114,8 +116,6 @@ const _init = async (options: Options) => {
 	fs.mkdirSync(path.join(options.cwd, config.path), { recursive: true });
 
 	loading.stop(`Wrote config to \`${CONFIG_NAME}\`.`);
-
-	outro(color.green('All done!'));
 };
 
 export { init };

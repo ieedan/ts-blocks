@@ -19,10 +19,10 @@ import { languages } from '../utils/language-support';
 import { type Task, intro, nextSteps, runTasks } from '../utils/prompts';
 
 const schema = v.object({
-	yes: v.boolean(),
-	verbose: v.boolean(),
 	repo: v.optional(v.string()),
 	allow: v.boolean(),
+	yes: v.boolean(),
+	verbose: v.boolean(),
 	cwd: v.string(),
 });
 
@@ -33,22 +33,24 @@ const add = new Command('add')
 		'[blocks...]',
 		'Names of the blocks you want to add to your project. ex: (utils/math, github/ieedan/std/utils/math)'
 	)
-	.option('-y, --yes', 'Skip confirmation prompt.', false)
-	.option('-A, --allow', 'Allow jsrepo to download code from the provided repo.', false)
 	.option('--repo <repo>', 'Repository to download the blocks from.')
+	.option('-A, --allow', 'Allow jsrepo to download code from the provided repo.', false)
+	.option('-y, --yes', 'Skip confirmation prompt.', false)
 	.option('--verbose', 'Include debug logs.', false)
 	.option('--cwd <path>', 'The current working directory.', process.cwd())
 	.action(async (blockNames, opts) => {
 		const options = v.parse(schema, opts);
 
+		intro(context.package.version);
+
 		await _add(blockNames, options);
+
+		outro(color.green('All done!'));
 	});
 
 type RemoteBlock = Block & { sourceRepo: gitProviders.Info };
 
 const _add = async (blockNames: string[], options: Options) => {
-	intro(context.package.version);
-
 	const verbose = (msg: string) => {
 		if (options.verbose) {
 			console.info(`${INFO} ${msg}`);
@@ -396,8 +398,6 @@ const _add = async (blockNames: string[], options: Options) => {
 
 		process.stdout.write(next);
 	}
-
-	outro(color.green('All done!'));
 };
 
 export { add };

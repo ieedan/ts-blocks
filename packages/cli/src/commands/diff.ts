@@ -17,10 +17,10 @@ import { languages } from '../utils/language-support';
 import { intro } from '../utils/prompts';
 
 const schema = v.object({
-	allow: v.boolean(),
 	expand: v.boolean(),
 	maxUnchanged: v.number(),
 	repo: v.optional(v.string()),
+	allow: v.boolean(),
 	cwd: v.string(),
 });
 
@@ -28,27 +28,29 @@ type Options = v.InferInput<typeof schema>;
 
 const diff = new Command('diff')
 	.description('Compares local blocks to the blocks in the provided repository.')
-	.option('-A, --allow', 'Allow jsrepo to download code from the provided repo.', false)
 	.option('-E, --expand', 'Expands the diff so you see everything.', false)
-	.option('--repo <repo>', 'Repository to download the blocks from.')
 	.option(
 		'--max-unchanged <number>',
 		'Maximum unchanged lines that will show without being collapsed.',
 		(val) => Number.parseInt(val), // this is such a dumb api thing
 		3
 	)
+	.option('--repo <repo>', 'Repository to download the blocks from.')
+	.option('-A, --allow', 'Allow jsrepo to download code from the provided repo.', false)
 	.option('--cwd <path>', 'The current working directory.', process.cwd())
 	.action(async (opts) => {
 		const options = v.parse(schema, opts);
 
+		intro(context.package.version);
+
 		await _diff(options);
+
+		outro(color.green('All done!'));
 	});
 
 type RemoteBlock = Block & { sourceRepo: gitProviders.Info };
 
 const _diff = async (options: Options) => {
-	intro(context.package.version);
-
 	const loading = spinner();
 
 	const config = getConfig(options.cwd).match(
@@ -197,8 +199,6 @@ const _diff = async (options: Options) => {
 			);
 		}
 	}
-
-	outro(color.green('All done!'));
 };
 
 export { diff };

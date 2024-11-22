@@ -22,42 +22,44 @@ import { languages } from '../utils/language-support';
 import { type Task, intro, nextSteps, runTasks } from '../utils/prompts';
 
 const schema = v.object({
-	yes: v.boolean(),
 	all: v.boolean(),
-	verbose: v.boolean(),
-	repo: v.optional(v.string()),
-	allow: v.boolean(),
-	cwd: v.string(),
 	expand: v.boolean(),
 	maxUnchanged: v.number(),
+	repo: v.optional(v.string()),
+	allow: v.boolean(),
+	yes: v.boolean(),
+	verbose: v.boolean(),
+	cwd: v.string(),
 });
 
 type Options = v.InferInput<typeof schema>;
 
 const update = new Command('update')
 	.argument('[blocks...]', 'Names of the blocks you want to update. ex: (utils/math)')
-	.option('-y, --yes', 'Skip confirmation prompt.', false)
 	.option('--all', 'Update all installed components.', false)
 	.option('-E, --expand', 'Expands the diff so you see everything.', false)
-	.option('-A, --allow', 'Allow jsrepo to download code from the provided repo.', false)
-	.option('--repo <repo>', 'Repository to download the blocks from.')
 	.option(
 		'--max-unchanged <number>',
 		'Maximum unchanged lines that will show without being collapsed.',
 		(val) => Number.parseInt(val), // this is such a dumb api thing
 		3
 	)
+	.option('--repo <repo>', 'Repository to download the blocks from.')
+	.option('-A, --allow', 'Allow jsrepo to download code from the provided repo.', false)
+	.option('-y, --yes', 'Skip confirmation prompt.', false)
 	.option('--verbose', 'Include debug logs.', false)
 	.option('--cwd <path>', 'The current working directory.', process.cwd())
 	.action(async (blockNames, opts) => {
 		const options = v.parse(schema, opts);
 
+		intro(context.package.version);
+
 		await _update(blockNames, options);
+
+		outro(color.green('All done!'));
 	});
 
 const _update = async (blockNames: string[], options: Options) => {
-	intro(context.package.version);
-
 	const verbose = (msg: string) => {
 		if (options.verbose) {
 			console.info(`${INFO} ${msg}`);
@@ -409,8 +411,6 @@ const _update = async (blockNames: string[], options: Options) => {
 
 		process.stdout.write(next);
 	}
-
-	outro(color.green('All done!'));
 };
 
 export { update };

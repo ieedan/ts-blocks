@@ -18,10 +18,10 @@ import { OUTPUT_FILE } from '../utils/index';
 import { intro } from '../utils/prompts';
 
 const schema = v.object({
-	debug: v.boolean(),
-	verbose: v.boolean(),
 	repo: v.optional(v.string()),
 	allow: v.boolean(),
+	debug: v.boolean(),
+	verbose: v.boolean(),
 	cwd: v.string(),
 });
 
@@ -30,22 +30,24 @@ type Options = v.InferInput<typeof schema>;
 const test = new Command('test')
 	.description('Tests local blocks against most recent remote tests.')
 	.addArgument(new Argument('[blocks...]', 'The blocks you want to test.').default([]))
-	.option('--verbose', 'Include debug logs.', false)
 	.option('-A, --allow', 'Allow jsrepo to download code from the provided repo.', false)
 	.option('--repo <repo>', 'Repository to download the blocks from.')
 	.option('--debug', 'Leaves the temp test file around for debugging upon failure.', false)
+	.option('--verbose', 'Include debug logs.', false)
 	.option('--cwd <path>', 'The current working directory.', process.cwd())
 	.action(async (blockNames, opts) => {
 		const options = v.parse(schema, opts);
 
+		intro(context.package.version);
+
 		await _test(blockNames, options);
+
+		outro(color.green('All done!'));
 	});
 
 type RemoteBlock = Block & { sourceRepo: gitProviders.Info };
 
 const _test = async (blockNames: string[], options: Options) => {
-	intro(context.package.version);
-
 	const verbose = (msg: string) => {
 		if (options.verbose) {
 			console.info(`${INFO} ${msg}`);
@@ -348,8 +350,6 @@ const _test = async (blockNames: string[], options: Options) => {
 		await testingProcess;
 
 		cleanUp();
-
-		outro(color.green('All done!'));
 	} catch (err) {
 		if (options.debug) {
 			console.info(
