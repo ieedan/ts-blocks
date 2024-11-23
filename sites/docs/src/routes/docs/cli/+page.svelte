@@ -92,12 +92,15 @@ Options:
 Builds the provided --dirs in the project root into a \`jsrepo-manifest.json\` file.
 
 Options:
-  --dirs [dirs...]          The directories containing the blocks. (default: ["./blocks"])
-  --exclude-deps [deps...]  Dependencies that should not be added. (default: [])
-  --no-output               Do not output a \`jsrepo-manifest.json\` file.
-  --verbose                 Include debug logs. (default: false)
-  --cwd <path>              The current working directory. (default: ".")
-  -h, --help                display help for command`}
+  --dirs [dirs...]                         The directories containing the blocks. (default: ["./blocks"])
+  --include-blocks [blockNames...]         Include only the blocks with these names. (default: [])
+  --include-categories [categoryNames...]  Include only the categories with these names. (default: [])
+  --exclude-deps [deps...]                 Dependencies that should not be added. (default: [])
+  --no-output                              Do not output a \`jsrepo-manifest.json\` file.
+  --error-on-warn                          If there is a warning throw an error and do not allow build to complete. (default: false)
+  --verbose                                Include debug logs. (default: false)
+  --cwd <path>                             The current working directory. (default: ".")
+  -h, --help                               display help for command`}
 />
 <SubHeading>test</SubHeading>
 <p>
