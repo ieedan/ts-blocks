@@ -1,5 +1,16 @@
 # jsrepo
 
+## 1.5.0
+
+### Minor Changes
+
+- 5ac4967: Improves onboarding experience by adding a `registry` option when running `init`.
+
+### Patch Changes
+
+- 5ac4967: Fixed an issue where detect wasn't using the correct cwd in some cases.
+- c3cd417: Fixed an issue where subdirectories of a subdirectory would give a unhelpful warning.
+
 ## 1.4.2
 
 ### Patch Changes
