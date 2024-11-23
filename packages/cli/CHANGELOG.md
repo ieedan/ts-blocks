@@ -1,5 +1,13 @@
 # jsrepo
 
+## 1.6.0
+
+### Minor Changes
+
+- caff9cc: Add `--include-blocks` and `--include-categories` flags to `build` command. These allow you to only include the provided blocks or categories in the build.
+- fd66b24: Add `error-on-warn` flag so that you can choose to error on warnings during build.
+- e408c46: jsrepo now checks the manifest file before writing it to warn about potential issues.
+
 ## 1.5.0
 
 ### Minor Changes
