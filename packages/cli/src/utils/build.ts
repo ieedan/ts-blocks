@@ -38,6 +38,7 @@ type Options = {
 	excludeDeps: string[];
 	includeBlocks: string[];
 	includeCategories: string[];
+	errorOnWarn: boolean;
 };
 
 /** Using the provided path to the blocks folder builds the blocks into categories and also resolves dependencies
@@ -47,7 +48,7 @@ type Options = {
  */
 const buildBlocksDirectory = (
 	blocksPath: string,
-	{ cwd, excludeDeps, includeBlocks, includeCategories }: Options
+	{ cwd, excludeDeps, includeBlocks, includeCategories, errorOnWarn }: Options
 ): Category[] => {
 	let paths: string[];
 
@@ -98,11 +99,24 @@ const buildBlocksDirectory = (
 				const lang = languages.find((resolver) => resolver.matches(file));
 
 				if (!lang) {
-					console.warn(
-						`${ascii.WARN} Skipped \`${color.bold(blockDir)}\` \`${color.bold(
-							path.parse(file).ext
-						)}\` files are not currently supported!`
-					);
+					const error = 'files are not currently supported!';
+
+					if (errorOnWarn) {
+						program.error(
+							color.red(
+								`Couldn't add \`${color.bold(blockDir)}\` \`${color.bold(
+									path.parse(file).ext
+								)}\` ${error}`
+							)
+						);
+					} else {
+						console.warn(
+							`${ascii.VERTICAL_LINE}  ${ascii.WARN} Skipped \`${color.bold(blockDir)}\` \`${color.bold(
+								path.parse(file).ext
+							)}\` ${error}`
+						);
+					}
+
 					continue;
 				}
 
@@ -165,20 +179,42 @@ const buildBlocksDirectory = (
 					if (isTestFile(f)) continue;
 
 					if (fs.statSync(path.join(blockDir, f)).isDirectory()) {
-						console.warn(
-							`${ascii.VERTICAL_LINE}  ${ascii.WARN} Skipped \`${color.bold(path.join(blockDir, f))}\` subdirectories are not currently supported!`
-						);
+						const error = 'subdirectories are not currently supported!';
+
+						if (errorOnWarn) {
+							program.error(
+								color.red(
+									`Couldn't add \`${color.bold(path.join(blockDir, f))}\` ${error}`
+								)
+							);
+						} else {
+							console.warn(
+								`${ascii.VERTICAL_LINE}  ${ascii.WARN} Skipped \`${color.bold(path.join(blockDir, f))}\` ${error}`
+							);
+						}
 						continue;
 					}
 
 					const lang = languages.find((resolver) => resolver.matches(f));
 
 					if (!lang) {
-						console.warn(
-							`${ascii.VERTICAL_LINE}  ${ascii.WARN} Skipped \`${color.bold(path.join(blockDir, f))}\` \`*${color.bold(
-								path.parse(f).ext
-							)}\` files are not currently supported!`
-						);
+						const error = 'files are not currently supported!';
+
+						if (errorOnWarn) {
+							program.error(
+								color.red(
+									`Couldn't add \`${color.bold(path.join(blockDir, f))}\` \`${color.bold(
+										path.parse(f).ext
+									)}\` ${error}`
+								)
+							);
+						} else {
+							console.warn(
+								`${ascii.VERTICAL_LINE}  ${ascii.WARN} Skipped \`${path.join(blockDir, f)}\` \`${color.bold(
+									path.parse(f).ext
+								)}\` ${error}`
+							);
+						}
 						continue;
 					}
 

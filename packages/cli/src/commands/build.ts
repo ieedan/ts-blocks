@@ -1,10 +1,11 @@
 import fs from 'node:fs';
 import { outro, spinner } from '@clack/prompts';
 import color from 'chalk';
-import { Command } from 'commander';
+import { Command, program } from 'commander';
 import path from 'pathe';
 import * as v from 'valibot';
 import { context } from '..';
+import * as ascii from '../utils/ascii';
 import { type Category, buildBlocksDirectory } from '../utils/build';
 import { OUTPUT_FILE } from '../utils/context';
 import { intro } from '../utils/prompts';
@@ -15,6 +16,7 @@ const schema = v.object({
 	includeCategories: v.array(v.string()),
 	excludeDeps: v.array(v.string()),
 	output: v.boolean(),
+	errorOnWarn: v.boolean(),
 	verbose: v.boolean(),
 	cwd: v.string(),
 });
@@ -32,6 +34,11 @@ const build = new Command('build')
 	)
 	.option('--exclude-deps [deps...]', 'Dependencies that should not be added.', [])
 	.option('--no-output', `Do not output a \`${OUTPUT_FILE}\` file.`)
+	.option(
+		'--error-on-warn',
+		'If there is a warning throw an error and do not allow build to complete.',
+		false
+	)
 	.option('--verbose', 'Include debug logs.', false)
 	.option('--cwd <path>', 'The current working directory.', process.cwd())
 	.action(async (opts) => {
@@ -58,25 +65,30 @@ const _build = async (options: Options) => {
 
 		if (options.output && fs.existsSync(outFile)) fs.rmSync(outFile);
 
-		categories.push(...buildBlocksDirectory(dirPath, { ...options }));
+		const builtCategories = buildBlocksDirectory(dirPath, { ...options });
 
-		loading.stop(`Built ${color.cyan(dirPath)}`);
-	}
+		for (const category of builtCategories) {
+			if (categories.find((cat) => cat.name === category.name) !== undefined) {
+				const error = 'a category with the same name already exists!';
 
-	const categoriesMap = new Map<string, Category>();
+				if (options.errorOnWarn) {
+					program.error(
+						color.red(
+							`\`${color.bold(`${dir}/${category.name}`)}\` could not be added because ${error}`
+						)
+					);
+				} else {
+					console.warn(
+						`${ascii.VERTICAL_LINE}  ${ascii.WARN} Skipped adding \`${color.cyan(`${dir}/${category.name}`)}\` because ${error}`
+					);
+				}
+				continue;
+			}
 
-	for (const category of categories) {
-		const cat = categoriesMap.get(category.name);
-
-		if (!cat) {
-			categoriesMap.set(category.name, category);
-			continue;
+			categories.push(category);
 		}
 
-		// we aren't going to merge blocks hopefully people are smart enough not to overlap names
-		cat.blocks = [...cat.blocks, ...category.blocks];
-
-		categoriesMap.set(cat.name, cat);
+		loading.stop(`Built ${color.cyan(dirPath)}`);
 	}
 
 	if (options.output) {
