@@ -138,12 +138,19 @@ const buildBlocksDirectory = (blocksPath: string, { cwd, excludeDeps }: Options)
 				for (const f of blockFiles) {
 					if (isTestFile(f)) continue;
 
+					if (fs.statSync(path.join(blockDir, f)).isDirectory()) {
+						console.warn(
+							`${ascii.VERTICAL_LINE}  ${ascii.WARN} Skipped \`${color.bold(path.join(blockDir, f))}\` subdirectories are not currently supported!`
+						);
+						continue;
+					}
+
 					const lang = languages.find((resolver) => resolver.matches(f));
 
 					if (!lang) {
 						console.warn(
-							`${ascii.WARN} Skipped \`${color.bold(path.join(blockDir, f))}\` \`${color.bold(
-								path.parse(file).ext
+							`${ascii.VERTICAL_LINE}  ${ascii.WARN} Skipped \`${color.bold(path.join(blockDir, f))}\` \`*${color.bold(
+								path.parse(f).ext
 							)}\` files are not currently supported!`
 						);
 						continue;
