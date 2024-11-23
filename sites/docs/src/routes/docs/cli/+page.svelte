@@ -18,10 +18,14 @@
 Initializes your project with a configuration file.
 
 Options:
-  --path <path>       Path to install the blocks.
-  --repos [repos...]  Repositories to install the blocks from.
+  --path <path>       Path to install the blocks / Path to build the blocks from.
+  --repos [repos...]  Repository to install the blocks from.
   --no-watermark      Will not add a watermark to each file upon adding it to your project.
   --tests             Will include tests with the blocks.
+  -P, --project       Takes you through the steps to initialize a project.
+  -R, --registry      Takes you through the steps to initialize a registry.
+  --script <name>     The name of the build script. (For Registry setup) (default: "build")
+  -y, --yes           Skip confirmation prompt. (default: false)
   --cwd <path>        The current working directory. (default: ".")
   -h, --help          display help for command`}
 />

@@ -10,3 +10,5 @@ export const BOTTOM_LEFT_CORNER = color.gray('└');
 
 export const WARN = color.bgRgb(245, 149, 66).white('WARN');
 export const INFO = color.bgBlueBright.white('INFO');
+
+export const JSREPO = color.hex('#f7df1e')('jsrepo');
