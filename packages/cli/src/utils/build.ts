@@ -104,14 +104,14 @@ const buildBlocksDirectory = (
 					if (errorOnWarn) {
 						program.error(
 							color.red(
-								`Couldn't add \`${color.bold(blockDir)}\` \`${color.bold(
+								`Couldn't add \`${color.bold(blockDir)}\` \`*${color.bold(
 									path.parse(file).ext
 								)}\` ${error}`
 							)
 						);
 					} else {
 						console.warn(
-							`${ascii.VERTICAL_LINE}  ${ascii.WARN} Skipped \`${color.bold(blockDir)}\` \`${color.bold(
+							`${ascii.VERTICAL_LINE}  ${ascii.WARN} Skipped \`${color.bold(blockDir)}\` \`*${color.bold(
 								path.parse(file).ext
 							)}\` ${error}`
 						);
@@ -203,14 +203,14 @@ const buildBlocksDirectory = (
 						if (errorOnWarn) {
 							program.error(
 								color.red(
-									`Couldn't add \`${color.bold(path.join(blockDir, f))}\` \`${color.bold(
+									`Couldn't add \`${color.bold(path.join(blockDir, f))}\` \`*${color.bold(
 										path.parse(f).ext
 									)}\` ${error}`
 								)
 							);
 						} else {
 							console.warn(
-								`${ascii.VERTICAL_LINE}  ${ascii.WARN} Skipped \`${path.join(blockDir, f)}\` \`${color.bold(
+								`${ascii.VERTICAL_LINE}  ${ascii.WARN} Skipped \`${path.join(blockDir, f)}\` \`*${color.bold(
 									path.parse(f).ext
 								)}\` ${error}`
 							);
