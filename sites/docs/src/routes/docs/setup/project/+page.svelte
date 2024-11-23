@@ -19,7 +19,7 @@
 	To setup the <CodeSpan>jsrepo.json</CodeSpan> file you can run the <CodeSpan>init</CodeSpan> command
 	to take your through initial setup.
 </p>
-<Snippet command="execute" args={['jsrepo', 'init']} />
+<Snippet command="execute" args={['jsrepo', 'init', '--project']} />
 <Code
 	showLines={false}
 	showCopy={false}

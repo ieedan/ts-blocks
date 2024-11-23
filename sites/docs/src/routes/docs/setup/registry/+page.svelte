@@ -57,12 +57,44 @@
 `}
 />
 <p>
-	Once you have setup all you files run <CodeSpan>build</CodeSpan> to build you files into a
-	<CodeSpan>jsrepo-manifest.json</CodeSpan> file.
+	Once you have setup all you files run you'll want to setup a <CodeSpan>build</CodeSpan> script to build
+	your blocks into a <CodeSpan>jsrepo-manifest.json</CodeSpan>.
 </p>
+<p>The easiest way to do this is to use the CLI:</p>
+<Snippet command="execute" args={['jsrepo', 'init', '--registry']} />
+<Code
+	showLines={false}
+	showCopy={false}
+	code={`┌   jsrepo  v1.4.2 
+│
+◇  Where are your blocks located?
+│  ./blocks
+│
+◇  Add jsrepo as a dev dependency?
+│  Yes
+│
+◇  Added \`build\` to scripts in package.json
+│
+◇  Install dependencies?
+│  Yes
+│
+◇  Installed jsrepo.
+│
+├  Next Steps ───────────────────────────────────────┐
+│                                                    │
+│  1. Add blocks to \`./blocks\`.                      │
+│  2. Run \`npm run build\` to build the registry.     │
+│                                                    │
+├────────────────────────────────────────────────────┘
+│
+└  All done!`}
+/>
+<p>This sets up a build script for you based on your answers to the prompts.</p>
+<p>However you can also just run it manually like so:</p>
 <Snippet command="execute" args={['jsrepo', 'build', '--dirs', '<folder>']} />
 <p>
-	The output <CodeSpan>jsrepo-manifest.json</CodeSpan> should look something like this.
+	After running <CodeSpan>build</CodeSpan> the output <CodeSpan>jsrepo-manifest.json</CodeSpan> should
+	look something like this.
 </p>
 <Code
 	lang="json"
@@ -84,20 +116,20 @@
         "devDependencies": []  // any dependencies 
       },
       {
-        "name": "print", // name of the block
-        "directory": "src/utils", // directory containing the files
+        "name": "print",
+        "directory": "src/utils",
         "category": "utils",
-        "tests": false, // whether or not the block has tests
-        "subdirectory": true, // is the block in a subdirectory of it's category
+        "tests": false,
+        "subdirectory": true,
         "files": [
             "add.ts",
             "subtract.ts"
         ],
-        "localDependencies": [ // any dependencies to other blocks
+        "localDependencies": [
             "utils/print"
         ], 
-        "dependencies": [], // any dependencies 
-        "devDependencies": []  // any dependencies 
+        "dependencies": [],
+        "devDependencies": []
       }
 	]
   },
