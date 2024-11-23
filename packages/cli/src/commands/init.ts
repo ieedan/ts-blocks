@@ -220,9 +220,9 @@ const _initRegistry = async (options: Options) => {
 		}
 	}
 
-	let installAsDevDependency = options.yes;
-
 	const alreadyInstalled = pkg.devDependencies && pkg.devDependencies.jsrepo !== undefined;
+
+	let installAsDevDependency = options.yes || alreadyInstalled;
 
 	if (!options.yes && !alreadyInstalled) {
 		const response = await confirm({
