@@ -156,7 +156,7 @@ const _update = async (blockNames: string[], options: Options) => {
 		program.error
 	);
 
-	const pm = (await detect({ cwd: process.cwd() }))?.agent ?? 'npm';
+	const pm = (await detect({ cwd: options.cwd }))?.agent ?? 'npm';
 
 	const tasks: Task[] = [];
 
