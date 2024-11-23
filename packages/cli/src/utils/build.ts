@@ -36,6 +36,8 @@ const isTestFile = (file: string): boolean =>
 type Options = {
 	cwd: string;
 	excludeDeps: string[];
+	includeBlocks: string[];
+	includeCategories: string[];
 };
 
 /** Using the provided path to the blocks folder builds the blocks into categories and also resolves dependencies
@@ -43,7 +45,10 @@ type Options = {
  * @param blocksPath
  * @returns
  */
-const buildBlocksDirectory = (blocksPath: string, { cwd, excludeDeps }: Options): Category[] => {
+const buildBlocksDirectory = (
+	blocksPath: string,
+	{ cwd, excludeDeps, includeBlocks, includeCategories }: Options
+): Category[] => {
 	let paths: string[];
 
 	try {
@@ -61,6 +66,13 @@ const buildBlocksDirectory = (blocksPath: string, { cwd, excludeDeps }: Options)
 
 		const categoryName = path.basename(categoryPath);
 
+		// if includeCategories enabled and block is not part of includeCategories skip adding it
+		if (
+			includeCategories.length > 0 &&
+			includeCategories.find((val) => val.trim() === categoryName.trim()) === undefined
+		)
+			continue;
+
 		const category: Category = {
 			name: categoryName,
 			blocks: [],
@@ -74,6 +86,15 @@ const buildBlocksDirectory = (blocksPath: string, { cwd, excludeDeps }: Options)
 			if (fs.statSync(blockDir).isFile()) {
 				if (isTestFile(file)) continue;
 
+				const name = path.parse(path.basename(file)).name;
+
+				// if includeBlocks enabled and block is not part of includeBlocks skip adding it
+				if (
+					includeBlocks.length > 0 &&
+					includeBlocks.find((val) => val.trim() === name.trim()) === undefined
+				)
+					continue;
+
 				const lang = languages.find((resolver) => resolver.matches(file));
 
 				if (!lang) {
@@ -84,8 +105,6 @@ const buildBlocksDirectory = (blocksPath: string, { cwd, excludeDeps }: Options)
 					);
 					continue;
 				}
-
-				const name = path.parse(path.basename(file)).name;
 
 				// tries to find a test file with the same name as the file
 				const testsPath = files.find((f) =>
@@ -125,6 +144,13 @@ const buildBlocksDirectory = (blocksPath: string, { cwd, excludeDeps }: Options)
 				category.blocks.push(block);
 			} else {
 				const blockName = file;
+
+				// if includeBlocks enabled and block is not part of includeBlocks skip adding it
+				if (
+					includeBlocks.length > 0 &&
+					includeBlocks.find((val) => val.trim() === blockName.trim()) === undefined
+				)
+					continue;
 
 				const blockFiles = fs.readdirSync(blockDir);
 

@@ -11,6 +11,8 @@ import { intro } from '../utils/prompts';
 
 const schema = v.object({
 	dirs: v.array(v.string()),
+	includeBlocks: v.array(v.string()),
+	includeCategories: v.array(v.string()),
 	excludeDeps: v.array(v.string()),
 	output: v.boolean(),
 	verbose: v.boolean(),
@@ -22,6 +24,12 @@ type Options = v.InferInput<typeof schema>;
 const build = new Command('build')
 	.description(`Builds the provided --dirs in the project root into a \`${OUTPUT_FILE}\` file.`)
 	.option('--dirs [dirs...]', 'The directories containing the blocks.', ['./blocks'])
+	.option('--include-blocks [blockNames...]', 'Include only the blocks with these names.', [])
+	.option(
+		'--include-categories [categoryNames...]',
+		'Include only the categories with these names.',
+		[]
+	)
 	.option('--exclude-deps [deps...]', 'Dependencies that should not be added.', [])
 	.option('--no-output', `Do not output a \`${OUTPUT_FILE}\` file.`)
 	.option('--verbose', 'Include debug logs.', false)
@@ -50,9 +58,7 @@ const _build = async (options: Options) => {
 
 		if (options.output && fs.existsSync(outFile)) fs.rmSync(outFile);
 
-		categories.push(
-			...buildBlocksDirectory(dirPath, { cwd: options.cwd, excludeDeps: options.excludeDeps })
-		);
+		categories.push(...buildBlocksDirectory(dirPath, { ...options }));
 
 		loading.stop(`Built ${color.cyan(dirPath)}`);
 	}
@@ -74,9 +80,11 @@ const _build = async (options: Options) => {
 	}
 
 	if (options.output) {
+		loading.start(`Writing output to \`${color.cyan(outFile)}\``);
+
 		fs.writeFileSync(outFile, JSON.stringify(categories, null, '\t'));
-	} else {
-		loading.stop('Built successfully!');
+
+		loading.stop(`Wrote output to \`${color.cyan(outFile)}\``);
 	}
 };
 
