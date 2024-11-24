@@ -15,7 +15,9 @@
 
 <main class="flex place-items-center justify-center w-full px-4 pb-10">
 	<div class="max-w-xl w-full">
-		<div class="flex flex-col gap-5 justify-center place-items-center w-full min-h-[calc(100vh-3.5rem)]">
+		<div
+			class="flex flex-col gap-5 justify-center place-items-center w-full min-h-[calc(100vh-3.5rem)]"
+		>
 			<div class="flex place-items-center gap-4 justify-center w-full">
 				<h1
 					class="bg-primary text-primary-foreground sm:text-6xl text-4xl font-serif font-bold py-4 px-4 w-fit"
