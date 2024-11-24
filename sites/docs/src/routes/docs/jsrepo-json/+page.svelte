@@ -1,0 +1,83 @@
+<script lang="ts">
+	import { Code, CodeSpan, DocHeader, SubHeading } from '$lib/components/site/docs';
+	import { Snippet } from '$lib/components/ui/snippet';
+
+	let { data } = $props();
+</script>
+
+<DocHeader title="jsrepo.json" description="Configuration for your project." />
+<p>
+	<CodeSpan>jsrepo.json</CodeSpan> holds the configuration for your project.
+</p>
+<p>
+	You can create a <CodeSpan>jsrepo.json</CodeSpan> by running the init command with the
+	<CodeSpan>--project</CodeSpan> flag:
+</p>
+<Snippet command="execute" args={['jsrepo', 'init', '--project']} />
+<SubHeading>$schema</SubHeading>
+<p>
+	<CodeSpan>$schema</CodeSpan> is tracked with the cli so you can use a specific version using <CodeSpan
+		>unpkg</CodeSpan
+	>:
+</p>
+<Code
+	lang="json"
+	code={`{
+    "$schema": "https://unpkg.com/jsrepo@${data.version}/schema.json"
+}`}
+/>
+<SubHeading>repos</SubHeading>
+<p>
+	<CodeSpan>repos</CodeSpan> allows you to specify different registries to install blocks from. All of
+	the blocks from each registry will be listed when you run <CodeSpan>add</CodeSpan>.
+</p>
+<Code
+	lang="json"
+	code={`{
+    "repos": [
+        "github/ieedan/std",
+        "github/ieedan/shadcn-phone-input-svelte"
+    ]
+}`}
+/>
+<SubHeading>path</SubHeading>
+<p>Where blocks will be installed into your project.</p>
+<Code
+	lang="json"
+	code={`{
+    "path": "./src/blocks"
+}`}
+/>
+<SubHeading>includeTests</SubHeading>
+<p>Whether or not to include test files when installing blocks.</p>
+<Code
+	lang="json"
+	code={`{
+    "includeTests": false
+}`}
+/>
+<SubHeading>watermark</SubHeading>
+<p>Whether or not to add a watermark to installed blocks.</p>
+<Code
+	lang="json"
+	code={`{
+    "watermark": true
+}`}
+/>
+<p>
+	When true adds a watermark with the jsrepo version repository it was added from and the date it
+	was added on.
+</p>
+<Code
+	lang="ts"
+	code={`/*
+	jsrepo ${data.version}
+	Installed from github/ieedan/std
+	${new Date().toLocaleDateString().replaceAll('/', '-')}
+*/
+
+export type Point = {
+	x: number;
+	y: number;
+};`}
+/>
