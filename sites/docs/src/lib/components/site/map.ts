@@ -52,6 +52,10 @@ const categories: Category[] = [
 				]
 			},
 			{
+				name: 'jsrepo.json',
+				href: '/docs/jsrepo-json'
+			},
+			{
 				name: 'CLI',
 				href: '/docs/cli'
 			},
