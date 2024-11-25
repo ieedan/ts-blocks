@@ -36,7 +36,7 @@ const auth = new Command('auth')
 	});
 
 const _auth = async (options: Options) => {
-	const storage = persisted.create(context);
+	const storage = persisted.create();
 
 	if (providers.length > 1) {
 		const response = await select({

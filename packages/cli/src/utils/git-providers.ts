@@ -1,6 +1,5 @@
 import { Octokit } from 'octokit';
 import * as v from 'valibot';
-import { context } from '..';
 import type { RemoteBlock } from './blocks';
 import { Err, Ok, type Result } from './blocks/types/result';
 import { type Category, categorySchema } from './build';
@@ -86,7 +85,7 @@ const github: Provider = {
 		};
 
 		try {
-			const token = persisted.create(context).get(`${github.name()}-token`);
+			const token = persisted.create().get(`${github.name()}-token`);
 
 			const headers = new Headers();
 

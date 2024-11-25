@@ -1,8 +1,7 @@
 import Conf from 'conf';
-import type { CLIContext } from './context';
 
-const create = (context: CLIContext) => {
-	return new Conf({ projectName: `${context.package.name}` });
+const create = () => {
+	return new Conf({ projectName: 'jsrepo' });
 };
 
 export { create };
