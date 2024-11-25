@@ -3,6 +3,7 @@ import color from 'chalk';
 import { Command, Option } from 'commander';
 import * as v from 'valibot';
 import { context } from '..';
+import * as ascii from '../utils/ascii';
 import { providers } from '../utils/git-providers';
 import * as persisted from '../utils/persisted';
 import { intro } from '../utils/prompts';
@@ -41,6 +42,18 @@ const _auth = async (options: Options) => {
 
 	if (options.logout) {
 		for (const provider of providers) {
+			const tokenKey = `${provider.name()}-token`;
+
+			if (storage.get(tokenKey) === undefined) {
+				process.stdout.write(`${ascii.VERTICAL_LINE}\n`);
+				process.stdout.write(
+					color.gray(
+						`${ascii.VERTICAL_LINE}  Already logged out of ${provider.name()}.\n`
+					)
+				);
+				continue;
+			}
+
 			const response = await confirm({
 				message: `Remove ${provider.name()} token?`,
 				initialValue: true,
@@ -53,7 +66,7 @@ const _auth = async (options: Options) => {
 
 			if (!response) continue;
 
-			storage.delete(`${provider.name()}-token`);
+			storage.delete(tokenKey);
 		}
 		return;
 	}
