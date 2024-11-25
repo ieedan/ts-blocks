@@ -1,5 +1,13 @@
 # jsrepo
 
+## 1.7.0
+
+### Minor Changes
+
+- 65216c4: Add `auth` command to allow you to supply a token for private repositories.
+- 65216c4: Private repository support 🎉
+- 65216c4: Add prompts to `init` to allow you to supply a token when setting up repositories.
+
 ## 1.6.0
 
 ### Minor Changes
