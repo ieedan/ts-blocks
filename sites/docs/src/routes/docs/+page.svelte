@@ -48,5 +48,23 @@
 				<p>You! Or someone else you know. Anyone can create a registry to be used by everyone!</p>
 			</Accordion.Content>
 		</Accordion.Item>
+		<Accordion.Item value="q-2">
+			<Accordion.Trigger>Is this trying to replace npm?</Accordion.Trigger>
+			<Accordion.Content>
+				<p>
+					No, there is a gap that exists between things that you should create an npm package for
+					and things you shouldn't. <Jsrepo /> lives in this gap.
+				</p>
+				<br />
+				<p>
+					Many times you write utility functions like leftPad etc. that really shouldn't be an npm
+					package but also shouldn't have to be written every time you need them.
+				</p>
+				<br />
+				<p>
+					<Jsrepo /> gives you a mechanism to reuse that code along with it's documentation and tests.
+				</p>
+			</Accordion.Content>
+		</Accordion.Item>
 	</Accordion.Root>
 </div>
