@@ -1,4 +1,4 @@
-import { cancel, isCancel, outro, password, select, confirm } from '@clack/prompts';
+import { cancel, confirm, isCancel, outro, password, select } from '@clack/prompts';
 import color from 'chalk';
 import { Command, Option } from 'commander';
 import * as v from 'valibot';
