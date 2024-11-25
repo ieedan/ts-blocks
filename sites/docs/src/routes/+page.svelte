@@ -24,7 +24,7 @@
 				>
 					jsrepo
 				</h1>
-				<span class="text-2xl sm:text-4xl font-serif text-muted-foreground">v{data.version}</span>
+				<span class="text-2xl sm:text-4xl font-serif text-muted-foreground">v1.0.0</span>
 			</div>
 			<p class="text-lg text-muted-foreground">
 				The best way to reuse <span class="text-primary">your</span> code.
