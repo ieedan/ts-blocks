@@ -147,3 +147,23 @@ Options:
   --cwd <path>              The current working directory. (default: ".")
   -h, --help                display help for command`}
 />
+<SubHeading>auth</SubHeading>
+<p>
+	The <CodeSpan>auth</CodeSpan> command prompts you to provide a token to be used for access to private
+	repositories.
+</p>
+<Snippet command="execute" args={['jsrepo', 'auth']} />
+<Code
+	showLines={false}
+	showCopy={false}
+	code={`Usage: jsrepo auth [options]
+
+Provide a token for access to private repositories.
+
+Options:
+  --token <token>    The token to use for authenticating to your provider.
+  --provider <name>  The provider this token belongs to. (choices: "github")
+  --logout           Erase tokens from each provider from storage. (default: false)
+  --cwd <path>       The current working directory. (default: ".")
+  -h, --help         display help for command`}
+/>

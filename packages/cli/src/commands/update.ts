@@ -176,17 +176,15 @@ const _update = async (blockNames: string[], options: Options) => {
 
 		const files: { content: string; destPath: string; fileName: string }[] = [];
 
-		const getSourceFile = async (filePath: string): Promise<string> => {
-			const rawUrl = await providerInfo.provider.resolveRaw(providerInfo, filePath);
+		const getSourceFile = async (filePath: string) => {
+			const content = await providerInfo.provider.fetchRaw(providerInfo, filePath);
 
-			const response = await fetch(rawUrl);
-
-			if (!response.ok) {
-				loading.stop(color.red(`Error fetching ${color.bold(rawUrl.href)}`));
+			if (content.isErr()) {
+				loading.stop(color.red(`Error fetching ${color.bold(filePath)}`));
 				program.error(color.red(`There was an error trying to get ${fullSpecifier}`));
 			}
 
-			return await response.text();
+			return content.unwrap();
 		};
 
 		for (const sourceFile of block.files) {

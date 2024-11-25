@@ -1,0 +1,100 @@
+import { cancel, confirm, isCancel, outro, password, select } from '@clack/prompts';
+import color from 'chalk';
+import { Command, Option } from 'commander';
+import * as v from 'valibot';
+import { context } from '..';
+import { providers } from '../utils/git-providers';
+import * as persisted from '../utils/persisted';
+import { intro } from '../utils/prompts';
+
+const schema = v.object({
+	token: v.optional(v.string()),
+	provider: v.optional(v.string()),
+	logout: v.boolean(),
+	cwd: v.string(),
+});
+
+type Options = v.InferInput<typeof schema>;
+
+const auth = new Command('auth')
+	.description('Provide a token for access to private repositories.')
+	.option('--token <token>', 'The token to use for authenticating to your provider.')
+	.addOption(
+		new Option('--provider <name>', 'The provider this token belongs to.').choices(
+			providers.map((provider) => provider.name())
+		)
+	)
+	.option('--logout', 'Erase tokens from each provider from storage.', false)
+	.option('--cwd <path>', 'The current working directory.', process.cwd())
+	.action(async (opts) => {
+		const options = v.parse(schema, opts);
+
+		intro(context.package.version);
+
+		await _auth(options);
+
+		outro(color.green('All done!'));
+	});
+
+const _auth = async (options: Options) => {
+	const storage = persisted.get();
+
+	if (options.logout) {
+		for (const provider of providers) {
+			const response = await confirm({
+				message: `Remove ${provider.name()} token?`,
+				initialValue: true,
+			});
+
+			if (isCancel(response)) {
+				cancel('Canceled!');
+				process.exit(0);
+			}
+
+			if (!response) continue;
+
+			storage.delete(`${provider.name()}-token`);
+		}
+		return;
+	}
+
+	if (providers.length > 1) {
+		const response = await select({
+			message: 'Which provider is this token for?',
+			options: providers.map((provider) => ({
+				label: provider.name(),
+				value: provider.name(),
+			})),
+			initialValue: providers[0].name(),
+		});
+
+		if (isCancel(response)) {
+			cancel('Canceled!');
+			process.exit(0);
+		}
+
+		options.provider = response;
+	} else {
+		options.provider = providers[0].name();
+	}
+
+	if (options.token === undefined) {
+		const response = await password({
+			message: 'Paste your token',
+			validate(value) {
+				if (value.trim() === '') return 'Please provide a value';
+			},
+		});
+
+		if (isCancel(response) || !response) {
+			cancel('Canceled!');
+			process.exit(0);
+		}
+
+		options.token = response;
+	}
+
+	storage.set(`${options.provider}-token`, options.token);
+};
+
+export { auth };

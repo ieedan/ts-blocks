@@ -69,6 +69,10 @@ const categories: Category[] = [
 				activeForSubdirectories: true
 			},
 			{
+				name: 'Private Repositories',
+				href: '/docs/private-repositories'
+			},
+			{
 				name: 'Badges',
 				href: '/docs/badges'
 			},

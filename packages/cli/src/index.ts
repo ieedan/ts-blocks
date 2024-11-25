@@ -30,6 +30,7 @@ program
 	.description(description)
 	.version(version)
 	.addCommand(commands.add)
+	.addCommand(commands.auth)
 	.addCommand(commands.init)
 	.addCommand(commands.test)
 	.addCommand(commands.build)

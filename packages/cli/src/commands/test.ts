@@ -92,14 +92,12 @@ const _test = async (blockNames: string[], options: Options) => {
 			(err) => program.error(color.red(err))
 		);
 
-		const manifestUrl = await providerInfo.provider.resolveRaw(providerInfo, OUTPUT_FILE);
+		const manifest = await providerInfo.provider.fetchManifest(providerInfo);
 
 		verbose(`Got info for provider ${color.cyan(providerInfo.name)}`);
 
-		const response = await fetch(manifestUrl);
-
-		if (!response.ok) {
-			if (!options.verbose) loading.stop(`Error fetching ${color.cyan(manifestUrl.href)}`);
+		if (manifest.isErr()) {
+			if (!options.verbose) loading.stop(`Error fetching ${color.cyan(repo)}`);
 			program.error(
 				color.red(
 					`There was an error fetching the \`${OUTPUT_FILE}\` from the repository ${color.cyan(
@@ -109,7 +107,7 @@ const _test = async (blockNames: string[], options: Options) => {
 			);
 		}
 
-		const categories = v.parse(v.array(categorySchema), await response.json());
+		const categories = manifest.unwrap();
 
 		for (const category of categories) {
 			for (const block of category.blocks) {
@@ -195,12 +193,7 @@ const _test = async (blockNames: string[], options: Options) => {
 					(err) => program.error(color.red(err))
 				);
 
-				const manifestUrl = await providerInfo.provider.resolveRaw(
-					providerInfo,
-					OUTPUT_FILE
-				);
-
-				const categories = (await gitProviders.getManifest(manifestUrl)).match(
+				const categories = (await providerInfo.provider.fetchManifest(providerInfo)).match(
 					(val) => val,
 					(err) => program.error(color.red(err))
 				);
@@ -230,32 +223,32 @@ const _test = async (blockNames: string[], options: Options) => {
 		testingBlocksMapped.push({ name: blockSpecifier, block });
 	}
 
-	for (const { name: specifier, block } of testingBlocksMapped) {
+	for (const { block } of testingBlocksMapped) {
 		const providerInfo = block.sourceRepo;
 
+		const fullSpecifier = `${block.sourceRepo.url}/${block.category}/${block.name}`;
+
 		if (!options.verbose) {
-			loading.start(`Setting up test file for ${color.cyan(specifier)}`);
+			loading.start(`Setting up test file for ${color.cyan(fullSpecifier)}`);
 		}
 
 		if (!block.tests) {
-			loading.stop(`No tests found for ${color.cyan(specifier)}`);
+			loading.stop(`No tests found for ${color.cyan(fullSpecifier)}`);
 			continue;
 		}
 
 		const getSourceFile = async (filePath: string) => {
-			const rawUrl = await providerInfo.provider.resolveRaw(providerInfo, filePath);
+			const content = await providerInfo.provider.fetchRaw(providerInfo, filePath);
 
-			const response = await fetch(rawUrl);
-
-			if (!response.ok) {
-				loading.stop(color.red(`Error fetching ${color.bold(rawUrl.href)}`));
-				program.error(color.red(`There was an error trying to get ${specifier}`));
+			if (content.isErr()) {
+				loading.stop(color.red(`Error fetching ${color.bold(filePath)}`));
+				program.error(color.red(`There was an error trying to get ${fullSpecifier}`));
 			}
 
-			return await response.text();
+			return content.unwrap();
 		};
 
-		verbose(`Downloading and copying test files for ${specifier}`);
+		verbose(`Downloading and copying test files for ${fullSpecifier}`);
 
 		const testFiles: string[] = [];
 
@@ -311,10 +304,10 @@ const _test = async (blockNames: string[], options: Options) => {
 
 		project.saveSync();
 
-		verbose(`Completed ${color.cyan.bold(specifier)} test file`);
+		verbose(`Completed ${color.cyan.bold(fullSpecifier)} test file`);
 
 		if (!options.verbose) {
-			loading.stop(`Completed setup for ${color.bold(specifier)}`);
+			loading.stop(`Completed setup for ${color.bold(fullSpecifier)}`);
 		}
 	}
 
