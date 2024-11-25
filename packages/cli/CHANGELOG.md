@@ -1,5 +1,11 @@
 # jsrepo
 
+## 1.7.1
+
+### Patch Changes
+
+- 9cef7ca: Moves check for `package.json` to the top of `init --registry`
+
 ## 1.7.0
 
 ### Minor Changes
