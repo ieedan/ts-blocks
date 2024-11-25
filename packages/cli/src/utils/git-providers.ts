@@ -1,9 +1,11 @@
 import { Octokit } from 'octokit';
 import * as v from 'valibot';
+import { context } from '..';
 import type { RemoteBlock } from './blocks';
 import { Err, Ok, type Result } from './blocks/types/result';
 import { type Category, categorySchema } from './build';
 import { OUTPUT_FILE } from './context';
+import * as persisted from './persisted';
 
 const octokit = new Octokit({});
 
@@ -30,12 +32,26 @@ export interface Provider {
 	 * @returns
 	 */
 	resolveRaw: (repoPath: string | Info, resourcePath: string) => Promise<URL>;
+	/** Returns the content of the requested resource
+	 *
+	 * @param repoPath
+	 * @param resourcePath
+	 * @returns
+	 */
+	fetchRaw: (repoPath: string | Info, resourcePath: string) => Promise<Result<string, string>>;
+	/** Returns the manifest for the provided repoPath
+	 *
+	 * @param repoPath
+	 * @param resourcePath
+	 * @returns
+	 */
+	fetchManifest: (repoPath: string | Info) => Promise<Result<Category[], string>>;
 	/** Parses the url and gives info about the repo
 	 *
 	 * @param repoPath
 	 * @returns
 	 */
-	info: (repoPath: string) => Promise<Info>;
+	info: (repoPath: string | Info) => Promise<Info>;
 	/** Returns true if this provider matches the provided url
 	 *
 	 * @param repoPath
@@ -53,19 +69,54 @@ export interface Provider {
 const github: Provider = {
 	name: () => 'github',
 	resolveRaw: async (repoPath, resourcePath) => {
-		let info: Info;
-		if (typeof repoPath === 'string') {
-			info = await github.info(repoPath);
-		} else {
-			info = repoPath;
-		}
+		const info = await github.info(repoPath);
 
 		return new URL(
 			resourcePath,
 			`https://raw.githubusercontent.com/${info.owner}/${info.repoName}/refs/${info.refs}/${info.ref}/`
 		);
 	},
+	fetchRaw: async (repoPath, resourcePath) => {
+		const url = await github.resolveRaw(repoPath, resourcePath);
+
+		const errorMessage = (err: string) => {
+			return Err(
+				`There was an error fetching the \`${OUTPUT_FILE}\` from the repository \`${url.href}\` make sure the target repository has a \`${OUTPUT_FILE}\` in its root.\n Error: ${err}`
+			);
+		};
+
+		try {
+			const token = persisted.create(context).get(`${github.name()}-token`);
+
+			const headers = new Headers();
+
+			if (token !== undefined) {
+				headers.append('Authorization', `token ${token}`);
+			}
+
+			const response = await fetch(url, { headers });
+
+			if (!response.ok) {
+				return errorMessage(`${response.status} ${response.text}`);
+			}
+
+			return Ok(await response.text());
+		} catch (err) {
+			return errorMessage(`${err}`);
+		}
+	},
+	fetchManifest: async (repoPath) => {
+		const manifest = await github.fetchRaw(repoPath, OUTPUT_FILE);
+
+		if (manifest.isErr()) return Err(manifest.unwrapErr());
+
+		const categories = v.parse(v.array(categorySchema), JSON.parse(manifest.unwrap()));
+
+		return Ok(categories);
+	},
 	info: async (repoPath) => {
+		if (typeof repoPath !== 'string') return repoPath;
+
 		const repo = repoPath.replaceAll(/(https:\/\/github.com\/)|(github\/)/g, '');
 
 		const [owner, repoName, ...rest] = repo.split('/');
@@ -121,27 +172,6 @@ const getProviderInfo = async (repo: string): Promise<Result<Info, string>> => {
 	return Err('Only GitHub repositories are supported at this time!');
 };
 
-const getManifest = async (url: URL): Promise<Result<Category[], string>> => {
-	const errorMessage = (err: string): Result<never, string> => {
-		return Err(
-			`There was an error fetching the \`${OUTPUT_FILE}\` from the repository \`${url.href}\` make sure the target repository has a \`${OUTPUT_FILE}\` in its root.\n Error: ${err}`
-		);
-	};
-	try {
-		const response = await fetch(url);
-
-		if (!response.ok) {
-			return errorMessage(`${response.status} ${response.text}`);
-		}
-
-		const categories = v.parse(v.array(categorySchema), await response.json());
-
-		return Ok(categories);
-	} catch (err) {
-		return errorMessage(`${err}`);
-	}
-};
-
 const fetchBlocks = async (
 	...repos: string[]
 ): Promise<Result<Map<string, RemoteBlock>, { message: string; repo: string }>> => {
@@ -153,9 +183,7 @@ const fetchBlocks = async (
 
 		const providerInfo = getProviderResult.unwrap();
 
-		const manifestUrl = await providerInfo.provider.resolveRaw(providerInfo, OUTPUT_FILE);
-
-		const getManifestResult = await getManifest(manifestUrl);
+		const getManifestResult = await providerInfo.provider.fetchManifest(providerInfo);
 
 		if (getManifestResult.isErr()) return Err({ message: getManifestResult.unwrapErr(), repo });
 
@@ -177,4 +205,4 @@ const fetchBlocks = async (
 	return Ok(blocksMap);
 };
 
-export { github, getProviderInfo, getManifest, fetchBlocks };
+export { github, getProviderInfo, fetchBlocks, providers };

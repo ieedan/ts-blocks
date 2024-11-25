@@ -120,15 +120,13 @@ const _diff = async (options: Options) => {
 
 				const sourcePath = path.join(block.directory, file);
 
-				const rawUrl = await providerInfo.provider.resolveRaw(providerInfo, sourcePath);
+				const response = await providerInfo.provider.fetchRaw(providerInfo, sourcePath);
 
-				const response = await fetch(rawUrl);
-
-				if (!response.ok) {
+				if (response.isErr()) {
 					program.error(color.red(`There was an error trying to get ${fullSpecifier}`));
 				}
 
-				let remoteContent = await response.text();
+				let remoteContent = response.unwrap();
 
 				const directory = path.join(options.cwd, config.path, block.category);
 

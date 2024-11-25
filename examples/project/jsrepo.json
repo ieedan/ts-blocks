@@ -1,0 +1,9 @@
+{
+	"$schema": "https://unpkg.com/jsrepo@1.6.0/schema.json",
+	"repos": [
+		"github/ieedan/jsrepo-private-demo"
+	],
+	"path": "src/blocks",
+	"includeTests": false,
+	"watermark": true
+}
