@@ -3,7 +3,6 @@ import color from 'chalk';
 import { Command, Option } from 'commander';
 import * as v from 'valibot';
 import { context } from '..';
-import { OUTPUT_FILE } from '../utils/context';
 import { providers } from '../utils/git-providers';
 import * as persisted from '../utils/persisted';
 import { intro } from '../utils/prompts';
@@ -17,7 +16,7 @@ const schema = v.object({
 type Options = v.InferInput<typeof schema>;
 
 const auth = new Command('auth')
-	.description(`Builds the provided --dirs in the project root into a \`${OUTPUT_FILE}\` file.`)
+	.description('Provide a token for access to private repositories.')
 	.option('--token <token>', 'The token to use for authenticating to your provider.')
 	.addOption(
 		new Option('--provider <name>', 'The provider this token belongs to.').choices(
