@@ -1,8 +1,6 @@
 <script lang="ts">
 	import { Snippet } from '$lib/components/ui/snippet';
 	import { Button } from '$lib/components/ui/button';
-
-	let { data } = $props();
 </script>
 
 <svelte:head>
