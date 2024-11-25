@@ -1,5 +1,5 @@
 import fs from 'node:fs';
-import { cancel, confirm, isCancel, outro, select, spinner, text } from '@clack/prompts';
+import { cancel, confirm, isCancel, outro, password, select, spinner, text } from '@clack/prompts';
 import color from 'chalk';
 import { Command, program } from 'commander';
 import { detect, resolveCommand } from 'package-manager-detector';
@@ -9,6 +9,8 @@ import { context } from '..';
 import * as ascii from '../utils/ascii';
 import { CONFIG_NAME, type Config, getConfig } from '../utils/config';
 import { installDependencies } from '../utils/dependencies';
+import { providers } from '../utils/git-providers';
+import * as persisted from '../utils/persisted';
 import { intro, nextSteps } from '../utils/prompts';
 
 const schema = v.object({
@@ -80,6 +82,8 @@ const init = new Command('init')
 	});
 
 const _initProject = async (options: Options) => {
+	const store = persisted.get();
+
 	const initialConfig = getConfig(options.cwd);
 
 	const loading = spinner();
@@ -121,8 +125,10 @@ const _initProject = async (options: Options) => {
 				message: 'Where should we download the blocks from?',
 				placeholder: 'github/ieedan/std',
 				validate: (val) => {
-					if (!val.startsWith('https://github.com') && !val.startsWith('github/')) {
-						return `Must be a ${color.bold('GitHub')} repository!`;
+					if (val.trim().length === 0) return 'Please provide a value';
+
+					if (!providers.find((provider) => provider.matches(val))) {
+						return `Invalid provider! Valid providers (${providers.map((provider) => provider.name()).join(', ')})`;
 					}
 				},
 			});
@@ -130,6 +136,44 @@ const _initProject = async (options: Options) => {
 			if (isCancel(result)) {
 				cancel('Canceled!');
 				process.exit(0);
+			}
+
+			const provider = providers.find((p) => p.matches(result));
+
+			if (!provider) {
+				program.error(color.red('Invalid provider!'));
+			}
+
+			const tokenKey = `${provider.name()}-token`;
+
+			const token = store.get(tokenKey);
+
+			if (!token) {
+				const result = await confirm({
+					message: 'Would you like to add an auth token?',
+					initialValue: false,
+				});
+
+				if (isCancel(result)) {
+					cancel('Canceled!');
+					process.exit(0);
+				}
+
+				if (result) {
+					const response = await password({
+						message: 'Paste your token',
+						validate(value) {
+							if (value.trim() === '') return 'Please provide a value';
+						},
+					});
+
+					if (isCancel(response) || !response) {
+						cancel('Canceled!');
+						process.exit(0);
+					}
+
+					store.set(tokenKey, token);
+				}
 			}
 
 			options.repos.push(result);

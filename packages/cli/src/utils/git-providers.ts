@@ -85,7 +85,7 @@ const github: Provider = {
 		};
 
 		try {
-			const token = persisted.create().get(`${github.name()}-token`);
+			const token = persisted.get().get(`${github.name()}-token`);
 
 			const headers = new Headers();
 

@@ -1,7 +1,7 @@
 import Conf from 'conf';
 
-const create = () => {
+const get = () => {
 	return new Conf({ projectName: 'jsrepo' });
 };
 
-export { create };
+export { get };
