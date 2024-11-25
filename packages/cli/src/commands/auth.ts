@@ -1,4 +1,4 @@
-import { cancel, isCancel, outro, password, select } from '@clack/prompts';
+import { cancel, isCancel, outro, password, select, confirm } from '@clack/prompts';
 import color from 'chalk';
 import { Command, Option } from 'commander';
 import * as v from 'valibot';
@@ -10,6 +10,7 @@ import { intro } from '../utils/prompts';
 const schema = v.object({
 	token: v.optional(v.string()),
 	provider: v.optional(v.string()),
+	logout: v.boolean(),
 	cwd: v.string(),
 });
 
@@ -23,6 +24,7 @@ const auth = new Command('auth')
 			providers.map((provider) => provider.name())
 		)
 	)
+	.option('--logout', 'Erase a token from storage.', false)
 	.option('--cwd <path>', 'The current working directory.', process.cwd())
 	.action(async (opts) => {
 		const options = v.parse(schema, opts);
@@ -37,6 +39,25 @@ const auth = new Command('auth')
 const _auth = async (options: Options) => {
 	const storage = persisted.get();
 
+	if (options.logout) {
+		for (const provider of providers) {
+			const response = await confirm({
+				message: `Remove ${provider.name()} token?`,
+				initialValue: true,
+			});
+
+			if (isCancel(response)) {
+				cancel('Canceled!');
+				process.exit(0);
+			}
+
+			if (!response) continue;
+
+			storage.delete(`${provider.name()}-token`);
+		}
+		return;
+	}
+
 	if (providers.length > 1) {
 		const response = await select({
 			message: 'Which provider is this token for?',
@@ -47,7 +68,7 @@ const _auth = async (options: Options) => {
 			initialValue: providers[0].name(),
 		});
 
-		if (isCancel(response) || !response) {
+		if (isCancel(response)) {
 			cancel('Canceled!');
 			process.exit(0);
 		}

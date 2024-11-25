@@ -82,7 +82,7 @@ const init = new Command('init')
 	});
 
 const _initProject = async (options: Options) => {
-	const store = persisted.get();
+	const storage = persisted.get();
 
 	const initialConfig = getConfig(options.cwd);
 
@@ -146,7 +146,7 @@ const _initProject = async (options: Options) => {
 
 			const tokenKey = `${provider.name()}-token`;
 
-			const token = store.get(tokenKey);
+			const token = storage.get(tokenKey);
 
 			if (!token) {
 				const result = await confirm({
@@ -167,12 +167,12 @@ const _initProject = async (options: Options) => {
 						},
 					});
 
-					if (isCancel(response) || !response) {
+					if (isCancel(response)) {
 						cancel('Canceled!');
 						process.exit(0);
 					}
 
-					store.set(tokenKey, token);
+					storage.set(tokenKey, response);
 				}
 			}
 
