@@ -163,6 +163,7 @@ Provide a token for access to private repositories.
 Options:
   --token <token>    The token to use for authenticating to your provider.
   --provider <name>  The provider this token belongs to. (choices: "github")
+  --logout           Erase tokens from each provider from storage. (default: false)
   --cwd <path>       The current working directory. (default: ".")
   -h, --help         display help for command`}
 />

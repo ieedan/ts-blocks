@@ -24,7 +24,7 @@ const auth = new Command('auth')
 			providers.map((provider) => provider.name())
 		)
 	)
-	.option('--logout', 'Erase a token from storage.', false)
+	.option('--logout', 'Erase tokens from each provider from storage.', false)
 	.option('--cwd <path>', 'The current working directory.', process.cwd())
 	.action(async (opts) => {
 		const options = v.parse(schema, opts);
