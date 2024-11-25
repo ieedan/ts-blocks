@@ -206,6 +206,12 @@ const _initProject = async (options: Options) => {
 const _initRegistry = async (options: Options) => {
 	const loading = spinner();
 
+	const packagePath = path.join(options.cwd, 'package.json');
+
+	if (!fs.existsSync(packagePath)) {
+		program.error(color.red(`Couldn't find your ${color.bold('package.json')}!`));
+	}
+
 	if (!options.path) {
 		const response = await text({
 			message: 'Where are your blocks located?',
@@ -220,12 +226,6 @@ const _initRegistry = async (options: Options) => {
 		}
 
 		options.path = response;
-	}
-
-	const packagePath = path.join(options.cwd, 'package.json');
-
-	if (!fs.existsSync(packagePath)) {
-		program.error(color.red(`Couldn't find your ${color.bold('package.json')}!`));
 	}
 
 	const pkg = JSON.parse(fs.readFileSync(packagePath).toString());
