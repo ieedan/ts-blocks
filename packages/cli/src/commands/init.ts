@@ -205,7 +205,7 @@ const _initProject = async (options: Options) => {
 
 const _initRegistry = async (options: Options) => {
 	const loading = spinner();
-	
+
 	const packagePath = path.join(options.cwd, 'package.json');
 
 	if (!fs.existsSync(packagePath)) {
