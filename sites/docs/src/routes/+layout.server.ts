@@ -1,10 +1,17 @@
+import { GITHUB_TOKEN } from '$env/static/private';
 import { Err, Ok, type Result } from '$lib/ts/types/result';
+import { Octokit } from 'octokit';
 
 export const load = async () => {
+	const octokit = new Octokit({ auth: GITHUB_TOKEN });
+
+	const repo = await octokit.rest.repos.get({ owner: 'ieedan', repo: 'jsrepo' });
+
 	const version = (await tryGetVersion()).unwrapOr('1.0.0');
 
 	return {
-		version
+		version,
+		stars: repo.data.stargazers_count
 	};
 };
 
