@@ -1,5 +1,5 @@
 import fs from 'node:fs';
-import { cancel, confirm, isCancel, multiselect, outro, spinner } from '@clack/prompts';
+import { cancel, confirm, isCancel, multiselect, outro, spinner, text } from '@clack/prompts';
 import color from 'chalk';
 import { Command, program } from 'commander';
 import { resolveCommand } from 'package-manager-detector/commands';
@@ -10,7 +10,7 @@ import { context } from '..';
 import * as ascii from '../utils/ascii';
 import { getInstalled, resolveTree } from '../utils/blocks';
 import { type Block, isTestFile } from '../utils/build';
-import { getConfig } from '../utils/config';
+import { type Config, getConfig } from '../utils/config';
 import { installDependencies } from '../utils/dependencies';
 import { getWatermark } from '../utils/get-watermark';
 import * as gitProviders from '../utils/git-providers';
@@ -60,10 +60,35 @@ const _add = async (blockNames: string[], options: Options) => {
 
 	const loading = spinner();
 
-	const config = getConfig(options.cwd).match(
-		(val) => val,
-		(err) => program.error(color.red(err))
-	);
+	const configResult = getConfig(options.cwd);
+
+	/** The user has opted for no config */
+	const noConfig = configResult.isErr();
+
+	let config: Config;
+
+	if (configResult.isErr()) {
+		const response = await confirm({
+			message: `You don't have ${ascii.JSREPO} initialized in your project. Do you want to continue?`,
+			initialValue: false,
+		});
+
+		if (isCancel(response) || !response) {
+			cancel('Canceled!');
+			process.exit(0);
+		}
+
+		// add default config used for default values in prompts
+		config = {
+			$schema: '',
+			includeTests: false,
+			watermark: true,
+			path: './src/blocks',
+			repos: [],
+		};
+	} else {
+		config = configResult.unwrap();
+	}
 
 	let repoPaths = config.repos;
 
@@ -73,7 +98,7 @@ const _add = async (blockNames: string[], options: Options) => {
 	// resolve repos for blocks
 	for (const blockSpecifier of blockNames) {
 		// we are only getting repos for blocks that specified repos
-		if (!blockSpecifier.startsWith('github')) continue;
+		if (!blockSpecifier.startsWith('github/')) continue;
 
 		const [providerName, owner, repoName, ...rest] = blockSpecifier.split('/');
 
@@ -88,7 +113,7 @@ const _add = async (blockNames: string[], options: Options) => {
 		if (!repoPaths.find((repoPath) => repoPath === repo)) {
 			if (!options.allow) {
 				const result = await confirm({
-					message: `Allow ${color.cyan('jsrepo')} to download and run code from ${color.cyan(repo)}?`,
+					message: `Allow ${ascii.JSREPO} to download and run code from ${color.cyan(repo)}?`,
 					initialValue: true,
 				});
 
@@ -104,7 +129,7 @@ const _add = async (blockNames: string[], options: Options) => {
 
 	if (!options.allow && options.repo) {
 		const result = await confirm({
-			message: `Allow ${color.cyan('jsrepo')} to download and run code from ${color.cyan(options.repo)}?`,
+			message: `Allow ${ascii.JSREPO} to download and run code from ${color.cyan(options.repo)}?`,
 			initialValue: true,
 		});
 
@@ -115,6 +140,14 @@ const _add = async (blockNames: string[], options: Options) => {
 	}
 
 	if (repoPaths.length === 0) {
+		if (noConfig) {
+			program.error(
+				color.red(
+					`Fully quality blocks ex: (github/ieedan/std/utils/math) or provide the \`${color.bold('--repo')}\` flag to specify a registry.`
+				)
+			);
+		}
+
 		program.error(
 			color.red(
 				`There were no repos present in your config and you didn't provide the \`${color.bold('--repo')}\` flag with a repo.`
@@ -191,7 +224,7 @@ const _add = async (blockNames: string[], options: Options) => {
 
 	const installingBlocks = (await resolveTree(installingBlockNames, blocksMap, repoPaths)).match(
 		(val) => val,
-		program.error
+		(err) => program.error(err)
 	);
 
 	const pm = (await detect({ cwd: options.cwd }))?.agent ?? 'npm';
@@ -208,6 +241,53 @@ const _add = async (blockNames: string[], options: Options) => {
 		const providerInfo = block.sourceRepo;
 
 		verbose(`Setting up ${fullSpecifier}`);
+
+		if (noConfig) {
+			const partialSpecifier = `${color.cyan(`${block.category}/${block.name}`)}`;
+
+			const blocksPath = await text({
+				message: `Where would you like to add ${partialSpecifier}?`,
+				initialValue: config.path,
+				defaultValue: config.path,
+				placeholder: config.path,
+				validate(value) {
+					if (value.trim() === '') return 'Please provide a value';
+				},
+			});
+
+			if (isCancel(blocksPath)) {
+				cancel('Canceled!');
+				process.exit(0);
+			}
+
+			config.path = blocksPath;
+
+			if (!options.yes) {
+				const includeTests = await confirm({
+					message: `Include tests for ${partialSpecifier}?`,
+					initialValue: config.includeTests,
+				});
+
+				if (isCancel(includeTests)) {
+					cancel('Canceled!');
+					process.exit(0);
+				}
+
+				config.includeTests = includeTests;
+
+				const addWatermark = await confirm({
+					message: `Add watermark to ${partialSpecifier}?`,
+					initialValue: config.watermark,
+				});
+
+				if (isCancel(addWatermark)) {
+					cancel('Canceled!');
+					process.exit(0);
+				}
+
+				config.watermark = addWatermark;
+			}
+		}
 
 		const directory = path.join(options.cwd, config.path, block.category);
 
