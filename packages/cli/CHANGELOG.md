@@ -1,5 +1,15 @@
 # jsrepo
 
+## 1.8.0
+
+### Minor Changes
+
+- 7b37835: Allow for zero-config adds where users will be prompted for the options necessary to install the `block`.
+
+### Patch Changes
+
+- 7b37835: Make `auth --logout` smarter so that it shows you if you were already logged out.
+
 ## 1.7.1
 
 ### Patch Changes
