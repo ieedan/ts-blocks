@@ -7,12 +7,11 @@ export const load = async () => {
 
 	const repo = await octokit.rest.repos.get({ owner: 'ieedan', repo: 'jsrepo' });
 
-	console.log(repo.data.stargazers_count);
-
 	const version = (await tryGetVersion()).unwrapOr('1.0.0');
 
 	return {
-		version
+		version,
+		stars: repo.data.stargazers_count
 	};
 };
 

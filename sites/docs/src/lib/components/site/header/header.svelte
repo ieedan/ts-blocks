@@ -5,14 +5,17 @@
 	import * as Drawer from '$lib/components/ui/drawer';
 	import { categories } from '$lib/components/site/map';
 	import { page } from '$app/stores';
-	import { Menu } from 'lucide-svelte';
+	import { Menu, Star } from 'lucide-svelte';
 	import { active } from '$lib/ts/actions/active';
+	import { Separator } from '$lib/components/ui/separator';
+	import { StarButton } from '$lib/components/ui/github';
 
 	type Props = {
 		version: string;
+		stars: number;
 	};
 
-	let { version }: Props = $props();
+	let { version, stars }: Props = $props();
 
 	let open = $state(false);
 </script>
@@ -96,10 +99,7 @@
 			</div>
 		</div>
 		<div class="flex place-items-center gap-1">
-			<Button target="_blank" href="https://github.com/ieedan/jsrepo" variant="ghost" size="icon">
-				<span class="sr-only">GitHub</span>
-				<Icons.GitHub />
-			</Button>
+			<StarButton {stars} />
 			<LightSwitch />
 		</div>
 	</div>
