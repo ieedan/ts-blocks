@@ -1,5 +1,12 @@
 # jsrepo
 
+## 1.10.1
+
+### Patch Changes
+
+- 722dd80: Add no longer prompts for options for every block when using zero-config.
+- 722dd80: Add `*.(yml|yaml)` support
+
 ## 1.10.0
 
 ### Minor Changes
