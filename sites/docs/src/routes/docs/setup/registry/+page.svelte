@@ -8,8 +8,9 @@
 <DocHeader title="Registry Setup" description="Create your own registry to share your code." />
 <p>
 	To create a registry start by creating a new
-	<Link target="_blank" href="https://github.com/new">github</Link>
-	or <Link target="_blank" href="https://gitlab.com/projects/new#blank_project">gitlab</Link> repository.
+	<Link target="_blank" href="https://github.com/new">GitHub</Link>,
+	<Link target="_blank" href="https://gitlab.com/projects/new#blank_project">GitLab</Link>, or
+	<Link target="_blank" href="https://bitbucket.org">BitBucket</Link> repository.
 </p>
 <p>
 	<Jsrepo /> looks at the directories in your project to determine which blocks to add the the
