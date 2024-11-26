@@ -15,6 +15,7 @@ import { installDependencies } from '../utils/dependencies';
 import { getWatermark } from '../utils/get-watermark';
 import * as gitProviders from '../utils/git-providers';
 import { languages } from '../utils/language-support';
+import { returnShouldInstall } from '../utils/package';
 import { type Task, intro, nextSteps, runTasks } from '../utils/prompts';
 
 const schema = v.object({
@@ -143,14 +144,18 @@ const _add = async (blockNames: string[], options: Options) => {
 		if (noConfig) {
 			program.error(
 				color.red(
-					`Fully quality blocks ex: (github/ieedan/std/utils/math) or provide the \`${color.bold('--repo')}\` flag to specify a registry.`
+					`Fully quality blocks ex: (github/ieedan/std/utils/math) or provide the \`${color.bold(
+						'--repo'
+					)}\` flag to specify a registry.`
 				)
 			);
 		}
 
 		program.error(
 			color.red(
-				`There were no repos present in your config and you didn't provide the \`${color.bold('--repo')}\` flag with a repo.`
+				`There were no repos present in your config and you didn't provide the \`${color.bold(
+					'--repo'
+				)}\` flag with a repo.`
 			)
 		);
 	}
@@ -231,8 +236,8 @@ const _add = async (blockNames: string[], options: Options) => {
 
 	const tasks: Task[] = [];
 
-	const devDeps: Set<string> = new Set<string>();
-	const deps: Set<string> = new Set<string>();
+	let devDeps: Set<string> = new Set<string>();
+	let deps: Set<string> = new Set<string>();
 
 	if (noConfig) {
 		const blocksPath = await text({
@@ -389,6 +394,12 @@ const _add = async (blockNames: string[], options: Options) => {
 	}
 
 	await runTasks(tasks, { verbose: options.verbose ? verbose : undefined });
+
+	// check if dependencies are already installed
+	const requiredDependencies = returnShouldInstall(deps, devDeps, { cwd: options.cwd });
+
+	deps = requiredDependencies.dependencies;
+	devDeps = requiredDependencies.devDependencies;
 
 	const hasDependencies = deps.size > 0 || devDeps.size > 0;
 
