@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { DocHeader, Jsrepo, Link, Blockquote, SubHeading, Code } from '$lib/components/site/docs';
+	import { DocHeader, Jsrepo, Link, SubHeading, Code } from '$lib/components/site/docs';
 	import CodeSpan from '$lib/components/site/docs/code-span.svelte';
 	import { Snippet } from '$lib/components/ui/snippet';
 
