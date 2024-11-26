@@ -1,5 +1,11 @@
 # jsrepo
 
+## 1.10.2
+
+### Patch Changes
+
+- 282b15c: Checks package.json for dependencies before trying to install the same dependency on `update` and `add`.
+
 ## 1.10.1
 
 ### Patch Changes
