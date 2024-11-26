@@ -260,7 +260,95 @@ const gitlab: Provider = {
 		repoPath.toLowerCase().startsWith('gitlab'),
 };
 
-const providers = [github, gitlab];
+/** Valid paths
+ *
+ * `https://bitbucket.org/ieedan/std/src/main/`
+ *
+ * `https://bitbucket.org/ieedan/std/src/next/`
+ *
+ * `https://bitbucket.org/ieedan/std/src/v2.0.0/`
+ *
+ */
+const bitbucket: Provider = {
+	name: () => 'bitbucket',
+	resolveRaw: async (repoPath, resourcePath) => {
+		const info = await bitbucket.info(repoPath);
+
+		return new URL(
+			resourcePath,
+			`https://api.bitbucket.org/2.0/repositories/${info.owner}/${info.repoName}/src/${info.ref}/`
+		);
+	},
+	fetchRaw: async (repoPath, resourcePath) => {
+		const url = await bitbucket.resolveRaw(repoPath, resourcePath);
+
+		const errorMessage = (err: string) => {
+			return Err(
+				`There was an error fetching the \`${OUTPUT_FILE}\` from the repository \`${url.href}\` make sure the target repository has a \`${OUTPUT_FILE}\` in its root.\n Error: ${err}`
+			);
+		};
+
+		try {
+			const token = persisted.get().get(`${bitbucket.name()}-token`);
+
+			const headers = new Headers();
+
+			if (token !== undefined) {
+				headers.append('Authorization', `Bearer ${token}`);
+			}
+
+			const response = await fetch(url, { headers });
+
+			if (!response.ok) {
+				return errorMessage(`${response.status} ${response.text}`);
+			}
+
+			return Ok(await response.text());
+		} catch (err) {
+			return errorMessage(`${err}`);
+		}
+	},
+	fetchManifest: async (repoPath) => {
+		const manifest = await bitbucket.fetchRaw(repoPath, OUTPUT_FILE);
+
+		if (manifest.isErr()) return Err(manifest.unwrapErr());
+
+		const categories = v.parse(v.array(categorySchema), JSON.parse(manifest.unwrap()));
+
+		return Ok(categories);
+	},
+	info: async (repoPath) => {
+		if (typeof repoPath !== 'string') return repoPath;
+
+		const repo = repoPath.replaceAll(/(https:\/\/bitbucket.org\/)|(bitbucket\/)/g, '');
+
+		const [owner, repoName, ...rest] = repo.split('/');
+
+		// pretty sure this just auto detects
+		const refs = 'heads';
+
+		let ref = 'master';
+
+		if (rest[0] === 'src') {
+			ref = rest[1];
+		}
+
+		return {
+			refs,
+			url: repoPath,
+			name: bitbucket.name(),
+			repoName,
+			owner,
+			ref: ref,
+			provider: bitbucket,
+		};
+	},
+	matches: (repoPath) =>
+		repoPath.toLowerCase().startsWith('https://bitbucket.org') ||
+		repoPath.toLowerCase().startsWith('bitbucket'),
+};
+
+const providers = [github, gitlab, bitbucket];
 
 const getProviderInfo = async (repo: string): Promise<Result<Info, string>> => {
 	const provider = providers.find((provider) => provider.matches(repo));
@@ -306,4 +394,4 @@ const fetchBlocks = async (
 	return Ok(blocksMap);
 };
 
-export { github, gitlab, getProviderInfo, fetchBlocks, providers };
+export { github, gitlab, bitbucket, getProviderInfo, fetchBlocks, providers };
