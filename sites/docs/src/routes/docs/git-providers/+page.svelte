@@ -28,7 +28,7 @@
 			logo: bitbucket,
 			name: 'BitBucket',
 			href: '/docs/git-providers/bitbucket',
-			status: '🚫'
+			status: '⌛️'
 		}
 	];
 </script>
