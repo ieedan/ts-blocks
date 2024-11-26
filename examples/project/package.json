@@ -16,8 +16,5 @@
 		"jsrepo": "^1.2.4",
 		"tsup": "^8.3.5",
 		"typescript": "^5.6.3"
-	},
-	"dependencies": {
-		"ansi-regex": "^6.1.0"
 	}
 }

@@ -11,7 +11,7 @@ import * as sv from 'svelte/compiler';
 import { Project } from 'ts-morph';
 import validatePackageName from 'validate-npm-package-name';
 import * as ascii from './ascii';
-import { Ok, type Result } from './blocks/types/result';
+import { Err, Ok, type Result } from './blocks/types/result';
 import * as lines from './blocks/utils/lines';
 import type { Formatter } from './config';
 import { findNearestPackageJson } from './package';
@@ -116,7 +116,7 @@ const svelte: Lang = {
 	resolveDependencies: ({ filePath, category, isSubDir, excludeDeps }) => {
 		const sourceCode = fs.readFileSync(filePath).toString();
 
-		const root = sv.parse(sourceCode, { modern: true });
+		const root = sv.parse(sourceCode, { modern: true, filename: filePath });
 
 		// if no script tag then no dependencies
 		if (!root.instance) return Ok({ dependencies: [], devDependencies: [], local: [] });
@@ -157,23 +157,8 @@ const svelte: Lang = {
 		} satisfies ResolvedDependencies);
 	},
 	comment: (content) => `<!--\n${content}\n-->`,
-	format: async (code, { formatter, filePath, prettierOptions, biomeOptions }) => {
-		if (!formatter) return code;
-
-		if (formatter === 'prettier') {
-			return await prettier.format(code, { filepath: filePath, ...prettierOptions });
-		}
-
-		const biome = await Biome.create({
-			distribution: Distribution.NODE,
-		});
-
-		if (biomeOptions) {
-			biome.applyConfiguration(biomeOptions);
-		}
-
-		return biome.formatContent(code, { filePath }).content;
-	},
+	// not great support for svelte maybe we can add it another time
+	format: async (code) => code,
 };
 
 const vue: Lang = {
@@ -181,7 +166,7 @@ const vue: Lang = {
 	resolveDependencies: ({ filePath, category, isSubDir, excludeDeps }) => {
 		const sourceCode = fs.readFileSync(filePath).toString();
 
-		const parsed = v.parse(sourceCode);
+		const parsed = v.parse(sourceCode, { filename: filePath });
 
 		if (!parsed.descriptor.script?.content && !parsed.descriptor.scriptSetup?.content)
 			return Ok({ dependencies: [], devDependencies: [], local: [] });
@@ -189,7 +174,12 @@ const vue: Lang = {
 		const localDeps = new Set<string>();
 		const deps = new Set<string>();
 
-		const compiled = v.compileScript(parsed.descriptor, { id: 'shut-it' }); // you need this id to remove a warning
+		let compiled: v.SFCScriptBlock;
+		try {
+			compiled = v.compileScript(parsed.descriptor, { id: 'shut-it' }); // you need this id to remove a warning
+		} catch (err) {
+			return Err(`Compile error: ${err}`);
+		}
 
 		if (!compiled.imports) return Ok({ dependencies: [], devDependencies: [], local: [] });
 
@@ -217,22 +207,15 @@ const vue: Lang = {
 		} satisfies ResolvedDependencies);
 	},
 	comment: (content) => `<!--\n${content}\n-->`,
-	format: async (code, { formatter, filePath, prettierOptions, biomeOptions }) => {
+	format: async (code, { formatter, prettierOptions }) => {
 		if (!formatter) return code;
 
 		if (formatter === 'prettier') {
 			return await prettier.format(code, { parser: 'vue', ...prettierOptions });
 		}
 
-		const biome = await Biome.create({
-			distribution: Distribution.NODE,
-		});
-
-		if (biomeOptions) {
-			biome.applyConfiguration(biomeOptions);
-		}
-
-		return biome.formatContent(code, { filePath }).content;
+		// biome has issues with vue support
+		return code;
 	},
 };
 
@@ -240,22 +223,14 @@ const yaml: Lang = {
 	matches: (fileName) => fileName.endsWith('.yml') || fileName.endsWith('.yaml'),
 	resolveDependencies: () => Ok({ dependencies: [], local: [], devDependencies: [] }),
 	comment: (content: string) => lines.join(lines.get(content), { prefix: () => '# ' }),
-	format: async (code, { formatter, filePath, prettierOptions, biomeOptions }) => {
+	format: async (code, { formatter, prettierOptions }) => {
 		if (!formatter) return code;
 
 		if (formatter === 'prettier') {
 			return await prettier.format(code, { parser: 'yaml', ...prettierOptions });
 		}
 
-		const biome = await Biome.create({
-			distribution: Distribution.NODE,
-		});
-
-		if (biomeOptions) {
-			biome.applyConfiguration(biomeOptions);
-		}
-
-		return biome.formatContent(code, { filePath }).content;
+		return code;
 	},
 };
 
