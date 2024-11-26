@@ -22,7 +22,7 @@
 			logo: gitlab,
 			name: 'GitLab',
 			href: '/docs/git-providers/gitlab',
-			status: '⌛️'
+			status: '✅'
 		},
 		{
 			logo: bitbucket,

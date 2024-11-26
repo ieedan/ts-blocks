@@ -78,10 +78,9 @@ const _update = async (blockNames: string[], options: Options) => {
 	// we just want to override all others if supplied via the CLI
 	if (options.repo) repoPaths = [options.repo];
 
-	// resolve repos for blocks
+	// ensure blocks do not provide repos
 	for (const blockSpecifier of blockNames) {
-		// we are only getting repos for blocks that specified repos
-		if (blockSpecifier.startsWith('github')) {
+		if (gitProviders.providers.find((p) => blockSpecifier.startsWith(p.name()))) {
 			program.error(
 				color.red(
 					`Invalid value provided for block names \`${color.bold(blockSpecifier)}\`. Block names are expected to be provided in the format of \`${color.bold('<category>/<name>')}\``

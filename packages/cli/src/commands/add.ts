@@ -98,7 +98,7 @@ const _add = async (blockNames: string[], options: Options) => {
 	// resolve repos for blocks
 	for (const blockSpecifier of blockNames) {
 		// we are only getting repos for blocks that specified repos
-		if (!blockSpecifier.startsWith('github/')) continue;
+		if (!gitProviders.providers.find((p) => blockSpecifier.startsWith(p.name()))) continue;
 
 		const [providerName, owner, repoName, ...rest] = blockSpecifier.split('/');
 

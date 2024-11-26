@@ -35,7 +35,7 @@
 	lang="json"
 	code={`{
     "repos": [
-        "github/ieedan/std",
+        "gitlab/ieedan/std",
         "github/ieedan/shadcn-phone-input-svelte"
     ]
 }`}

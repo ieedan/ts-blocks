@@ -31,6 +31,9 @@
 	showCopy={false}
 	code={`┌   jsrepo  v${data.version} 
 │
+◇  Which provider is this token for?
+│  github
+│
 ◇  Paste your token
 │  ▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪▪
 │
@@ -42,12 +45,25 @@
 		<Accordion.Item value="q-1">
 			<Accordion.Trigger>What permissions does my token need?</Accordion.Trigger>
 			<Accordion.Content>
-				<p>
-					For GitHub just create a fine grained token with access to the repositories you are using
-					and make sure to change the access for <CodeSpan>Contents</CodeSpan> under
-					<CodeSpan>Repository permissions</CodeSpan> to
-					<CodeSpan>Read-only</CodeSpan>.
-				</p>
+				<ul class="flex flex-col gap-3">
+					<li>
+						- <Link target="_blank" href="https://github.com/settings/personal-access-tokens/new">
+							GitHub
+						</Link> - Create a fine grained PAT with access to the repositories you are using and make
+						sure to change the access for <CodeSpan>Contents</CodeSpan> under
+						<CodeSpan>Repository permissions</CodeSpan> to
+						<CodeSpan>Read-only</CodeSpan>.
+					</li>
+					<li>
+						- <Link
+							target="_blank"
+							href="https://gitlab.com/-/user_settings/personal_access_tokens"
+						>
+							GitLab
+						</Link> - Create an access token with <CodeSpan>read_api</CodeSpan> and
+						<CodeSpan>read_repository</CodeSpan>.
+					</li>
+				</ul>
 			</Accordion.Content>
 		</Accordion.Item>
 	</Accordion.Root>
