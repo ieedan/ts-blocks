@@ -26,7 +26,7 @@ const resolveTree = async (
 		let block: RemoteBlock | undefined = undefined;
 
 		// if the block starts with github (or another provider) we know it has been resolved
-		if (!blockSpecifier.startsWith('github')) {
+		if (!gitProviders.providers.find((p) => blockSpecifier.startsWith(p.name()))) {
 			if (repoPaths.length === 0) {
 				return Err(
 					color.red(

@@ -1,3 +1,4 @@
+import color from 'chalk';
 import { Octokit } from 'octokit';
 import * as v from 'valibot';
 import type { RemoteBlock } from './blocks';
@@ -160,7 +161,106 @@ const github: Provider = {
 		repoPath.toLowerCase().startsWith('github'),
 };
 
-const providers = [github];
+/** Valid paths
+ *
+ * `https://gitlab.com/ieedan/std`
+ *
+ * `https://gitlab.com/ieedan/std/-/tree/next`
+ *
+ * `https://gitlab.com/ieedan/std/-/tree/v2.0.0`
+ *
+ * `https://gitlab.com/ieedan/std/-/raw/v2.0.0/jsrepo-manifest.json?ref_type=tags`
+ */
+const gitlab: Provider = {
+	name: () => 'gitlab',
+	resolveRaw: async (repoPath, resourcePath) => {
+		const info = await gitlab.info(repoPath);
+
+		return new URL(
+			`${encodeURIComponent(resourcePath)}/raw?ref=${info.ref}`,
+			`https://gitlab.com/api/v4/projects/${encodeURIComponent(`${info.owner}/${info.repoName}`)}/repository/files/`
+		);
+	},
+	fetchRaw: async (repoPath, resourcePath) => {
+		const url = await gitlab.resolveRaw(repoPath, resourcePath);
+
+		const errorMessage = (err: string) => {
+			return Err(
+				`There was an error fetching the \`${OUTPUT_FILE}\` from the repository \`${url.href}\` make sure the target repository has a \`${OUTPUT_FILE}\` in its root.\n Error: ${err}`
+			);
+		};
+
+		try {
+			const token = persisted.get().get(`${gitlab.name()}-token`);
+
+			const headers = new Headers();
+
+			if (token !== undefined) {
+				headers.append('PRIVATE-TOKEN', `${token}`);
+			}
+
+			const response = await fetch(url, { headers });
+
+			if (!response.ok) {
+				return errorMessage(`${response.status} ${response.text}`);
+			}
+
+			return Ok(await response.text());
+		} catch (err) {
+			return errorMessage(`${err}`);
+		}
+	},
+	fetchManifest: async (repoPath) => {
+		const manifest = await gitlab.fetchRaw(repoPath, OUTPUT_FILE);
+
+		if (manifest.isErr()) return Err(manifest.unwrapErr());
+
+		const categories = v.parse(v.array(categorySchema), JSON.parse(manifest.unwrap()));
+
+		return Ok(categories);
+	},
+	info: async (repoPath) => {
+		if (typeof repoPath !== 'string') return repoPath;
+
+		const repo = repoPath.replaceAll(/(https:\/\/gitlab.com\/)|(gitlab\/)/g, '');
+
+		const [owner, repoName, ...rest] = repo.split('/');
+
+		let ref = 'main';
+		let refs: Info['refs'] = 'heads';
+
+		if (rest[0] === '-' && rest[1] === 'tree') {
+			if (rest[2].includes('?')) {
+				const [tempRef, last] = rest[2].split('?');
+
+				ref = tempRef;
+
+				if (last.startsWith('ref_type=')) {
+					if (last.slice(10) === 'tags') {
+						refs = 'tags';
+					}
+				}
+			} else {
+				ref = rest[2];
+			}
+		}
+
+		return {
+			refs,
+			url: repoPath,
+			name: gitlab.name(),
+			repoName,
+			owner,
+			ref: ref,
+			provider: gitlab,
+		};
+	},
+	matches: (repoPath) =>
+		repoPath.toLowerCase().startsWith('https://gitlab.com') ||
+		repoPath.toLowerCase().startsWith('gitlab'),
+};
+
+const providers = [github, gitlab];
 
 const getProviderInfo = async (repo: string): Promise<Result<Info, string>> => {
 	const provider = providers.find((provider) => provider.matches(repo));
@@ -168,7 +268,9 @@ const getProviderInfo = async (repo: string): Promise<Result<Info, string>> => {
 		return Ok(await provider.info(repo));
 	}
 
-	return Err('Only GitHub repositories are supported at this time!');
+	return Err(
+		`Only ${providers.map((p, i) => `${i === providers.length - 1 ? 'and' : ''}${color.cyan(p.name())}`).join(', ')} repositories are supported at this time!`
+	);
 };
 
 const fetchBlocks = async (
@@ -204,4 +306,4 @@ const fetchBlocks = async (
 	return Ok(blocksMap);
 };
 
-export { github, getProviderInfo, fetchBlocks, providers };
+export { github, gitlab, getProviderInfo, fetchBlocks, providers };
