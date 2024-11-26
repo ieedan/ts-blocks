@@ -14,6 +14,7 @@ import { isTestFile } from '../utils/build';
 import { getConfig } from '../utils/config';
 import { installDependencies } from '../utils/dependencies';
 import { formatDiff } from '../utils/diff';
+import { loadFormatterConfig } from '../utils/format';
 import { getWatermark } from '../utils/get-watermark';
 import * as gitProviders from '../utils/git-providers';
 import { languages } from '../utils/language-support';
@@ -171,6 +172,11 @@ const _update = async (blockNames: string[], options: Options) => {
 	let devDeps: Set<string> = new Set<string>();
 	let deps: Set<string> = new Set<string>();
 
+	const { prettierOptions, biomeOptions } = await loadFormatterConfig({
+		formatter: config.formatter,
+		cwd: options.cwd,
+	});
+
 	for (const { block } of updatingBlocks) {
 		const fullSpecifier = `${block.sourceRepo.url}/${block.category}/${block.name}`;
 
@@ -235,6 +241,8 @@ const _update = async (blockNames: string[], options: Options) => {
 				remoteContent = await lang.format(remoteContent, {
 					filePath: file.destPath,
 					formatter: config.formatter,
+					prettierOptions,
+					biomeOptions,
 				});
 			}
 

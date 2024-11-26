@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import { builtinModules } from 'node:module';
 import { Biome, Distribution } from '@biomejs/js-api';
+import type { PartialConfiguration } from '@biomejs/wasm-nodejs';
 import * as v from '@vue/compiler-sfc';
 import color from 'chalk';
 import { walk } from 'estree-walker';
@@ -33,6 +34,8 @@ export type FormatOptions = {
 	formatter?: Formatter;
 	/** Can be used to infer the prettier parser */
 	filePath: string;
+	prettierOptions: prettier.Options | null;
+	biomeOptions: PartialConfiguration | null;
 };
 
 export type Lang = {
@@ -89,16 +92,20 @@ const typescript: Lang = {
 		} satisfies ResolvedDependencies);
 	},
 	comment: (content) => `/*\n${content}\n*/`,
-	format: async (code, { formatter, filePath }) => {
+	format: async (code, { formatter, filePath, prettierOptions, biomeOptions }) => {
 		if (!formatter) return code;
 
 		if (formatter === 'prettier') {
-			return await prettier.format(code, { filepath: filePath });
+			return await prettier.format(code, { filepath: filePath, ...prettierOptions });
 		}
 
 		const biome = await Biome.create({
 			distribution: Distribution.NODE,
 		});
+
+		if (biomeOptions) {
+			biome.applyConfiguration(biomeOptions);
+		}
 
 		return biome.formatContent(code, { filePath }).content;
 	},
@@ -150,16 +157,20 @@ const svelte: Lang = {
 		} satisfies ResolvedDependencies);
 	},
 	comment: (content) => `<!--\n${content}\n-->`,
-	format: async (code, { formatter, filePath }) => {
+	format: async (code, { formatter, filePath, prettierOptions, biomeOptions }) => {
 		if (!formatter) return code;
 
 		if (formatter === 'prettier') {
-			return await prettier.format(code, { filepath: filePath });
+			return await prettier.format(code, { filepath: filePath, ...prettierOptions });
 		}
 
 		const biome = await Biome.create({
 			distribution: Distribution.NODE,
 		});
+
+		if (biomeOptions) {
+			biome.applyConfiguration(biomeOptions);
+		}
 
 		return biome.formatContent(code, { filePath }).content;
 	},
@@ -206,16 +217,20 @@ const vue: Lang = {
 		} satisfies ResolvedDependencies);
 	},
 	comment: (content) => `<!--\n${content}\n-->`,
-	format: async (code, { formatter, filePath }) => {
+	format: async (code, { formatter, filePath, prettierOptions, biomeOptions }) => {
 		if (!formatter) return code;
 
 		if (formatter === 'prettier') {
-			return await prettier.format(code, { parser: 'vue' });
+			return await prettier.format(code, { parser: 'vue', ...prettierOptions });
 		}
 
 		const biome = await Biome.create({
 			distribution: Distribution.NODE,
 		});
+
+		if (biomeOptions) {
+			biome.applyConfiguration(biomeOptions);
+		}
 
 		return biome.formatContent(code, { filePath }).content;
 	},
@@ -225,16 +240,20 @@ const yaml: Lang = {
 	matches: (fileName) => fileName.endsWith('.yml') || fileName.endsWith('.yaml'),
 	resolveDependencies: () => Ok({ dependencies: [], local: [], devDependencies: [] }),
 	comment: (content: string) => lines.join(lines.get(content), { prefix: () => '# ' }),
-	format: async (code, { formatter, filePath }) => {
+	format: async (code, { formatter, filePath, prettierOptions, biomeOptions }) => {
 		if (!formatter) return code;
 
 		if (formatter === 'prettier') {
-			return await prettier.format(code, { parser: 'yaml' });
+			return await prettier.format(code, { parser: 'yaml', ...prettierOptions });
 		}
 
 		const biome = await Biome.create({
 			distribution: Distribution.NODE,
 		});
+
+		if (biomeOptions) {
+			biome.applyConfiguration(biomeOptions);
+		}
 
 		return biome.formatContent(code, { filePath }).content;
 	},

@@ -7,15 +7,13 @@
 	"scripts": {
 		"jsrepo": "jsrepo",
 		"start": "tsup --silent && node ./dist/index.js",
-		"build": "tsup",
-		"format": "prettier . --write"
+		"build": "tsup"
 	},
 	"keywords": [],
 	"author": "",
 	"license": "ISC",
 	"devDependencies": {
 		"jsrepo": "^1.2.4",
-		"prettier": "^3.3.2",
 		"tsup": "^8.3.5",
 		"typescript": "^5.6.3"
 	},
