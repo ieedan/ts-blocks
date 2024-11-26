@@ -1,0 +1,5 @@
+---
+"jsrepo": minor
+---
+
+BitBucket support 🎉

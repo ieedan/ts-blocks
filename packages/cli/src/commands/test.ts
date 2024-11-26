@@ -183,7 +183,7 @@ const _test = async (blockNames: string[], options: Options) => {
 				let repo: string;
 				// if rest is greater than 2 it isn't the block specifier so it is part of the path
 				if (rest.length > 2) {
-					repo = `${providerName}/${owner}/${repoName}/${rest.join('/')}`;
+					repo = `${providerName}/${owner}/${repoName}/${rest.slice(0, rest.length - 2).join('/')}`;
 				} else {
 					repo = `${providerName}/${owner}/${repoName}`;
 				}
