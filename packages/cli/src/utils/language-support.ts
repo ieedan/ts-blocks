@@ -1,17 +1,20 @@
-import fs from 'node:fs';
-import { builtinModules } from 'node:module';
-import * as v from '@vue/compiler-sfc';
-import color from 'chalk';
-import { walk } from 'estree-walker';
-import path from 'pathe';
-import * as sv from 'svelte/compiler';
-import { Project } from 'ts-morph';
-import validatePackageName from 'validate-npm-package-name';
-import * as ascii from './ascii';
-import { Ok, type Result } from './blocks/types/result';
-import * as lines from './blocks/utils/lines';
-import { findNearestPackageJson } from './package';
-import { parsePackageName } from './parse-package-name';
+import fs from "node:fs";
+import { builtinModules } from "node:module";
+import { Biome, Distribution } from "@biomejs/js-api";
+import * as v from "@vue/compiler-sfc";
+import color from "chalk";
+import { walk } from "estree-walker";
+import path from "pathe";
+import * as prettier from "prettier";
+import * as sv from "svelte/compiler";
+import { Project } from "ts-morph";
+import validatePackageName from "validate-npm-package-name";
+import * as ascii from "./ascii";
+import { Ok, type Result } from "./blocks/types/result";
+import * as lines from "./blocks/utils/lines";
+import { findNearestPackageJson } from "./package";
+import { parsePackageName } from "./parse-package-name";
+import { Formatter } from "./config";
 
 export type ResolvedDependencies = {
 	local: string[];
@@ -26,6 +29,12 @@ export type ResolveDependencyOptions = {
 	excludeDeps: string[];
 };
 
+export type FormatOptions = {
+	formatter?: Formatter;
+	/** Can be used to infer the prettier parser */
+	filePath: string;
+};
+
 export type Lang = {
 	/** Matches the supported file types */
 	matches: (fileName: string) => boolean;
@@ -33,14 +42,12 @@ export type Lang = {
 	resolveDependencies: (opts: ResolveDependencyOptions) => Result<ResolvedDependencies, string>;
 	/** Returns a multiline comment containing the content */
 	comment: (content: string) => string;
+	format: (code: string, opts: FormatOptions) => Promise<string>;
 };
 
 const typescript: Lang = {
 	matches: (fileName) =>
-		fileName.endsWith('.ts') ||
-		fileName.endsWith('.js') ||
-		fileName.endsWith('.tsx') ||
-		fileName.endsWith('.jsx'),
+		fileName.endsWith(".ts") || fileName.endsWith(".js") || fileName.endsWith(".tsx") || fileName.endsWith(".jsx"),
 	resolveDependencies: ({ filePath, category, isSubDir, excludeDeps }) => {
 		const project = new Project();
 
@@ -48,9 +55,7 @@ const typescript: Lang = {
 
 		const imports = blockFile.getImportDeclarations();
 
-		const relativeImports = imports.filter((declaration) =>
-			declaration.getModuleSpecifierValue().startsWith('.')
-		);
+		const relativeImports = imports.filter((declaration) => declaration.getModuleSpecifierValue().startsWith("."));
 
 		const localDeps = new Set<string>();
 
@@ -63,14 +68,10 @@ const typescript: Lang = {
 		}
 
 		const deps = imports
-			.filter((declaration) => !declaration.getModuleSpecifierValue().startsWith('.'))
+			.filter((declaration) => !declaration.getModuleSpecifierValue().startsWith("."))
 			.map((declaration) => declaration.getModuleSpecifierValue());
 
-		const { devDependencies, dependencies } = resolveRemoteDeps(
-			Array.from(deps),
-			filePath,
-			excludeDeps
-		);
+		const { devDependencies, dependencies } = resolveRemoteDeps(Array.from(deps), filePath, excludeDeps);
 
 		return Ok({
 			local: Array.from(localDeps),
@@ -79,10 +80,25 @@ const typescript: Lang = {
 		} satisfies ResolvedDependencies);
 	},
 	comment: (content) => `/*\n${content}\n*/`,
+	format: async (code, { formatter, filePath }) => {
+		if (!formatter) return code;
+
+		if (formatter === "prettier") {
+			return await prettier.format(code, {
+				filepath: filePath
+			});
+		}
+
+		const biome = await Biome.create({
+			distribution: Distribution.NODE,
+		});
+
+		return biome.formatContent(code, { filePath }).content;
+	},
 };
 
 const svelte: Lang = {
-	matches: (fileName) => fileName.endsWith('.svelte'),
+	matches: (fileName) => fileName.endsWith(".svelte"),
 	resolveDependencies: ({ filePath, category, isSubDir, excludeDeps }) => {
 		const sourceCode = fs.readFileSync(filePath).toString();
 
@@ -97,14 +113,10 @@ const svelte: Lang = {
 		// biome-ignore lint/suspicious/noExplicitAny: The root instance is just missing the `id` prop
 		walk(root.instance as any, {
 			enter: (node) => {
-				if (node.type === 'ImportDeclaration') {
-					if (typeof node.source.value === 'string') {
-						if (node.source.value.startsWith('.')) {
-							const localDep = resolveLocalImport(
-								node.source.value,
-								category,
-								isSubDir
-							);
+				if (node.type === "ImportDeclaration") {
+					if (typeof node.source.value === "string") {
+						if (node.source.value.startsWith(".")) {
+							const localDep = resolveLocalImport(node.source.value, category, isSubDir);
 
 							if (localDep) localDeps.add(localDep);
 						} else {
@@ -116,7 +128,7 @@ const svelte: Lang = {
 		});
 
 		const { devDependencies, dependencies } = resolveRemoteDeps(Array.from(deps), filePath, [
-			'svelte',
+			"svelte",
 			...excludeDeps,
 		]);
 
@@ -127,10 +139,23 @@ const svelte: Lang = {
 		} satisfies ResolvedDependencies);
 	},
 	comment: (content) => `<!--\n${content}\n-->`,
+	format: async (code, { formatter, filePath }) => {
+		if (!formatter) return code;
+
+		if (formatter === "prettier") {
+			return await prettier.format(code, { filepath: filePath });
+		}
+
+		const biome = await Biome.create({
+			distribution: Distribution.NODE,
+		});
+
+		return biome.formatContent(code, { filePath }).content;
+	},
 };
 
 const vue: Lang = {
-	matches: (fileName) => fileName.endsWith('.vue'),
+	matches: (fileName) => fileName.endsWith(".vue"),
 	resolveDependencies: ({ filePath, category, isSubDir, excludeDeps }) => {
 		const sourceCode = fs.readFileSync(filePath).toString();
 
@@ -142,14 +167,14 @@ const vue: Lang = {
 		const localDeps = new Set<string>();
 		const deps = new Set<string>();
 
-		const compiled = v.compileScript(parsed.descriptor, { id: 'shut-it' }); // you need this id to remove a warning
+		const compiled = v.compileScript(parsed.descriptor, { id: "shut-it" }); // you need this id to remove a warning
 
 		if (!compiled.imports) return Ok({ dependencies: [], devDependencies: [], local: [] });
 
 		const imports = Object.values(compiled.imports);
 
 		for (const imp of imports) {
-			if (imp.source.startsWith('.')) {
+			if (imp.source.startsWith(".")) {
 				const localDep = resolveLocalImport(imp.source, category, isSubDir);
 
 				if (localDep) localDeps.add(localDep);
@@ -159,7 +184,7 @@ const vue: Lang = {
 		}
 
 		const { devDependencies, dependencies } = resolveRemoteDeps(Array.from(deps), filePath, [
-			'vue',
+			"vue",
 			...excludeDeps,
 		]);
 
@@ -170,31 +195,53 @@ const vue: Lang = {
 		} satisfies ResolvedDependencies);
 	},
 	comment: (content) => `<!--\n${content}\n-->`,
+	format: async (code, { formatter, filePath }) => {
+		if (!formatter) return code;
+
+		if (formatter === "prettier") {
+			return await prettier.format(code, { parser: "vue" });
+		}
+
+		const biome = await Biome.create({
+			distribution: Distribution.NODE,
+		});
+
+		return biome.formatContent(code, { filePath }).content;
+	},
 };
 
 const yaml: Lang = {
-	matches: (fileName) => fileName.endsWith('.yml') || fileName.endsWith('.yaml'),
+	matches: (fileName) => fileName.endsWith(".yml") || fileName.endsWith(".yaml"),
 	resolveDependencies: () => Ok({ dependencies: [], local: [], devDependencies: [] }),
-	comment: (content: string) => lines.join(lines.get(content), { prefix: () => '# ' }),
+	comment: (content: string) => lines.join(lines.get(content), { prefix: () => "# " }),
+	format: async (code, { formatter, filePath }) => {
+		if (!formatter) return code;
+
+		if (formatter === "prettier") {
+			return await prettier.format(code, { parser: "yaml" });
+		}
+
+		const biome = await Biome.create({
+			distribution: Distribution.NODE,
+		});
+
+		return biome.formatContent(code, { filePath }).content;
+	},
 };
 
-const resolveLocalImport = (
-	mod: string,
-	category: string,
-	isSubDir: boolean
-): string | undefined => {
+const resolveLocalImport = (mod: string, category: string, isSubDir: boolean): string | undefined => {
 	// do not add local deps that are within the same folder
-	if (isSubDir && mod.startsWith('./')) return undefined;
+	if (isSubDir && mod.startsWith("./")) return undefined;
 
-	if (mod.startsWith('./')) {
+	if (mod.startsWith("./")) {
 		return `${category}/${path.parse(path.basename(mod)).name}`;
 	}
 
-	if (isSubDir && mod.startsWith('../') && !mod.startsWith('../.')) {
+	if (isSubDir && mod.startsWith("../") && !mod.startsWith("../.")) {
 		return `${category}/${path.parse(path.basename(mod)).name}`;
 	}
 
-	const segments = mod.replaceAll('../', '').split('/');
+	const segments = mod.replaceAll("../", "").split("/");
 
 	// invalid path
 	if (segments.length < 2) return undefined;
@@ -212,18 +259,17 @@ const resolveLocalImport = (
 const resolveRemoteDeps = (deps: string[], filePath: string, doNotInstall: string[] = []) => {
 	const exemptDeps = new Set(doNotInstall);
 
-	const filteredDeps = deps.filter(
-		(dep) => !builtinModules.includes(dep) && !dep.startsWith('node:')
-	);
+	const filteredDeps = deps.filter((dep) => !builtinModules.includes(dep) && !dep.startsWith("node:"));
 
-	const pkgPath = findNearestPackageJson(path.dirname(filePath), '');
+	const pkgPath = findNearestPackageJson(path.dirname(filePath), "");
 
 	const dependencies = new Set<string>();
 	const devDependencies = new Set<string>();
 
 	if (pkgPath) {
-		const { devDependencies: packageDevDependencies, dependencies: packageDependencies } =
-			JSON.parse(fs.readFileSync(pkgPath, 'utf-8'));
+		const { devDependencies: packageDevDependencies, dependencies: packageDependencies } = JSON.parse(
+			fs.readFileSync(pkgPath, "utf-8")
+		);
 
 		for (const dep of filteredDeps) {
 			const parsed = parsePackageName(dep);

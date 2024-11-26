@@ -7,7 +7,7 @@ import path from "pathe";
 import * as v from "valibot";
 import { context } from "..";
 import * as ascii from "../utils/ascii";
-import { CONFIG_NAME, type Config, formatterSchema, getConfig } from "../utils/config";
+import { CONFIG_NAME, type Config, Formatter, formatterSchema, getConfig } from "../utils/config";
 import { installDependencies } from "../utils/dependencies";
 import { providers } from "../utils/git-providers";
 import * as persisted from "../utils/persisted";
@@ -185,10 +185,23 @@ const _initProject = async (options: Options) => {
 	}
 
 	if (!options.formatter) {
+		let defaultFormatter = initialConfig.isErr() ? "none" : (initialConfig.unwrap().formatter ?? "none");
+
+		if (fs.existsSync(path.join(options.cwd, ".prettierrc"))) {
+			defaultFormatter = "prettier";
+		}
+
+		if (fs.existsSync(path.join(options.cwd, "biome.json"))) {
+			defaultFormatter = "biome";
+		}
+
 		const response = await select({
 			message: "What formatter would you like to use?",
-			options: ["Prettier", "Biome", "None"].map((val) => ({ value: val.toLowerCase(), label: val })),
-			initialValue: initialConfig.isErr() ? "none" : (initialConfig.unwrap().formatter ?? "none"),
+			options: ["Prettier", "Biome", "None"].map((val) => ({
+				value: val.toLowerCase(),
+				label: val,
+			})),
+			initialValue: defaultFormatter,
 		});
 
 		if (isCancel(response)) {
@@ -197,7 +210,7 @@ const _initProject = async (options: Options) => {
 		}
 
 		if (response !== "none") {
-			options.formatter = response as "biome" | "prettier";
+			options.formatter = response as Formatter;
 		}
 	}
 

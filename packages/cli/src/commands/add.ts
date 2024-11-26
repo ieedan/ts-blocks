@@ -355,16 +355,21 @@ const _add = async (blockNames: string[], options: Options) => {
 				}
 
 				for (const file of files) {
+					const lang = languages.find((lang) => lang.matches(file.destPath));
+
 					let content: string = file.content;
 
-					if (config.watermark) {
-						const lang = languages.find((lang) => lang.matches(file.destPath));
-
-						if (lang) {
+					if (lang) {
+						if (config.watermark) {
 							const comment = lang.comment(watermark);
 
 							content = `${comment}\n\n${content}`;
 						}
+
+						content = await lang.format(content, {
+							filePath: file.destPath,
+							formatter: config.formatter,
+						});
 					}
 
 					fs.writeFileSync(file.destPath, content);
