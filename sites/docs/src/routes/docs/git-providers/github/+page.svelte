@@ -7,10 +7,6 @@
 </script>
 
 <DocHeader title="GitHub" description="How to use GitHub as your jsrepo registry." />
-<Blockquote variant="primary">
-	<Link target="_blank" href="https://github.com">GitHub</Link> is currently the only supported git provider
-	for <Jsrepo />.
-</Blockquote>
 <SubHeading>Branches and Tags</SubHeading>
 <p>
 	<Jsrepo /> supports <Link target="_blank" href="https://github.com">GitHub</Link> so that you can just

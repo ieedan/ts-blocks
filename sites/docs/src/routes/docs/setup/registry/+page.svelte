@@ -8,7 +8,8 @@
 <DocHeader title="Registry Setup" description="Create your own registry to share your code." />
 <p>
 	To create a registry start by creating a new
-	<Link target="_blank" href="https://github.com/new">github</Link> repository.
+	<Link target="_blank" href="https://github.com/new">github</Link>
+	or <Link target="_blank" href="https://gitlab.com/projects/new#blank_project">gitlab</Link> repository.
 </p>
 <p>
 	<Jsrepo /> looks at the directories in your project to determine which blocks to add the the
@@ -221,9 +222,19 @@ const add = (a: number, b: number): number => {
 	By providing that flag it tells <Jsrepo /> to ignore those dependencies and skip adding them to the
 	manifest file.
 </p>
-<SubHeading>Examples</SubHeading>
-<ul>
-	<li>
-		<Link target="_blank" href="https://github.com/ieedan/std">github/ieedan/std</Link>
-	</li>
-</ul>
+<div class="flex flex-col gap-3">
+	<SubHeading>Examples</SubHeading>
+	<ul class="flex flex-col gap-2">
+		<li class="list-disc">
+			<Link target="_blank" href="https://github.com/ieedan/std">github/ieedan/std</Link>
+		</li>
+		<li class="list-disc">
+			<Link target="_blank" href="https://github.com/ieedan/shadcn-phone-input-svelte">
+				github/ieedan/shadcn-phone-input-svelte
+			</Link>
+		</li>
+		<li class="list-disc">
+			<Link target="_blank" href="https://gitlab.com/ieedan/std">gitlab/ieedan/std</Link>
+		</li>
+	</ul>
+</div>
