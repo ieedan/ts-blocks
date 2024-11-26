@@ -1,5 +1,11 @@
 # jsrepo
 
+## 1.10.0
+
+### Minor Changes
+
+- 2f5d566: BitBucket support 🎉
+
 ## 1.9.0
 
 ### Minor Changes
