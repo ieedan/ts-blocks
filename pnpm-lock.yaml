@@ -17,6 +17,9 @@ importers:
 
   packages/cli:
     dependencies:
+      '@biomejs/js-api':
+        specifier: ^0.7.1
+        version: 0.7.1
       '@clack/prompts':
         specifier: ^0.8.2
         version: 0.8.2
@@ -53,6 +56,9 @@ importers:
       pathe:
         specifier: ^1.1.2
         version: 1.1.2
+      prettier:
+        specifier: ^3.3.2
+        version: 3.3.3
       svelte:
         specifier: ^5.2.7
         version: 5.2.7
@@ -277,6 +283,20 @@ packages:
     engines: {node: '>=14.21.3'}
     cpu: [x64]
     os: [win32]
+
+  '@biomejs/js-api@0.7.1':
+    resolution: {integrity: sha512-VFdgFFZWcyCQxZcAasyv8Enpexn4CblMdWmr6izLYHTLcbd+z9x/LuKU71qnmClABfnYqZjiY7c8DKTVri3Ajw==}
+    peerDependencies:
+      '@biomejs/wasm-bundler': ^1.9.2
+      '@biomejs/wasm-nodejs': ^1.9.2
+      '@biomejs/wasm-web': ^1.9.2
+    peerDependenciesMeta:
+      '@biomejs/wasm-bundler':
+        optional: true
+      '@biomejs/wasm-nodejs':
+        optional: true
+      '@biomejs/wasm-web':
+        optional: true
 
   '@changesets/apply-release-plan@7.0.6':
     resolution: {integrity: sha512-TKhVLtiwtQOgMAC0fCJfmv93faiViKSDqr8oMEqrnNs99gtSC1sZh/aEMS9a+dseU1ESZRCK+ofLgGY7o0fw/Q==}
@@ -3036,6 +3056,8 @@ snapshots:
 
   '@biomejs/cli-win32-x64@1.9.4':
     optional: true
+
+  '@biomejs/js-api@0.7.1': {}
 
   '@changesets/apply-release-plan@7.0.6':
     dependencies:

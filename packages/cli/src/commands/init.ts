@@ -1,23 +1,24 @@
-import fs from 'node:fs';
-import { cancel, confirm, isCancel, outro, password, select, spinner, text } from '@clack/prompts';
-import color from 'chalk';
-import { Command, program } from 'commander';
-import { detect, resolveCommand } from 'package-manager-detector';
-import path from 'pathe';
-import * as v from 'valibot';
-import { context } from '..';
-import * as ascii from '../utils/ascii';
-import { CONFIG_NAME, type Config, getConfig } from '../utils/config';
-import { installDependencies } from '../utils/dependencies';
-import { providers } from '../utils/git-providers';
-import * as persisted from '../utils/persisted';
-import { intro, nextSteps } from '../utils/prompts';
+import fs from "node:fs";
+import { cancel, confirm, isCancel, outro, password, select, spinner, text } from "@clack/prompts";
+import color from "chalk";
+import { Command, Option, program } from "commander";
+import { detect, resolveCommand } from "package-manager-detector";
+import path from "pathe";
+import * as v from "valibot";
+import { context } from "..";
+import * as ascii from "../utils/ascii";
+import { CONFIG_NAME, type Config, formatterSchema, getConfig } from "../utils/config";
+import { installDependencies } from "../utils/dependencies";
+import { providers } from "../utils/git-providers";
+import * as persisted from "../utils/persisted";
+import { intro, nextSteps } from "../utils/prompts";
 
 const schema = v.object({
 	path: v.optional(v.string()),
 	repos: v.optional(v.array(v.string())),
 	watermark: v.boolean(),
 	tests: v.optional(v.boolean()),
+	formatter: v.optional(formatterSchema),
 	project: v.optional(v.boolean()),
 	registry: v.optional(v.boolean()),
 	script: v.string(),
@@ -27,20 +28,23 @@ const schema = v.object({
 
 type Options = v.InferInput<typeof schema>;
 
-const init = new Command('init')
-	.description('Initializes your project with a configuration file.')
-	.option('--path <path>', 'Path to install the blocks / Path to build the blocks from.')
-	.option('--repos [repos...]', 'Repository to install the blocks from.')
-	.option(
-		'--no-watermark',
-		'Will not add a watermark to each file upon adding it to your project.'
+const init = new Command("init")
+	.description("Initializes your project with a configuration file.")
+	.option("--path <path>", "Path to install the blocks / Path to build the blocks from.")
+	.option("--repos [repos...]", "Repository to install the blocks from.")
+	.option("--no-watermark", "Will not add a watermark to each file upon adding it to your project.")
+	.option("--tests", "Will include tests with the blocks.")
+	.addOption(
+		new Option("--formatter <formatter>", "What formatter to use when adding or updating blocks.").choices([
+			"prettier",
+			"biome",
+		])
 	)
-	.option('--tests', 'Will include tests with the blocks.')
-	.option('-P, --project', 'Takes you through the steps to initialize a project.')
-	.option('-R, --registry', 'Takes you through the steps to initialize a registry.')
-	.option('--script <name>', 'The name of the build script. (For Registry setup)', 'build')
-	.option('-y, --yes', 'Skip confirmation prompt.', false)
-	.option('--cwd <path>', 'The current working directory.', process.cwd())
+	.option("-P, --project", "Takes you through the steps to initialize a project.")
+	.option("-R, --registry", "Takes you through the steps to initialize a registry.")
+	.option("--script <name>", "The name of the build script. (For Registry setup)", "build")
+	.option("-y, --yes", "Skip confirmation prompt.", false)
+	.option("--cwd <path>", "The current working directory.", process.cwd())
 	.action(async (opts) => {
 		const options = v.parse(schema, opts);
 
@@ -49,27 +53,27 @@ const init = new Command('init')
 		if (options.registry !== undefined && options.project !== undefined) {
 			program.error(
 				color.red(
-					`You cannot provide both ${color.bold('--project')} and ${color.bold('--registry')} at the same time.`
+					`You cannot provide both ${color.bold("--project")} and ${color.bold("--registry")} at the same time.`
 				)
 			);
 		}
 
 		if (options.registry === undefined && options.project === undefined) {
 			const response = await select({
-				message: 'Initialize a project or registry?',
+				message: "Initialize a project or registry?",
 				options: [
-					{ value: 'project', label: 'project' },
-					{ value: 'registry', label: 'registry' },
+					{ value: "project", label: "project" },
+					{ value: "registry", label: "registry" },
 				],
-				initialValue: 'project',
+				initialValue: "project",
 			});
 
 			if (isCancel(response)) {
-				cancel('Canceled!');
+				cancel("Canceled!");
 				process.exit(0);
 			}
 
-			options.registry = response === 'registry';
+			options.registry = response === "registry";
 		}
 
 		if (options.registry) {
@@ -78,7 +82,7 @@ const init = new Command('init')
 			await _initProject(options);
 		}
 
-		outro(color.green('All done!'));
+		outro(color.green("All done!"));
 	});
 
 const _initProject = async (options: Options) => {
@@ -90,15 +94,15 @@ const _initProject = async (options: Options) => {
 
 	if (!options.path) {
 		const result = await text({
-			message: 'Where should we add the blocks?',
+			message: "Where should we add the blocks?",
 			validate(value) {
-				if (value.trim() === '') return 'Please provide a value';
+				if (value.trim() === "") return "Please provide a value";
 			},
-			initialValue: initialConfig.isOk() ? initialConfig.unwrap().path : 'src/blocks',
+			initialValue: initialConfig.isOk() ? initialConfig.unwrap().path : "src/blocks",
 		});
 
 		if (isCancel(result)) {
-			cancel('Canceled!');
+			cancel("Canceled!");
 			process.exit(0);
 		}
 
@@ -110,38 +114,38 @@ const _initProject = async (options: Options) => {
 
 		while (true) {
 			const confirmResult = await confirm({
-				message: `Add ${options.repos.length > 0 ? 'another' : 'a'} repo?`,
+				message: `Add ${options.repos.length > 0 ? "another" : "a"} repo?`,
 				initialValue: options.repos.length === 0, // default to yes for first repo
 			});
 
 			if (isCancel(confirmResult)) {
-				cancel('Canceled!');
+				cancel("Canceled!");
 				process.exit(0);
 			}
 
 			if (!confirmResult) break;
 
 			const result = await text({
-				message: 'Where should we download the blocks from?',
-				placeholder: 'github/ieedan/std',
+				message: "Where should we download the blocks from?",
+				placeholder: "github/ieedan/std",
 				validate: (val) => {
-					if (val.trim().length === 0) return 'Please provide a value';
+					if (val.trim().length === 0) return "Please provide a value";
 
 					if (!providers.find((provider) => provider.matches(val))) {
-						return `Invalid provider! Valid providers (${providers.map((provider) => provider.name()).join(', ')})`;
+						return `Invalid provider! Valid providers (${providers.map((provider) => provider.name()).join(", ")})`;
 					}
 				},
 			});
 
 			if (isCancel(result)) {
-				cancel('Canceled!');
+				cancel("Canceled!");
 				process.exit(0);
 			}
 
 			const provider = providers.find((p) => p.matches(result));
 
 			if (!provider) {
-				program.error(color.red('Invalid provider!'));
+				program.error(color.red("Invalid provider!"));
 			}
 
 			const tokenKey = `${provider.name()}-token`;
@@ -150,25 +154,25 @@ const _initProject = async (options: Options) => {
 
 			if (!token) {
 				const result = await confirm({
-					message: 'Would you like to add an auth token?',
+					message: "Would you like to add an auth token?",
 					initialValue: false,
 				});
 
 				if (isCancel(result)) {
-					cancel('Canceled!');
+					cancel("Canceled!");
 					process.exit(0);
 				}
 
 				if (result) {
 					const response = await password({
-						message: 'Paste your token',
+						message: "Paste your token",
 						validate(value) {
-							if (value.trim() === '') return 'Please provide a value';
+							if (value.trim() === "") return "Please provide a value";
 						},
 					});
 
 					if (isCancel(response)) {
-						cancel('Canceled!');
+						cancel("Canceled!");
 						process.exit(0);
 					}
 
@@ -177,6 +181,23 @@ const _initProject = async (options: Options) => {
 			}
 
 			options.repos.push(result);
+		}
+	}
+
+	if (!options.formatter) {
+		const response = await select({
+			message: "What formatter would you like to use?",
+			options: ["Prettier", "Biome", "None"].map((val) => ({ value: val.toLowerCase(), label: val })),
+			initialValue: initialConfig.isErr() ? "none" : (initialConfig.unwrap().formatter ?? "none"),
+		});
+
+		if (isCancel(response)) {
+			cancel("Canceled!");
+			process.exit(0);
+		}
+
+		if (response !== "none") {
+			options.formatter = response as "biome" | "prettier";
 		}
 	}
 
@@ -189,14 +210,12 @@ const _initProject = async (options: Options) => {
 				? initialConfig.unwrap().includeTests
 				: (options.tests ?? false),
 		watermark: options.watermark,
+		formatter: options.formatter,
 	};
 
 	loading.start(`Writing config to \`${CONFIG_NAME}\``);
 
-	fs.writeFileSync(
-		path.join(options.cwd, CONFIG_NAME),
-		`${JSON.stringify(config, null, '\t')}\n`
-	);
+	fs.writeFileSync(path.join(options.cwd, CONFIG_NAME), `${JSON.stringify(config, null, "\t")}\n`);
 
 	fs.mkdirSync(path.join(options.cwd, config.path), { recursive: true });
 
@@ -206,22 +225,22 @@ const _initProject = async (options: Options) => {
 const _initRegistry = async (options: Options) => {
 	const loading = spinner();
 
-	const packagePath = path.join(options.cwd, 'package.json');
+	const packagePath = path.join(options.cwd, "package.json");
 
 	if (!fs.existsSync(packagePath)) {
-		program.error(color.red(`Couldn't find your ${color.bold('package.json')}!`));
+		program.error(color.red(`Couldn't find your ${color.bold("package.json")}!`));
 	}
 
 	if (!options.path) {
 		const response = await text({
-			message: 'Where are your blocks located?',
-			defaultValue: './blocks',
-			initialValue: './blocks',
-			placeholder: './blocks',
+			message: "Where are your blocks located?",
+			defaultValue: "./blocks",
+			initialValue: "./blocks",
+			placeholder: "./blocks",
 		});
 
 		if (isCancel(response)) {
-			cancel('Canceled!');
+			cancel("Canceled!");
 			process.exit(0);
 		}
 
@@ -230,8 +249,7 @@ const _initRegistry = async (options: Options) => {
 
 	const pkg = JSON.parse(fs.readFileSync(packagePath).toString());
 
-	const scriptAlreadyExists =
-		pkg.scripts !== undefined && pkg.scripts[options.script] !== undefined;
+	const scriptAlreadyExists = pkg.scripts !== undefined && pkg.scripts[options.script] !== undefined;
 
 	if (!options.yes && scriptAlreadyExists) {
 		const response = await confirm({
@@ -240,23 +258,23 @@ const _initRegistry = async (options: Options) => {
 		});
 
 		if (isCancel(response)) {
-			cancel('Canceled!');
+			cancel("Canceled!");
 			process.exit(0);
 		}
 
 		if (!response) {
 			const response = await text({
-				message: 'What would you like to call the script?',
-				defaultValue: 'build:registry',
-				placeholder: 'build:registry',
-				initialValue: 'build:registry',
+				message: "What would you like to call the script?",
+				defaultValue: "build:registry",
+				placeholder: "build:registry",
+				initialValue: "build:registry",
 				validate: (val) => {
-					if (val.trim().length === 0) return 'Please provide a value!';
+					if (val.trim().length === 0) return "Please provide a value!";
 				},
 			});
 
 			if (isCancel(response)) {
-				cancel('Canceled!');
+				cancel("Canceled!");
 				process.exit(0);
 			}
 
@@ -275,28 +293,28 @@ const _initRegistry = async (options: Options) => {
 		});
 
 		if (isCancel(response)) {
-			cancel('Canceled!');
+			cancel("Canceled!");
 			process.exit(0);
 		}
 
 		installAsDevDependency = response;
 	}
 
-	const pm = (await detect({ cwd: 'cwd' }))?.agent ?? 'npm';
+	const pm = (await detect({ cwd: "cwd" }))?.agent ?? "npm";
 
-	let buildScript = '';
+	let buildScript = "";
 
 	if (installAsDevDependency) {
-		buildScript += 'jsrepo build ';
+		buildScript += "jsrepo build ";
 	} else {
-		const command = resolveCommand(pm, 'execute', ['jsrepo', 'build']);
+		const command = resolveCommand(pm, "execute", ["jsrepo", "build"]);
 
 		if (!command) program.error(color.red(`Error resolving execute command for ${pm}`));
 
-		buildScript += `${command.command} ${command.args.join(' ')} `;
+		buildScript += `${command.command} ${command.args.join(" ")} `;
 	}
 
-	if (options.path !== './build') {
+	if (options.path !== "./build") {
 		buildScript += `--dirs ${options.path}`;
 	}
 
@@ -309,7 +327,7 @@ const _initRegistry = async (options: Options) => {
 	loading.start(`Adding \`${color.cyan(options.script)}\` to scripts in package.json`);
 
 	try {
-		fs.writeFileSync(packagePath, JSON.stringify(pkg, null, '\t'));
+		fs.writeFileSync(packagePath, JSON.stringify(pkg, null, "\t"));
 	} catch (err) {
 		program.error(color.red(`Error writing to \`${color.bold(packagePath)}\`. Error: ${err}`));
 	}
@@ -322,12 +340,12 @@ const _initRegistry = async (options: Options) => {
 		let shouldInstall = options.yes;
 		if (!options.yes) {
 			const response = await confirm({
-				message: 'Install dependencies?',
+				message: "Install dependencies?",
 				initialValue: true,
 			});
 
 			if (isCancel(response)) {
-				cancel('Canceled!');
+				cancel("Canceled!");
 				process.exit(0);
 			}
 
@@ -339,7 +357,7 @@ const _initRegistry = async (options: Options) => {
 
 			const installedResult = await installDependencies({
 				pm,
-				deps: ['jsrepo'],
+				deps: ["jsrepo"],
 				dev: true,
 				cwd: options.cwd,
 			});
@@ -359,20 +377,18 @@ const _initRegistry = async (options: Options) => {
 	let steps: string[] = [];
 
 	if (!installed && installAsDevDependency) {
-		const cmd = resolveCommand(pm, 'install', ['jsrepo', '-D']);
+		const cmd = resolveCommand(pm, "install", ["jsrepo", "-D"]);
 
 		steps.push(
-			`Install ${ascii.JSREPO} as a dev dependency \`${color.cyan(`${cmd?.command} ${cmd?.args.join(' ')}`)}\``
+			`Install ${ascii.JSREPO} as a dev dependency \`${color.cyan(`${cmd?.command} ${cmd?.args.join(" ")}`)}\``
 		);
 	}
 
 	steps.push(`Add blocks to \`${color.cyan(options.path)}\`.`);
 
-	const runScript = resolveCommand(pm, 'run', [options.script]);
+	const runScript = resolveCommand(pm, "run", [options.script]);
 
-	steps.push(
-		`Run \`${color.cyan(`${runScript?.command} ${runScript?.args.join(' ')}`)}\` to build the registry.`
-	);
+	steps.push(`Run \`${color.cyan(`${runScript?.command} ${runScript?.args.join(" ")}`)}\` to build the registry.`);
 
 	// put steps with numbers above here
 	steps = steps.map((step, i) => `${i + 1}. ${step}`);
