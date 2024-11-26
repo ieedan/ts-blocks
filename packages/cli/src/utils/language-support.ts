@@ -9,6 +9,7 @@ import { Project } from 'ts-morph';
 import validatePackageName from 'validate-npm-package-name';
 import * as ascii from './ascii';
 import { Ok, type Result } from './blocks/types/result';
+import * as lines from './blocks/utils/lines';
 import { findNearestPackageJson } from './package';
 import { parsePackageName } from './parse-package-name';
 
@@ -171,6 +172,12 @@ const vue: Lang = {
 	comment: (content) => `<!--\n${content}\n-->`,
 };
 
+const yaml: Lang = {
+	matches: (fileName) => fileName.endsWith('.yml') || fileName.endsWith('.yaml'),
+	resolveDependencies: () => Ok({ dependencies: [], local: [], devDependencies: [] }),
+	comment: (content: string) => lines.join(lines.get(content), { prefix: () => '# ' }),
+};
+
 const resolveLocalImport = (
 	mod: string,
 	category: string,
@@ -269,6 +276,6 @@ const resolveRemoteDeps = (deps: string[], filePath: string, doNotInstall: strin
 	};
 };
 
-const languages: Lang[] = [typescript, svelte, vue];
+const languages: Lang[] = [typescript, svelte, vue, yaml];
 
-export { typescript, languages };
+export { typescript, svelte, vue, yaml, languages };

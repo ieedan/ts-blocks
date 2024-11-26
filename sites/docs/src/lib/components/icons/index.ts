@@ -8,6 +8,7 @@ import Vue from './vue.svelte';
 import Jsrepo from './jsrepo.svelte';
 import GitLab from './gitlab.svelte';
 import BitBucket from './bitbucket.svelte';
+import Yaml from './yaml.svelte';
 
 export interface Props extends HTMLAttributes<SVGElement> {
 	class?: string;
@@ -15,4 +16,4 @@ export interface Props extends HTMLAttributes<SVGElement> {
 	height?: number;
 }
 
-export { GitHub, TypeScript, Svelte, React, JavaScript, Vue, Jsrepo, GitLab, BitBucket };
+export { GitHub, TypeScript, Svelte, React, JavaScript, Vue, Jsrepo, GitLab, BitBucket, Yaml };

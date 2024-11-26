@@ -7,7 +7,7 @@
 	type Support = {
 		logo?: (opts: { size: number }) => ReturnType<Snippet>;
 		name: string;
-		status: '✅' | '⌛️' | '🚫';
+		status: '✅' | '⌛️' | '🚫' | '⚠️';
 	};
 
 	const support: Support[] = [
@@ -40,6 +40,11 @@
 			logo: vue,
 			name: '*.vue',
 			status: '✅'
+		},
+		{
+			logo: yaml,
+			name: '*.(yaml|yml)',
+			status: '⚠️'
 		}
 	];
 </script>
@@ -70,6 +75,10 @@
 	<Icons.Vue width={size} class="size-auto" />
 {/snippet}
 
+{#snippet yaml({ size }: { size: number })}
+	<Icons.Yaml height={size} class="size-auto" />
+{/snippet}
+
 <DocHeader
 	title="Language Support"
 	description="Languages that jsrepo supports in your registry."
@@ -84,6 +93,9 @@
 		<li>✅: Supported</li>
 		<li>⌛️: In progress</li>
 		<li>🚫: Not in progress</li>
+		<li>
+			⚠️: Partial support <span class="text-muted-foreground">(No dependency resolution)</span>
+		</li>
 	</ul>
 </div>
 <Table.Root class="w-fit">
