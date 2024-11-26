@@ -9,9 +9,9 @@ import { Project } from 'ts-morph';
 import validatePackageName from 'validate-npm-package-name';
 import * as ascii from './ascii';
 import { Ok, type Result } from './blocks/types/result';
+import * as lines from './blocks/utils/lines';
 import { findNearestPackageJson } from './package';
 import { parsePackageName } from './parse-package-name';
-import * as lines from './blocks/utils/lines';
 
 export type ResolvedDependencies = {
 	local: string[];
