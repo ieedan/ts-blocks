@@ -22,7 +22,13 @@
 			logo: gitlab,
 			name: 'GitLab',
 			href: '/docs/git-providers/gitlab',
-			status: '🚫'
+			status: '⌛️'
+		},
+		{
+			logo: bitbucket,
+			name: 'BitBucket',
+			href: '/docs/git-providers/bitbucket',
+			status: '⌛️'
 		}
 	];
 </script>
@@ -35,6 +41,10 @@
 
 {#snippet gitlab({ size }: { size: number })}
 	<Icons.GitLab width={size} class="size-auto" />
+{/snippet}
+
+{#snippet bitbucket({ size }: { size: number })}
+	<Icons.BitBucket width={size} class="size-auto" />
 {/snippet}
 
 <DocHeader
