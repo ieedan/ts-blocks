@@ -53,14 +53,19 @@ const resolveTree = async (
 				break;
 			}
 		} else {
-			block = blocksMap.get(blockSpecifier);
+			// get shortened name
+			const [providerName, owner, repoName, ...rest] = blockSpecifier.split('/');
+
+			block = blocksMap.get(
+				`${providerName}/${owner}/${repoName}/${rest.slice(rest.length - 2).join('/')}`
+			);
 		}
 
 		if (!block) {
 			return Err(`Invalid block! ${color.bold(blockSpecifier)} does not exist!`);
 		}
 
-		const fullSpecifier = `${block.sourceRepo.url}/${block.category}/${block.name}`;
+		const fullSpecifier = `${block.sourceRepo.name}/${block.sourceRepo.owner}/${block.sourceRepo.repoName}/${block.category}/${block.name}`;
 
 		blocks.set(fullSpecifier, { name: fullSpecifier, subDependency: false, block });
 
