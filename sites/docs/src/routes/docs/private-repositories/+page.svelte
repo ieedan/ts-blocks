@@ -64,12 +64,8 @@
 						<CodeSpan>read_repository</CodeSpan>.
 					</li>
 					<li>
-						- <Link
-							target="_blank"
-							href="https://bitbucket.org"
-						>
-							BitBucket
-						</Link> - Create an access token with <CodeSpan>Read</CodeSpan> for
+						- <Link target="_blank" href="https://bitbucket.org">BitBucket</Link> - Create an access
+						token with <CodeSpan>Read</CodeSpan> for
 						<CodeSpan>Repositories</CodeSpan>.
 					</li>
 				</ul>

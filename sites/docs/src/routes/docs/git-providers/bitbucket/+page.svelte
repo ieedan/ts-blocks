@@ -9,8 +9,8 @@
 <DocHeader title="BitBucket" description="How to use BitBucket as your jsrepo registry." />
 <SubHeading>Branches and Tags</SubHeading>
 <p>
-	<Jsrepo /> supports <Link target="_blank" href="https://bitbucket.org">BitBucket</Link> so that you can just
-	paste a link to the repo homepage and it will be handled correctly.
+	<Jsrepo /> supports <Link target="_blank" href="https://bitbucket.org">BitBucket</Link> so that you
+	can just paste a link to the repo homepage and it will be handled correctly.
 </p>
 <p>Because of this all of the following paths work:</p>
 <Code
@@ -44,12 +44,12 @@ https://bitbucket.org/ieedan/std/src/next # branch reference
 <p>This is why it's always important to make sure you trust the owner of the registry.</p>
 <SubHeading><CodeSpan class="text-2xl">bitbucket</CodeSpan> Shorthand</SubHeading>
 <p>
-	When referencing <Link target="_blank" href="https://bitbucket.org">bitbucket</Link> as the provider you
-	can use the <CodeSpan>bitbucket</CodeSpan> shorthand in place of
+	When referencing <Link target="_blank" href="https://bitbucket.org">bitbucket</Link> as the provider
+	you can use the <CodeSpan>bitbucket</CodeSpan> shorthand in place of
 	<CodeSpan>https://bitbucket.org</CodeSpan>.
 </p>
 <p>Example:</p>
-<Snippet command="execute" args={['jsrepo', 'add', 'bitbucket/ieedan/src/main/std/utils/math']} />
+<Snippet command="execute" args={['jsrepo', 'add', 'bitbucket/ieedan/std/src/main/utils/math']} />
 <p>
 	In the <CodeSpan>jsrepo.json</CodeSpan>:
 </p>
