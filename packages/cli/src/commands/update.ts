@@ -1,24 +1,24 @@
-import fs from "node:fs";
-import { cancel, confirm, isCancel, multiselect, outro, spinner } from "@clack/prompts";
-import color from "chalk";
-import { Command, program } from "commander";
-import { diffLines } from "diff";
-import { resolveCommand } from "package-manager-detector/commands";
-import { detect } from "package-manager-detector/detect";
-import path from "pathe";
-import * as v from "valibot";
-import { context } from "..";
-import * as ascii from "../utils/ascii";
-import { type RemoteBlock, getInstalled, resolveTree } from "../utils/blocks";
-import { isTestFile } from "../utils/build";
-import { getConfig } from "../utils/config";
-import { installDependencies } from "../utils/dependencies";
-import { formatDiff } from "../utils/diff";
-import { getWatermark } from "../utils/get-watermark";
-import * as gitProviders from "../utils/git-providers";
-import { languages } from "../utils/language-support";
-import { returnShouldInstall } from "../utils/package";
-import { type Task, intro, nextSteps, runTasks } from "../utils/prompts";
+import fs from 'node:fs';
+import { cancel, confirm, isCancel, multiselect, outro, spinner } from '@clack/prompts';
+import color from 'chalk';
+import { Command, program } from 'commander';
+import { diffLines } from 'diff';
+import { resolveCommand } from 'package-manager-detector/commands';
+import { detect } from 'package-manager-detector/detect';
+import path from 'pathe';
+import * as v from 'valibot';
+import { context } from '..';
+import * as ascii from '../utils/ascii';
+import { type RemoteBlock, getInstalled, resolveTree } from '../utils/blocks';
+import { isTestFile } from '../utils/build';
+import { getConfig } from '../utils/config';
+import { installDependencies } from '../utils/dependencies';
+import { formatDiff } from '../utils/diff';
+import { getWatermark } from '../utils/get-watermark';
+import * as gitProviders from '../utils/git-providers';
+import { languages } from '../utils/language-support';
+import { returnShouldInstall } from '../utils/package';
+import { type Task, intro, nextSteps, runTasks } from '../utils/prompts';
 
 const schema = v.object({
 	all: v.boolean(),
@@ -33,21 +33,21 @@ const schema = v.object({
 
 type Options = v.InferInput<typeof schema>;
 
-const update = new Command("update")
-	.argument("[blocks...]", "Names of the blocks you want to update. ex: (utils/math)")
-	.option("--all", "Update all installed components.", false)
-	.option("-E, --expand", "Expands the diff so you see everything.", false)
+const update = new Command('update')
+	.argument('[blocks...]', 'Names of the blocks you want to update. ex: (utils/math)')
+	.option('--all', 'Update all installed components.', false)
+	.option('-E, --expand', 'Expands the diff so you see everything.', false)
 	.option(
-		"--max-unchanged <number>",
-		"Maximum unchanged lines that will show without being collapsed.",
+		'--max-unchanged <number>',
+		'Maximum unchanged lines that will show without being collapsed.',
 		(val) => Number.parseInt(val), // this is such a dumb api thing
 		3
 	)
-	.option("--repo <repo>", "Repository to download the blocks from.")
-	.option("-A, --allow", "Allow jsrepo to download code from the provided repo.", false)
-	.option("-y, --yes", "Skip confirmation prompt.", false)
-	.option("--verbose", "Include debug logs.", false)
-	.option("--cwd <path>", "The current working directory.", process.cwd())
+	.option('--repo <repo>', 'Repository to download the blocks from.')
+	.option('-A, --allow', 'Allow jsrepo to download code from the provided repo.', false)
+	.option('-y, --yes', 'Skip confirmation prompt.', false)
+	.option('--verbose', 'Include debug logs.', false)
+	.option('--cwd <path>', 'The current working directory.', process.cwd())
 	.action(async (blockNames, opts) => {
 		const options = v.parse(schema, opts);
 
@@ -55,7 +55,7 @@ const update = new Command("update")
 
 		await _update(blockNames, options);
 
-		outro(color.green("All done!"));
+		outro(color.green('All done!'));
 	});
 
 const _update = async (blockNames: string[], options: Options) => {
@@ -84,7 +84,7 @@ const _update = async (blockNames: string[], options: Options) => {
 		if (gitProviders.providers.find((p) => blockSpecifier.startsWith(p.name()))) {
 			program.error(
 				color.red(
-					`Invalid value provided for block names \`${color.bold(blockSpecifier)}\`. Block names are expected to be provided in the format of \`${color.bold("<category>/<name>")}\``
+					`Invalid value provided for block names \`${color.bold(blockSpecifier)}\`. Block names are expected to be provided in the format of \`${color.bold('<category>/<name>')}\``
 				)
 			);
 		}
@@ -92,21 +92,23 @@ const _update = async (blockNames: string[], options: Options) => {
 
 	if (!options.allow && options.repo) {
 		const result = await confirm({
-			message: `Allow ${color.cyan("jsrepo")} to download and run code from ${color.cyan(options.repo)}?`,
+			message: `Allow ${color.cyan('jsrepo')} to download and run code from ${color.cyan(options.repo)}?`,
 			initialValue: true,
 		});
 
 		if (isCancel(result) || !result) {
-			cancel("Canceled!");
+			cancel('Canceled!');
 			process.exit(0);
 		}
 	}
 
-	verbose(`Fetching blocks from ${color.cyan(repoPaths.join(", "))}`);
+	verbose(`Fetching blocks from ${color.cyan(repoPaths.join(', '))}`);
 
-	if (!options.verbose) loading.start(`Fetching blocks from ${color.cyan(repoPaths.join(", "))}`);
+	if (!options.verbose) loading.start(`Fetching blocks from ${color.cyan(repoPaths.join(', '))}`);
 
-	const blocksMap: Map<string, RemoteBlock> = (await gitProviders.fetchBlocks(...repoPaths)).match(
+	const blocksMap: Map<string, RemoteBlock> = (
+		await gitProviders.fetchBlocks(...repoPaths)
+	).match(
 		(val) => val,
 		({ repo, message }) => {
 			loading.stop(`Failed fetching blocks from ${color.cyan(repo)}`);
@@ -114,14 +116,18 @@ const _update = async (blockNames: string[], options: Options) => {
 		}
 	);
 
-	if (!options.verbose) loading.stop(`Retrieved blocks from ${color.cyan(repoPaths.join(", "))}`);
+	if (!options.verbose) loading.stop(`Retrieved blocks from ${color.cyan(repoPaths.join(', '))}`);
 
-	verbose(`Retrieved blocks from ${color.cyan(repoPaths.join(", "))}`);
+	verbose(`Retrieved blocks from ${color.cyan(repoPaths.join(', '))}`);
 
 	const installedBlocks = getInstalled(blocksMap, config, options.cwd);
 
 	if (installedBlocks.length === 0) {
-		program.error(color.red(`You haven't installed any blocks yet. Did you mean to \`${color.bold("add")}\`?`));
+		program.error(
+			color.red(
+				`You haven't installed any blocks yet. Did you mean to \`${color.bold('add')}\`?`
+			)
+		);
 	}
 
 	let updatingBlockNames = blockNames;
@@ -133,7 +139,7 @@ const _update = async (blockNames: string[], options: Options) => {
 	// if no blocks are provided prompt the user for what blocks they want
 	if (updatingBlockNames.length === 0) {
 		const promptResult = await multiselect({
-			message: "Which blocks would you like to update?",
+			message: 'Which blocks would you like to update?',
 			options: installedBlocks.map((block) => {
 				return {
 					label: `${color.cyan(block.block.category)}/${block.block.name}`,
@@ -144,21 +150,21 @@ const _update = async (blockNames: string[], options: Options) => {
 		});
 
 		if (isCancel(promptResult)) {
-			cancel("Canceled!");
+			cancel('Canceled!');
 			process.exit(0);
 		}
 
 		updatingBlockNames = promptResult as string[];
 	}
 
-	verbose(`Preparing to update ${color.cyan(updatingBlockNames.join(", "))}`);
+	verbose(`Preparing to update ${color.cyan(updatingBlockNames.join(', '))}`);
 
 	const updatingBlocks = (await resolveTree(updatingBlockNames, blocksMap, repoPaths)).match(
 		(val) => val,
 		program.error
 	);
 
-	const pm = (await detect({ cwd: options.cwd }))?.agent ?? "npm";
+	const pm = (await detect({ cwd: options.cwd }))?.agent ?? 'npm';
 
 	const tasks: Task[] = [];
 
@@ -237,7 +243,7 @@ const _update = async (blockNames: string[], options: Options) => {
 			if (!options.yes) {
 				process.stdout.write(`${ascii.VERTICAL_LINE}\n`);
 
-				let localContent = "";
+				let localContent = '';
 				if (fs.existsSync(file.destPath)) {
 					localContent = fs.readFileSync(file.destPath).toString();
 				}
@@ -263,13 +269,13 @@ const _update = async (blockNames: string[], options: Options) => {
 					colorCharsRemoved: color.bgRedBright,
 					prefix: () => `${ascii.VERTICAL_LINE}  `,
 					onUnchanged: ({ from, to, prefix }) =>
-						`${prefix?.() ?? ""}${color.cyan(from)} → ${color.gray(to)} ${color.gray("(unchanged)")}\n`,
+						`${prefix?.() ?? ''}${color.cyan(from)} → ${color.gray(to)} ${color.gray('(unchanged)')}\n`,
 					intro: ({ from, to, changes, prefix }) => {
 						const totalChanges = changes.filter((a) => a.added).length;
 
-						return `${prefix?.() ?? ""}${color.cyan(from)} → ${color.gray(to)} (${totalChanges} change${
-							totalChanges === 1 ? "" : "s"
-						})\n${prefix?.() ?? ""}\n`;
+						return `${prefix?.() ?? ''}${color.cyan(from)} → ${color.gray(to)} (${totalChanges} change${
+							totalChanges === 1 ? '' : 's'
+						})\n${prefix?.() ?? ''}\n`;
 					},
 				});
 
@@ -278,12 +284,12 @@ const _update = async (blockNames: string[], options: Options) => {
 				// if there are no changes then don't ask
 				if (changes.length > 1) {
 					const confirmResult = await confirm({
-						message: "Accept changes?",
+						message: 'Accept changes?',
 						initialValue: true,
 					});
 
 					if (isCancel(confirmResult)) {
-						cancel("Canceled!");
+						cancel('Canceled!');
 						process.exit(0);
 					}
 
@@ -308,12 +314,14 @@ const _update = async (blockNames: string[], options: Options) => {
 		}
 
 		if (config.includeTests) {
-			verbose("Trying to include tests");
+			verbose('Trying to include tests');
 
-			const { devDependencies } = JSON.parse(fs.readFileSync(path.join(options.cwd, "package.json")).toString());
+			const { devDependencies } = JSON.parse(
+				fs.readFileSync(path.join(options.cwd, 'package.json')).toString()
+			);
 
 			if (devDependencies.vitest === undefined) {
-				devDeps.add("vitest");
+				devDeps.add('vitest');
 			}
 		}
 
@@ -340,12 +348,12 @@ const _update = async (blockNames: string[], options: Options) => {
 		let install = options.yes;
 		if (!options.yes) {
 			const result = await confirm({
-				message: "Would you like to install dependencies?",
+				message: 'Would you like to install dependencies?',
 				initialValue: true,
 			});
 
 			if (isCancel(result)) {
-				cancel("Canceled!");
+				cancel('Canceled!');
 				process.exit(0);
 			}
 
@@ -354,7 +362,8 @@ const _update = async (blockNames: string[], options: Options) => {
 
 		if (install) {
 			if (deps.size > 0) {
-				if (!options.verbose) loading.start(`Installing dependencies with ${color.cyan(pm)}`);
+				if (!options.verbose)
+					loading.start(`Installing dependencies with ${color.cyan(pm)}`);
 
 				(
 					await installDependencies({
@@ -365,10 +374,11 @@ const _update = async (blockNames: string[], options: Options) => {
 					})
 				).match(
 					(installed) => {
-						if (!options.verbose) loading.stop(`Installed ${color.cyan(installed.join(", "))}`);
+						if (!options.verbose)
+							loading.stop(`Installed ${color.cyan(installed.join(', '))}`);
 					},
 					(err) => {
-						if (!options.verbose) loading.stop("Failed to install dependencies");
+						if (!options.verbose) loading.stop('Failed to install dependencies');
 
 						program.error(err);
 					}
@@ -376,7 +386,8 @@ const _update = async (blockNames: string[], options: Options) => {
 			}
 
 			if (devDeps.size > 0) {
-				if (!options.verbose) loading.start(`Installing dependencies with ${color.cyan(pm)}`);
+				if (!options.verbose)
+					loading.start(`Installing dependencies with ${color.cyan(pm)}`);
 
 				(
 					await installDependencies({
@@ -387,10 +398,11 @@ const _update = async (blockNames: string[], options: Options) => {
 					})
 				).match(
 					(installed) => {
-						if (!options.verbose) loading.stop(`Installed ${color.cyan(installed.join(", "))}`);
+						if (!options.verbose)
+							loading.stop(`Installed ${color.cyan(installed.join(', '))}`);
 					},
 					(err) => {
-						if (!options.verbose) loading.stop("Failed to install dev dependencies");
+						if (!options.verbose) loading.stop('Failed to install dev dependencies');
 
 						program.error(err);
 					}
@@ -403,15 +415,19 @@ const _update = async (blockNames: string[], options: Options) => {
 
 		if (!install) {
 			if (deps.size > 0) {
-				const cmd = resolveCommand(pm, "install", [...deps]);
+				const cmd = resolveCommand(pm, 'install', [...deps]);
 
-				steps.push(`Install dependencies \`${color.cyan(`${cmd?.command} ${cmd?.args.join(" ")}`)}\``);
+				steps.push(
+					`Install dependencies \`${color.cyan(`${cmd?.command} ${cmd?.args.join(' ')}`)}\``
+				);
 			}
 
 			if (devDeps.size > 0) {
-				const cmd = resolveCommand(pm, "install", [...devDeps, "-D"]);
+				const cmd = resolveCommand(pm, 'install', [...devDeps, '-D']);
 
-				steps.push(`Install dev dependencies \`${color.cyan(`${cmd?.command} ${cmd?.args.join(" ")}`)}\``);
+				steps.push(
+					`Install dev dependencies \`${color.cyan(`${cmd?.command} ${cmd?.args.join(' ')}`)}\``
+				);
 			}
 		}
 
@@ -419,7 +435,7 @@ const _update = async (blockNames: string[], options: Options) => {
 		steps = steps.map((step, i) => `${i + 1}. ${step}`);
 
 		if (!install) {
-			steps.push("");
+			steps.push('');
 		}
 
 		steps.push(`Import the blocks from \`${color.cyan(config.path)}\``);
