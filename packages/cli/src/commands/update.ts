@@ -17,6 +17,7 @@ import { formatDiff } from '../utils/diff';
 import { getWatermark } from '../utils/get-watermark';
 import * as gitProviders from '../utils/git-providers';
 import { languages } from '../utils/language-support';
+import { returnShouldInstall } from '../utils/package';
 import { type Task, intro, nextSteps, runTasks } from '../utils/prompts';
 
 const schema = v.object({
@@ -159,8 +160,8 @@ const _update = async (blockNames: string[], options: Options) => {
 
 	const tasks: Task[] = [];
 
-	const devDeps: Set<string> = new Set<string>();
-	const deps: Set<string> = new Set<string>();
+	let devDeps: Set<string> = new Set<string>();
+	let deps: Set<string> = new Set<string>();
 
 	for (const { block } of updatingBlocks) {
 		const fullSpecifier = `${block.sourceRepo.url}/${block.category}/${block.name}`;
@@ -321,6 +322,12 @@ const _update = async (blockNames: string[], options: Options) => {
 	}
 
 	await runTasks(tasks, { verbose: options.verbose ? verbose : undefined });
+
+	// check if dependencies are already installed
+	const requiredDependencies = returnShouldInstall(deps, devDeps, { cwd: options.cwd });
+
+	deps = requiredDependencies.dependencies;
+	devDeps = requiredDependencies.devDependencies;
 
 	const hasDependencies = deps.size > 0 || devDeps.size > 0;
 
