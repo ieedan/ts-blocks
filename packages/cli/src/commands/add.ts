@@ -234,6 +234,51 @@ const _add = async (blockNames: string[], options: Options) => {
 	const devDeps: Set<string> = new Set<string>();
 	const deps: Set<string> = new Set<string>();
 
+	if (noConfig) {
+		const blocksPath = await text({
+			message: 'Where would you like to add the blocks?',
+			initialValue: config.path,
+			defaultValue: config.path,
+			placeholder: config.path,
+			validate(value) {
+				if (value.trim() === '') return 'Please provide a value';
+			},
+		});
+
+		if (isCancel(blocksPath)) {
+			cancel('Canceled!');
+			process.exit(0);
+		}
+
+		config.path = blocksPath;
+
+		if (!options.yes) {
+			const includeTests = await confirm({
+				message: 'Include tests?',
+				initialValue: config.includeTests,
+			});
+
+			if (isCancel(includeTests)) {
+				cancel('Canceled!');
+				process.exit(0);
+			}
+
+			config.includeTests = includeTests;
+
+			const addWatermark = await confirm({
+				message: 'Add watermark?',
+				initialValue: config.watermark,
+			});
+
+			if (isCancel(addWatermark)) {
+				cancel('Canceled!');
+				process.exit(0);
+			}
+
+			config.watermark = addWatermark;
+		}
+	}
+
 	for (const { block } of installingBlocks) {
 		const fullSpecifier = `${block.sourceRepo.url}/${block.category}/${block.name}`;
 		const watermark = getWatermark(context.package.version, block.sourceRepo.url);
@@ -241,53 +286,6 @@ const _add = async (blockNames: string[], options: Options) => {
 		const providerInfo = block.sourceRepo;
 
 		verbose(`Setting up ${fullSpecifier}`);
-
-		if (noConfig) {
-			const partialSpecifier = `${color.cyan(`${block.category}/${block.name}`)}`;
-
-			const blocksPath = await text({
-				message: `Where would you like to add ${partialSpecifier}?`,
-				initialValue: config.path,
-				defaultValue: config.path,
-				placeholder: config.path,
-				validate(value) {
-					if (value.trim() === '') return 'Please provide a value';
-				},
-			});
-
-			if (isCancel(blocksPath)) {
-				cancel('Canceled!');
-				process.exit(0);
-			}
-
-			config.path = blocksPath;
-
-			if (!options.yes) {
-				const includeTests = await confirm({
-					message: `Include tests for ${partialSpecifier}?`,
-					initialValue: config.includeTests,
-				});
-
-				if (isCancel(includeTests)) {
-					cancel('Canceled!');
-					process.exit(0);
-				}
-
-				config.includeTests = includeTests;
-
-				const addWatermark = await confirm({
-					message: `Add watermark to ${partialSpecifier}?`,
-					initialValue: config.watermark,
-				});
-
-				if (isCancel(addWatermark)) {
-					cancel('Canceled!');
-					process.exit(0);
-				}
-
-				config.watermark = addWatermark;
-			}
-		}
 
 		const directory = path.join(options.cwd, config.path, block.category);
 
