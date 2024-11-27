@@ -12,27 +12,41 @@
 		route: Route;
 		next?: Route;
 		previous?: Route;
+		parent?: Route;
 	};
 
-	const getCurrentDoc = (url: URL): CurrentDoc | undefined => {
-		const routes: Route[] = [];
-		categories.filter((a) => a.name !== 'routes').map((cat) => routes.push(...cat.routes));
-
+	const getCurrentDoc = (
+		url: URL,
+		routes: Route[],
+		parent: Route | undefined = undefined,
+		parentNext: Route | undefined = undefined
+	): CurrentDoc | undefined => {
 		for (let i = 0; i < routes.length; i++) {
 			const route = routes[i];
 
 			if (
 				checkIsActive(new URL(route.href, $page.url.origin).toString(), {
-					activeForSubdirectories: route.activeForSubdirectories ?? false,
+					activeForSubdirectories: false,
 					url
 				})
 			) {
-				return { route, next: routes[i + 1], previous: routes[i - 1] };
+				return { route, next: routes[i + 1] ?? parentNext, previous: routes[i - 1], parent };
+			}
+
+			if (route.routes) {
+				const doc = getCurrentDoc(url, route.routes, route, routes[i + 1]);
+
+				if (doc !== undefined) return doc;
 			}
 		}
 	};
 
-	const currentDoc = $derived(getCurrentDoc($page.url));
+	const currentDoc = $derived(
+		getCurrentDoc(
+			$page.url,
+			categories.filter((a) => a.name !== 'routes').flatMap((cat) => cat.routes)
+		)
+	);
 
 	const pageMap = onThisPage.init({ headings: new Map() });
 
@@ -118,6 +132,14 @@
 						</Breadcrumb.Item>
 						<Breadcrumb.Separator />
 						{#if currentDoc}
+							{#if currentDoc.parent}
+								<Breadcrumb.Item>
+									<Breadcrumb.Link href={currentDoc.parent.href}
+										>{currentDoc.parent.name}</Breadcrumb.Link
+									>
+								</Breadcrumb.Item>
+								<Breadcrumb.Separator />
+							{/if}
 							<Breadcrumb.Item>
 								<Breadcrumb.Page>{currentDoc.route.name}</Breadcrumb.Page>
 							</Breadcrumb.Item>
@@ -128,16 +150,24 @@
 			</div>
 			{#if currentDoc}
 				<div class="flex w-full justify-between place-items-center gap-4 pt-9">
-					{#if currentDoc.previous}
-						<Pagination.Previous href={currentDoc.previous.href}>
-							{currentDoc.previous.name}
-						</Pagination.Previous>
-					{/if}
-					{#if currentDoc.next}
-						<Pagination.Next href={currentDoc.next.href}>
-							{currentDoc.next.name}
-						</Pagination.Next>
-					{/if}
+					<div>
+						{#if currentDoc.previous}
+							<Pagination.Previous href={currentDoc.previous.href}>
+								{currentDoc.previous.name}
+							</Pagination.Previous>
+						{:else if currentDoc.parent}
+							<Pagination.Previous href={currentDoc.parent.href}>
+								{currentDoc.parent.name}
+							</Pagination.Previous>
+						{/if}
+					</div>
+					<div>
+						{#if currentDoc.next}
+							<Pagination.Next href={currentDoc.next.href}>
+								{currentDoc.next.name}
+							</Pagination.Next>
+						{/if}
+					</div>
 				</div>
 			{/if}
 		</div>
