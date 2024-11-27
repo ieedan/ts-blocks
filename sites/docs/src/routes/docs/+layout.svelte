@@ -113,7 +113,9 @@
 											activeForSubdirectories: activeForSubdirectories ?? false
 										}}
 									>
-										<Icon />
+										{#if Icon}
+											<Icon />
+										{/if}
 										{name}
 									</a>
 								{/each}
