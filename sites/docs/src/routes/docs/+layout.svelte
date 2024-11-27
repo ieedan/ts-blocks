@@ -12,27 +12,46 @@
 		route: Route;
 		next?: Route;
 		previous?: Route;
+		parent?: Route;
 	};
 
-	const getCurrentDoc = (url: URL): CurrentDoc | undefined => {
-		const routes: Route[] = [];
-		categories.filter((a) => a.name !== 'routes').map((cat) => routes.push(...cat.routes));
-
+	const getCurrentDoc = (
+		url: URL,
+		routes: Route[],
+		parent: Route | undefined = undefined,
+		parentNext: Route | undefined = undefined
+	): CurrentDoc | undefined => {
 		for (let i = 0; i < routes.length; i++) {
 			const route = routes[i];
 
 			if (
 				checkIsActive(new URL(route.href, $page.url.origin).toString(), {
-					activeForSubdirectories: route.activeForSubdirectories ?? false,
+					activeForSubdirectories: false,
 					url
 				})
 			) {
-				return { route, next: routes[i + 1], previous: routes[i - 1] };
+				return {
+					route,
+					next: route.routes ? route.routes[0] : (routes[i + 1] ?? parentNext),
+					previous: routes[i - 1],
+					parent
+				};
+			}
+
+			if (route.routes) {
+				const doc = getCurrentDoc(url, route.routes, route, routes[i + 1]);
+
+				if (doc !== undefined) return doc;
 			}
 		}
 	};
 
-	const currentDoc = $derived(getCurrentDoc($page.url));
+	const currentDoc = $derived(
+		getCurrentDoc(
+			$page.url,
+			categories.filter((a) => a.name !== 'routes').flatMap((cat) => cat.routes)
+		)
+	);
 
 	const pageMap = onThisPage.init({ headings: new Map() });
 
@@ -72,10 +91,10 @@
 			{#each categories.filter((a) => a.name !== 'routes') as { name, routes }}
 				<div class="flex flex-col gap-1 w-full">
 					<span class="text-sm font-semibold">{name}</span>
-					<div class="flex flex-col gap-1">
-						{#each routes as { name, href, activeForSubdirectories }}
+					<div class="flex flex-col gap-1 relative">
+						{#each routes as { name, href, activeForSubdirectories, routes: subroutes }}
 							<a
-								class="data-[active=true]:text-primary text-muted-foreground"
+								class="data-[active=true]:text-primary text-muted-foreground hover:text-primary transition-all"
 								{href}
 								use:active={{
 									url: $page.url,
@@ -84,6 +103,21 @@
 							>
 								{name}
 							</a>
+							{#if subroutes}
+								{#each subroutes as { name, href, activeForSubdirectories, icon: Icon }}
+									<a
+										class="data-[active=true]:text-primary flex place-items-center gap-2 text-muted-foreground ml-3 hover:text-primary transition-all"
+										{href}
+										use:active={{
+											url: $page.url,
+											activeForSubdirectories: activeForSubdirectories ?? false
+										}}
+									>
+										<Icon />
+										{name}
+									</a>
+								{/each}
+							{/if}
 						{/each}
 					</div>
 				</div>
@@ -103,6 +137,14 @@
 						</Breadcrumb.Item>
 						<Breadcrumb.Separator />
 						{#if currentDoc}
+							{#if currentDoc.parent}
+								<Breadcrumb.Item>
+									<Breadcrumb.Link href={currentDoc.parent.href}
+										>{currentDoc.parent.name}</Breadcrumb.Link
+									>
+								</Breadcrumb.Item>
+								<Breadcrumb.Separator />
+							{/if}
 							<Breadcrumb.Item>
 								<Breadcrumb.Page>{currentDoc.route.name}</Breadcrumb.Page>
 							</Breadcrumb.Item>
@@ -112,11 +154,15 @@
 				{@render children?.()}
 			</div>
 			{#if currentDoc}
-				<div class="flex w-full justify-between place-items-center pt-9">
+				<div class="flex w-full justify-between place-items-center gap-4 pt-9">
 					<div>
 						{#if currentDoc.previous}
 							<Pagination.Previous href={currentDoc.previous.href}>
 								{currentDoc.previous.name}
+							</Pagination.Previous>
+						{:else if currentDoc.parent}
+							<Pagination.Previous href={currentDoc.parent.href}>
+								{currentDoc.parent.name}
 							</Pagination.Previous>
 						{/if}
 					</div>

@@ -1,3 +1,5 @@
+import * as Icons from '$lib/components/icons';
+
 export type Category = {
 	name: string;
 	routes: Route[];
@@ -8,6 +10,7 @@ export type Route = {
 	href: string;
 	activeForSubdirectories?: boolean;
 	hide?: boolean;
+	icon?: typeof Icons.GitHub;
 	routes?: Route[];
 };
 
@@ -66,7 +69,24 @@ const categories: Category[] = [
 			{
 				name: 'Git Providers',
 				href: '/docs/git-providers',
-				activeForSubdirectories: true
+				activeForSubdirectories: true,
+				routes: [
+					{
+						name: 'GitHub',
+						href: '/docs/git-providers/github',
+						icon: Icons.GitHub
+					},
+					{
+						name: 'GitLab',
+						href: '/docs/git-providers/gitlab',
+						icon: Icons.GitLab
+					},
+					{
+						name: 'BitBucket',
+						href: '/docs/git-providers/bitbucket',
+						icon: Icons.BitBucket
+					}
+				]
 			},
 			{
 				name: 'Private Repositories',

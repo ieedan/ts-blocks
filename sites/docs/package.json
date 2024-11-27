@@ -14,7 +14,6 @@
 	"devDependencies": {
 		"@fontsource-variable/jetbrains-mono": "^5.1.1",
 		"@fontsource/poppins": "^5.1.0",
-		"@sveltejs/adapter-auto": "^3.0.0",
 		"@sveltejs/kit": "^2.8.2",
 		"@sveltejs/vite-plugin-svelte": "^4.0.0",
 		"@tailwindcss/typography": "^0.5.15",
@@ -28,6 +27,7 @@
 		"globals": "^15.0.0",
 		"lucide-svelte": "^0.460.1",
 		"mode-watcher": "^0.5.0",
+		"octokit": "^4.0.2",
 		"package-manager-detector": "^0.2.4",
 		"prettier": "^3.3.2",
 		"prettier-plugin-svelte": "^3.3.2",
@@ -42,7 +42,9 @@
 		"typescript": "^5.7.2",
 		"typescript-eslint": "^8.0.0",
 		"vaul-svelte": "1.0.0-next.3",
-		"vite": "^5.0.3",
-		"octokit": "^4.0.2"
+		"vite": "^5.0.3"
+	},
+	"dependencies": {
+		"@sveltejs/adapter-vercel": "^5.4.8"
 	}
 }
