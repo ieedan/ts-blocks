@@ -50,7 +50,11 @@
 				"useValidForDirection": "error",
 				"useYield": "error"
 			},
-			"style": { "noNamespace": "error", "useAsConstAssertion": "error" },
+			"style": {
+				"noNamespace": "error",
+				"useAsConstAssertion": "error",
+				"noNonNullAssertion": "off"
+			},
 			"suspicious": {
 				"noAsyncPromiseExecutor": "error",
 				"noCatchAssign": "error",

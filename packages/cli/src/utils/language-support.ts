@@ -25,7 +25,6 @@ export type ResolvedDependencies = {
 
 export type ResolveDependencyOptions = {
 	filePath: string;
-	category: string;
 	isSubDir: boolean;
 	excludeDeps: string[];
 	cwd: string;
@@ -55,7 +54,7 @@ const typescript: Lang = {
 		fileName.endsWith('.js') ||
 		fileName.endsWith('.tsx') ||
 		fileName.endsWith('.jsx'),
-	resolveDependencies: ({ filePath, isSubDir, excludeDeps, cwd }) => {
+	resolveDependencies: ({ filePath, isSubDir, excludeDeps }) => {
 		const project = new Project();
 
 		const blockFile = project.addSourceFileAtPath(filePath);
@@ -71,11 +70,11 @@ const typescript: Lang = {
 		for (const relativeImport of relativeImports) {
 			const mod = relativeImport.getModuleSpecifierValue();
 
-			const localDep = resolveLocalImport(mod, isSubDir, { filePath, cwd });
+			const localDep = resolveLocalImport(mod, isSubDir, { filePath });
 
 			if (localDep.isErr()) return Err(localDep.unwrapErr());
 
-			if (localDep) localDeps.add(localDep.unwrap());
+			if (localDep.unwrap()) localDeps.add(localDep.unwrap()!);
 		}
 
 		const deps = imports
@@ -116,7 +115,7 @@ const typescript: Lang = {
 
 const svelte: Lang = {
 	matches: (fileName) => fileName.endsWith('.svelte'),
-	resolveDependencies: ({ filePath, isSubDir, excludeDeps, cwd }) => {
+	resolveDependencies: ({ filePath, isSubDir, excludeDeps }) => {
 		const sourceCode = fs.readFileSync(filePath).toString();
 
 		const root = sv.parse(sourceCode, { modern: true, filename: filePath });
@@ -135,12 +134,11 @@ const svelte: Lang = {
 						if (node.source.value.startsWith('.')) {
 							const localDep = resolveLocalImport(node.source.value, isSubDir, {
 								filePath,
-								cwd,
 							});
 
 							if (localDep.isErr()) return Err(localDep.unwrapErr());
 
-							if (localDep) localDeps.add(localDep.unwrap());
+							if (localDep.unwrap()) localDeps.add(localDep.unwrap()!);
 						} else {
 							deps.add(node.source.value);
 						}
@@ -179,7 +177,7 @@ const svelte: Lang = {
 
 const vue: Lang = {
 	matches: (fileName) => fileName.endsWith('.vue'),
-	resolveDependencies: ({ filePath, isSubDir, excludeDeps, cwd }) => {
+	resolveDependencies: ({ filePath, isSubDir, excludeDeps }) => {
 		const sourceCode = fs.readFileSync(filePath).toString();
 
 		const parsed = v.parse(sourceCode, { filename: filePath });
@@ -205,12 +203,11 @@ const vue: Lang = {
 			if (imp.source.startsWith('.')) {
 				const localDep = resolveLocalImport(imp.source, isSubDir, {
 					filePath,
-					cwd,
 				});
 
 				if (localDep.isErr()) return Err(localDep.unwrapErr());
 
-				if (localDep) localDeps.add(localDep.unwrap());
+				if (localDep.unwrap()) localDeps.add(localDep.unwrap()!);
 			} else {
 				deps.add(imp.source);
 			}
@@ -258,8 +255,10 @@ const yaml: Lang = {
 const resolveLocalImport = (
 	mod: string,
 	isSubDir: boolean,
-	{ filePath, cwd }: { filePath: string; cwd: string }
-): Result<string, string> => {
+	{ filePath }: { filePath: string }
+): Result<string | undefined, string> => {
+	if (isSubDir && (mod.startsWith('./') || mod === '.')) return Ok(undefined);
+
 	// get the path to the current category
 	const categoryDir = isSubDir ? path.join(filePath, '../../') : path.join(filePath, '../');
 
@@ -267,7 +266,7 @@ const resolveLocalImport = (
 	const modPath = path.join(path.join(filePath, '../'), mod);
 
 	// get the full path to the current category
-	const fullDir = path.join(cwd, path.join(categoryDir, '../'));
+	const fullDir = path.join(categoryDir, '../');
 
 	// mod paths that reference outside of the current blocks directory are invalid
 	if (modPath.startsWith(fullDir)) {
