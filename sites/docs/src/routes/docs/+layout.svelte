@@ -7,8 +7,6 @@
 	import * as Breadcrumb from '$lib/components/ui/breadcrumb';
 	import { onThisPage } from '$lib/ts/on-this-page';
 	import { onNavigate } from '$app/navigation';
-	import { Button } from '$lib/components/ui/button';
-	import { ChevronLeft, ChevronRight } from 'lucide-svelte';
 
 	type CurrentDoc = {
 		route: Route;
@@ -74,10 +72,10 @@
 			{#each categories.filter((a) => a.name !== 'routes') as { name, routes }}
 				<div class="flex flex-col gap-1 w-full">
 					<span class="text-sm font-semibold">{name}</span>
-					<div class="flex flex-col gap-1">
-						{#each routes as { name, href, activeForSubdirectories }}
+					<div class="flex flex-col gap-1 relative">
+						{#each routes as { name, href, activeForSubdirectories, routes: subroutes }}
 							<a
-								class="data-[active=true]:text-primary text-muted-foreground"
+								class="data-[active=true]:text-primary text-muted-foreground hover:text-primary transition-all"
 								{href}
 								use:active={{
 									url: $page.url,
@@ -86,6 +84,21 @@
 							>
 								{name}
 							</a>
+							{#if subroutes}
+								{#each subroutes as { name, href, activeForSubdirectories, icon: Icon }}
+									<a
+										class="data-[active=true]:text-primary flex place-items-center gap-2 text-muted-foreground ml-3 hover:text-primary transition-all"
+										{href}
+										use:active={{
+											url: $page.url,
+											activeForSubdirectories: activeForSubdirectories ?? false
+										}}
+									>
+										<Icon/>
+										{name}
+									</a>
+								{/each}
+							{/if}
 						{/each}
 					</div>
 				</div>

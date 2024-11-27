@@ -8,6 +8,9 @@
 
 <DocHeader title="GitHub" description="How to use GitHub as your jsrepo registry." />
 <SubHeading>Branches and Tags</SubHeading>
+<Blockquote variant="primary">
+	The default branch is <CodeSpan>main</CodeSpan>.
+</Blockquote>
 <p>
 	<Jsrepo /> supports <Link target="_blank" href="https://github.com">GitHub</Link> so that you can just
 	paste a link to the repo homepage and it will be handled correctly.
@@ -68,6 +71,15 @@ https://github.com/ieedan/std/tree/next # branch reference
 	"watermark": true
 }`}
 />
+<SubHeading>Rate Limiting</SubHeading>
+<p>
+	If you are doing a lot of testing with <Jsrepo /> you may eventually get to a point where GitHub "cuts
+	you off". At this point GitHub will start to return cached responses when trying to add, update, or
+	test blocks.
+</p>
+<p>
+	You can get around this by supplying a PAT with the <CodeSpan>auth</CodeSpan> command.
+</p>
 <SubHeading>CI / CD</SubHeading>
 <p>
 	If you are creating your own registry you may want to build the registry on a push to the main
