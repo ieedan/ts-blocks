@@ -1,5 +1,16 @@
 # jsrepo
 
+## 1.11.0
+
+### Minor Changes
+
+- 2f49635: Added `formatter` key to config to allow you to format `blocks` before adding them to your project.
+
+### Patch Changes
+
+- 7a760b0: Fix `*.(yml|yaml)` watermark to only have a single space between the `#` and comment content.
+- 2f49635: Fix issue where vue compiler error would not show during build.
+
 ## 1.10.2
 
 ### Patch Changes
