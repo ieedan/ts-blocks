@@ -290,7 +290,7 @@ const _update = async (blockNames: string[], options: Options) => {
 				process.stdout.write(formattedDiff);
 
 				// if there are no changes then don't ask
-				if (changes.length > 1) {
+				if (changes.length > 1 || localContent === '') {
 					const confirmResult = await confirm({
 						message: 'Accept changes?',
 						initialValue: true,
