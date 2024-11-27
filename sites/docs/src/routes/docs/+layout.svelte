@@ -94,7 +94,7 @@
 											activeForSubdirectories: activeForSubdirectories ?? false
 										}}
 									>
-										<Icon/>
+										<Icon />
 										{name}
 									</a>
 								{/each}
