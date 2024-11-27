@@ -19,8 +19,6 @@
 		"@sveltejs/vite-plugin-svelte": "^4.0.0",
 		"@tailwindcss/typography": "^0.5.15",
 		"@types/eslint": "^9.6.0",
-		"@vercel/analytics": "^1.4.1",
-		"@vercel/speed-insights": "^1.1.0",
 		"autoprefixer": "^10.4.20",
 		"bits-ui": "1.0.0-next.63",
 		"clsx": "^2.1.1",
@@ -44,9 +42,7 @@
 		"typescript": "^5.7.2",
 		"typescript-eslint": "^8.0.0",
 		"vaul-svelte": "1.0.0-next.3",
-		"vite": "^5.0.3"
-	},
-	"dependencies": {
+		"vite": "^5.0.3",
 		"octokit": "^4.0.2"
 	}
 }

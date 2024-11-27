@@ -87,12 +87,12 @@ export type Point = {
 <Code
 	lang="json"
 	code={`{
-    "formatter": "prettier" | "biome"
+    "formatter": "prettier" / "biome" / undefined
 }`}
 />
 <p>
 	<Jsrepo /> can format your files following your local config before adding them to your repository.
-	Currently the only supported formatters are 
-	<Link target="_blank" href="https://prettier.io/">Prettier</Link> and 
+	Currently the only supported formatters are
+	<Link target="_blank" href="https://prettier.io/">Prettier</Link> and
 	<Link target="_blank" href="https://biomejs.dev/">Biome</Link>.
 </p>
