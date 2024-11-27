@@ -1,5 +1,11 @@
 # jsrepo
 
+## 1.12.2
+
+### Patch Changes
+
+- 5d14390: Fix issue where `build` could create circular dependencies.
+
 ## 1.12.1
 
 ### Patch Changes
