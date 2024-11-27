@@ -128,7 +128,6 @@ const buildBlocksDirectory = (
 				const { dependencies, devDependencies, local } = lang
 					.resolveDependencies({
 						filePath: blockDir,
-						category: categoryName,
 						isSubDir: false,
 						excludeDeps,
 						cwd,
@@ -222,7 +221,6 @@ const buildBlocksDirectory = (
 					const { local, dependencies, devDependencies } = lang
 						.resolveDependencies({
 							filePath: path.join(blockDir, f),
-							category: categoryName,
 							isSubDir: true,
 							excludeDeps,
 							cwd,
