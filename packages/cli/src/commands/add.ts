@@ -12,6 +12,7 @@ import { getInstalled, resolveTree } from '../utils/blocks';
 import { type Block, isTestFile } from '../utils/build';
 import { type Config, getConfig } from '../utils/config';
 import { installDependencies } from '../utils/dependencies';
+import { loadFormatterConfig } from '../utils/format';
 import { getWatermark } from '../utils/get-watermark';
 import * as gitProviders from '../utils/git-providers';
 import { languages } from '../utils/language-support';
@@ -284,6 +285,11 @@ const _add = async (blockNames: string[], options: Options) => {
 		}
 	}
 
+	const { prettierOptions, biomeOptions } = await loadFormatterConfig({
+		formatter: config.formatter,
+		cwd: options.cwd,
+	});
+
 	for (const { block } of installingBlocks) {
 		const fullSpecifier = `${block.sourceRepo.url}/${block.category}/${block.name}`;
 		const watermark = getWatermark(context.package.version, block.sourceRepo.url);
@@ -355,16 +361,23 @@ const _add = async (blockNames: string[], options: Options) => {
 				}
 
 				for (const file of files) {
+					const lang = languages.find((lang) => lang.matches(file.destPath));
+
 					let content: string = file.content;
 
-					if (config.watermark) {
-						const lang = languages.find((lang) => lang.matches(file.destPath));
-
-						if (lang) {
+					if (lang) {
+						if (config.watermark) {
 							const comment = lang.comment(watermark);
 
 							content = `${comment}\n\n${content}`;
 						}
+
+						content = await lang.format(content, {
+							filePath: file.destPath,
+							formatter: config.formatter,
+							prettierOptions,
+							biomeOptions,
+						});
 					}
 
 					fs.writeFileSync(file.destPath, content);

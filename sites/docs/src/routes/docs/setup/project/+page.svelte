@@ -37,6 +37,9 @@
 ◇  Add another repo?
 │  No
 │
+◇  What formatter would you like to use?
+│  Prettier
+│
 ◇  Wrote config to \`jsrepo.json\`.
 │
 └  All done!`}

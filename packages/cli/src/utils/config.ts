@@ -5,12 +5,15 @@ import { Err, Ok, type Result } from './blocks/types/result';
 
 const CONFIG_NAME = 'jsrepo.json';
 
+const formatterSchema = v.union([v.literal('prettier'), v.literal('biome')]);
+
 const schema = v.object({
 	$schema: v.string(),
 	repos: v.optional(v.array(v.string()), []),
 	includeTests: v.boolean(),
 	path: v.pipe(v.string(), v.minLength(1)),
 	watermark: v.optional(v.boolean(), true),
+	formatter: v.optional(formatterSchema),
 });
 
 const getConfig = (cwd: string): Result<Config, string> => {
@@ -32,4 +35,6 @@ const getConfig = (cwd: string): Result<Config, string> => {
 
 type Config = v.InferOutput<typeof schema>;
 
-export { type Config, CONFIG_NAME, getConfig, schema };
+type Formatter = v.InferOutput<typeof formatterSchema>;
+
+export { type Config, type Formatter, CONFIG_NAME, getConfig, schema, formatterSchema };

@@ -1,13 +1,19 @@
 import fs from 'node:fs';
 import { cancel, confirm, isCancel, outro, password, select, spinner, text } from '@clack/prompts';
 import color from 'chalk';
-import { Command, program } from 'commander';
+import { Command, Option, program } from 'commander';
 import { detect, resolveCommand } from 'package-manager-detector';
 import path from 'pathe';
 import * as v from 'valibot';
 import { context } from '..';
 import * as ascii from '../utils/ascii';
-import { CONFIG_NAME, type Config, getConfig } from '../utils/config';
+import {
+	CONFIG_NAME,
+	type Config,
+	type Formatter,
+	formatterSchema,
+	getConfig,
+} from '../utils/config';
 import { installDependencies } from '../utils/dependencies';
 import { providers } from '../utils/git-providers';
 import * as persisted from '../utils/persisted';
@@ -18,6 +24,7 @@ const schema = v.object({
 	repos: v.optional(v.array(v.string())),
 	watermark: v.boolean(),
 	tests: v.optional(v.boolean()),
+	formatter: v.optional(formatterSchema),
 	project: v.optional(v.boolean()),
 	registry: v.optional(v.boolean()),
 	script: v.string(),
@@ -36,6 +43,12 @@ const init = new Command('init')
 		'Will not add a watermark to each file upon adding it to your project.'
 	)
 	.option('--tests', 'Will include tests with the blocks.')
+	.addOption(
+		new Option(
+			'--formatter <formatter>',
+			'What formatter to use when adding or updating blocks.'
+		).choices(['prettier', 'biome'])
+	)
 	.option('-P, --project', 'Takes you through the steps to initialize a project.')
 	.option('-R, --registry', 'Takes you through the steps to initialize a registry.')
 	.option('--script <name>', 'The name of the build script. (For Registry setup)', 'build')
@@ -180,6 +193,38 @@ const _initProject = async (options: Options) => {
 		}
 	}
 
+	if (!options.formatter) {
+		let defaultFormatter = initialConfig.isErr()
+			? 'none'
+			: (initialConfig.unwrap().formatter ?? 'none');
+
+		if (fs.existsSync(path.join(options.cwd, '.prettierrc'))) {
+			defaultFormatter = 'prettier';
+		}
+
+		if (fs.existsSync(path.join(options.cwd, 'biome.json'))) {
+			defaultFormatter = 'biome';
+		}
+
+		const response = await select({
+			message: 'What formatter would you like to use?',
+			options: ['Prettier', 'Biome', 'None'].map((val) => ({
+				value: val.toLowerCase(),
+				label: val,
+			})),
+			initialValue: defaultFormatter,
+		});
+
+		if (isCancel(response)) {
+			cancel('Canceled!');
+			process.exit(0);
+		}
+
+		if (response !== 'none') {
+			options.formatter = response as Formatter;
+		}
+	}
+
 	const config: Config = {
 		$schema: `https://unpkg.com/jsrepo@${context.package.version}/schema.json`,
 		repos: options.repos,
@@ -189,6 +234,7 @@ const _initProject = async (options: Options) => {
 				? initialConfig.unwrap().includeTests
 				: (options.tests ?? false),
 		watermark: options.watermark,
+		formatter: options.formatter,
 	};
 
 	loading.start(`Writing config to \`${CONFIG_NAME}\``);

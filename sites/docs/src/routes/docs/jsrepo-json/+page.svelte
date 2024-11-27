@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Code, CodeSpan, DocHeader, SubHeading } from '$lib/components/site/docs';
+	import { Code, CodeSpan, DocHeader, Jsrepo, Link, SubHeading } from '$lib/components/site/docs';
 	import { Snippet } from '$lib/components/ui/snippet';
 
 	let { data } = $props();
@@ -81,3 +81,18 @@ export type Point = {
 	y: number;
 };`}
 />
+
+<SubHeading>formatter</SubHeading>
+<p>The formatter to use when adding or updating blocks.</p>
+<Code
+	lang="json"
+	code={`{
+    "formatter": "prettier" / "biome" / undefined
+}`}
+/>
+<p>
+	<Jsrepo /> can format your files following your local config before adding them to your repository.
+	Currently the only supported formatters are
+	<Link target="_blank" href="https://prettier.io/">Prettier</Link> and
+	<Link target="_blank" href="https://biomejs.dev/">Biome</Link>.
+</p>

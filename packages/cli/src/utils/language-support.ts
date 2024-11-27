@@ -1,15 +1,19 @@
 import fs from 'node:fs';
 import { builtinModules } from 'node:module';
+import { Biome, Distribution } from '@biomejs/js-api';
+import type { PartialConfiguration } from '@biomejs/wasm-nodejs';
 import * as v from '@vue/compiler-sfc';
 import color from 'chalk';
 import { walk } from 'estree-walker';
 import path from 'pathe';
+import * as prettier from 'prettier';
 import * as sv from 'svelte/compiler';
 import { Project } from 'ts-morph';
 import validatePackageName from 'validate-npm-package-name';
 import * as ascii from './ascii';
-import { Ok, type Result } from './blocks/types/result';
+import { Err, Ok, type Result } from './blocks/types/result';
 import * as lines from './blocks/utils/lines';
+import type { Formatter } from './config';
 import { findNearestPackageJson } from './package';
 import { parsePackageName } from './parse-package-name';
 
@@ -26,6 +30,14 @@ export type ResolveDependencyOptions = {
 	excludeDeps: string[];
 };
 
+export type FormatOptions = {
+	formatter?: Formatter;
+	/** Can be used to infer the prettier parser */
+	filePath: string;
+	prettierOptions: prettier.Options | null;
+	biomeOptions: PartialConfiguration | null;
+};
+
 export type Lang = {
 	/** Matches the supported file types */
 	matches: (fileName: string) => boolean;
@@ -33,6 +45,7 @@ export type Lang = {
 	resolveDependencies: (opts: ResolveDependencyOptions) => Result<ResolvedDependencies, string>;
 	/** Returns a multiline comment containing the content */
 	comment: (content: string) => string;
+	format: (code: string, opts: FormatOptions) => Promise<string>;
 };
 
 const typescript: Lang = {
@@ -78,7 +91,24 @@ const typescript: Lang = {
 			devDependencies,
 		} satisfies ResolvedDependencies);
 	},
-	comment: (content) => `/*\n${content}\n*/`,
+	comment: (content) => `/*\n${lines.join(lines.get(content), { prefix: () => '\t' })}\n*/`,
+	format: async (code, { formatter, filePath, prettierOptions, biomeOptions }) => {
+		if (!formatter) return code;
+
+		if (formatter === 'prettier') {
+			return await prettier.format(code, { filepath: filePath, ...prettierOptions });
+		}
+
+		const biome = await Biome.create({
+			distribution: Distribution.NODE,
+		});
+
+		if (biomeOptions) {
+			biome.applyConfiguration(biomeOptions);
+		}
+
+		return biome.formatContent(code, { filePath }).content;
+	},
 };
 
 const svelte: Lang = {
@@ -86,7 +116,7 @@ const svelte: Lang = {
 	resolveDependencies: ({ filePath, category, isSubDir, excludeDeps }) => {
 		const sourceCode = fs.readFileSync(filePath).toString();
 
-		const root = sv.parse(sourceCode, { modern: true });
+		const root = sv.parse(sourceCode, { modern: true, filename: filePath });
 
 		// if no script tag then no dependencies
 		if (!root.instance) return Ok({ dependencies: [], devDependencies: [], local: [] });
@@ -126,7 +156,21 @@ const svelte: Lang = {
 			local: Array.from(localDeps),
 		} satisfies ResolvedDependencies);
 	},
-	comment: (content) => `<!--\n${content}\n-->`,
+	comment: (content) => `<!--\n${lines.join(lines.get(content), { prefix: () => '\t' })}\n-->`,
+	format: async (code, { formatter, filePath, prettierOptions }) => {
+		if (!formatter) return code;
+
+		// only attempt to format if svelte plugin is included in the config.
+		if (
+			formatter === 'prettier' &&
+			prettierOptions &&
+			prettierOptions.plugins?.find((plugin) => plugin === 'prettier-plugin-svelte')
+		) {
+			return await prettier.format(code, { filepath: filePath, ...prettierOptions });
+		}
+
+		return code;
+	},
 };
 
 const vue: Lang = {
@@ -134,7 +178,7 @@ const vue: Lang = {
 	resolveDependencies: ({ filePath, category, isSubDir, excludeDeps }) => {
 		const sourceCode = fs.readFileSync(filePath).toString();
 
-		const parsed = v.parse(sourceCode);
+		const parsed = v.parse(sourceCode, { filename: filePath });
 
 		if (!parsed.descriptor.script?.content && !parsed.descriptor.scriptSetup?.content)
 			return Ok({ dependencies: [], devDependencies: [], local: [] });
@@ -142,7 +186,12 @@ const vue: Lang = {
 		const localDeps = new Set<string>();
 		const deps = new Set<string>();
 
-		const compiled = v.compileScript(parsed.descriptor, { id: 'shut-it' }); // you need this id to remove a warning
+		let compiled: v.SFCScriptBlock;
+		try {
+			compiled = v.compileScript(parsed.descriptor, { id: 'shut-it' }); // you need this id to remove a warning
+		} catch (err) {
+			return Err(`Compile error: ${err}`);
+		}
 
 		if (!compiled.imports) return Ok({ dependencies: [], devDependencies: [], local: [] });
 
@@ -169,13 +218,32 @@ const vue: Lang = {
 			local: Array.from(localDeps),
 		} satisfies ResolvedDependencies);
 	},
-	comment: (content) => `<!--\n${content}\n-->`,
+	comment: (content) => `<!--\n${lines.join(lines.get(content), { prefix: () => '\t' })}\n-->`,
+	format: async (code, { formatter, prettierOptions }) => {
+		if (!formatter) return code;
+
+		if (formatter === 'prettier') {
+			return await prettier.format(code, { parser: 'vue', ...prettierOptions });
+		}
+
+		// biome has issues with vue support
+		return code;
+	},
 };
 
 const yaml: Lang = {
 	matches: (fileName) => fileName.endsWith('.yml') || fileName.endsWith('.yaml'),
 	resolveDependencies: () => Ok({ dependencies: [], local: [], devDependencies: [] }),
 	comment: (content: string) => lines.join(lines.get(content), { prefix: () => '# ' }),
+	format: async (code, { formatter, prettierOptions }) => {
+		if (!formatter) return code;
+
+		if (formatter === 'prettier') {
+			return await prettier.format(code, { parser: 'yaml', ...prettierOptions });
+		}
+
+		return code;
+	},
 };
 
 const resolveLocalImport = (

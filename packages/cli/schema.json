@@ -22,6 +22,11 @@
 			"description": "When true will add a watermark with the version and repository at the top of the installed files.",
 			"type": "boolean",
 			"default": "true"
+		},
+		"formatter": {
+			"description": "The formatter to use when adding or updating files.",
+			"type": "string",
+			"enum": ["prettier", "biome"]
 		}
 	},
 	"required": ["path", "includeTests"]

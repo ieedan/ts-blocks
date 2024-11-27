@@ -14,6 +14,7 @@ import { isTestFile } from '../utils/build';
 import { getConfig } from '../utils/config';
 import { installDependencies } from '../utils/dependencies';
 import { formatDiff } from '../utils/diff';
+import { loadFormatterConfig } from '../utils/format';
 import { getWatermark } from '../utils/get-watermark';
 import * as gitProviders from '../utils/git-providers';
 import { languages } from '../utils/language-support';
@@ -122,6 +123,14 @@ const _update = async (blockNames: string[], options: Options) => {
 
 	const installedBlocks = getInstalled(blocksMap, config, options.cwd);
 
+	if (installedBlocks.length === 0) {
+		program.error(
+			color.red(
+				`You haven't installed any blocks yet. Did you mean to \`${color.bold('add')}\`?`
+			)
+		);
+	}
+
 	let updatingBlockNames = blockNames;
 
 	if (options.all) {
@@ -162,6 +171,11 @@ const _update = async (blockNames: string[], options: Options) => {
 
 	let devDeps: Set<string> = new Set<string>();
 	let deps: Set<string> = new Set<string>();
+
+	const { prettierOptions, biomeOptions } = await loadFormatterConfig({
+		formatter: config.formatter,
+		cwd: options.cwd,
+	});
 
 	for (const { block } of updatingBlocks) {
 		const fullSpecifier = `${block.sourceRepo.url}/${block.category}/${block.name}`;
@@ -213,16 +227,23 @@ const _update = async (blockNames: string[], options: Options) => {
 		process.stdout.write(`${ascii.VERTICAL_LINE}  ${fullSpecifier}\n`);
 
 		for (const file of files) {
+			const lang = languages.find((lang) => lang.matches(file.destPath));
+
 			let remoteContent: string = file.content;
 
-			if (config.watermark) {
-				const lang = languages.find((lang) => lang.matches(file.destPath));
-
-				if (lang) {
+			if (lang) {
+				if (config.watermark) {
 					const comment = lang.comment(watermark);
 
 					remoteContent = `${comment}\n\n${remoteContent}`;
 				}
+
+				remoteContent = await lang.format(remoteContent, {
+					filePath: file.destPath,
+					formatter: config.formatter,
+					prettierOptions,
+					biomeOptions,
+				});
 			}
 
 			let acceptedChanges = options.yes;
