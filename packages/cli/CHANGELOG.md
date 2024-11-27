@@ -1,5 +1,11 @@
 # jsrepo
 
+## 1.12.0
+
+### Minor Changes
+
+- 8830cd9: Fixes issue with building files that reference a file from another block directory.
+
 ## 1.11.0
 
 ### Minor Changes
