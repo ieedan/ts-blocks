@@ -127,7 +127,7 @@
 				{@render children?.()}
 			</div>
 			{#if currentDoc}
-				<div class="flex w-full justify-between place-items-center gap-32 pt-9">
+				<div class="flex w-full justify-between place-items-center gap-4 pt-9">
 					{#if currentDoc.previous}
 						<Pagination.Previous href={currentDoc.previous.href}>
 							{currentDoc.previous.name}
