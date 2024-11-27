@@ -157,8 +157,20 @@ const svelte: Lang = {
 		} satisfies ResolvedDependencies);
 	},
 	comment: (content) => `<!--\n${lines.join(lines.get(content), { prefix: () => '\t' })}\n-->`,
-	// not great support for svelte maybe we can add it another time
-	format: async (code) => code,
+	format: async (code, { formatter, filePath, prettierOptions }) => {
+		if (!formatter) return code;
+
+		// only attempt to format if svelte plugin is included in the config.
+		if (
+			formatter === 'prettier' &&
+			prettierOptions &&
+			prettierOptions.plugins?.find((plugin) => plugin === 'prettier-plugin-svelte')
+		) {
+			return await prettier.format(code, { filepath: filePath, ...prettierOptions });
+		}
+
+		return code;
+	},
 };
 
 const vue: Lang = {

@@ -3,5 +3,6 @@
 	"repos": ["github/ieedan/std"],
 	"path": "src/lib/ts",
 	"includeTests": false,
-	"watermark": true
+	"watermark": true,
+	"formatter": "prettier"
 }

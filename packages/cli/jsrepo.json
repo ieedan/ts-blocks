@@ -3,5 +3,6 @@
 	"repos": ["github/ieedan/std"],
 	"path": "src/utils/blocks",
 	"includeTests": false,
-	"watermark": true
+	"watermark": true,
+	"formatter": "biome"
 }
