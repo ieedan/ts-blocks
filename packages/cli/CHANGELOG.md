@@ -1,5 +1,11 @@
 # jsrepo
 
+## 1.12.1
+
+### Patch Changes
+
+- 9b4dafb: Fixes an issue where new files would not be created in update command.
+
 ## 1.12.0
 
 ### Minor Changes
