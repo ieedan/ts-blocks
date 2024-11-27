@@ -41,7 +41,7 @@
 </p>
 <div>
 	<SubHeading>FAQ</SubHeading>
-	<Accordion.Root type="single">
+	<Accordion.Root type="multiple">
 		<Accordion.Item value="q-1">
 			<Accordion.Trigger>Who owns the registry?</Accordion.Trigger>
 			<Accordion.Content>

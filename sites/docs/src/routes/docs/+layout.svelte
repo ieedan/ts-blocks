@@ -7,6 +7,8 @@
 	import * as Breadcrumb from '$lib/components/ui/breadcrumb';
 	import { onThisPage } from '$lib/ts/on-this-page';
 	import { onNavigate } from '$app/navigation';
+	import { Button } from '$lib/components/ui/button';
+	import { ChevronLeft, ChevronRight } from 'lucide-svelte';
 
 	type CurrentDoc = {
 		route: Route;
@@ -112,21 +114,17 @@
 				{@render children?.()}
 			</div>
 			{#if currentDoc}
-				<div class="flex w-full justify-between place-items-center pt-9">
-					<div>
-						{#if currentDoc.previous}
-							<Pagination.Previous href={currentDoc.previous.href}>
-								{currentDoc.previous.name}
-							</Pagination.Previous>
-						{/if}
-					</div>
-					<div>
-						{#if currentDoc.next}
-							<Pagination.Next href={currentDoc.next.href}>
-								{currentDoc.next.name}
-							</Pagination.Next>
-						{/if}
-					</div>
+				<div class="flex w-full justify-between place-items-center gap-32 pt-9">
+					{#if currentDoc.previous}
+						<Pagination.Previous href={currentDoc.previous.href}>
+							{currentDoc.previous.name}
+						</Pagination.Previous>
+					{/if}
+					{#if currentDoc.next}
+						<Pagination.Next href={currentDoc.next.href}>
+							{currentDoc.next.name}
+						</Pagination.Next>
+					{/if}
 				</div>
 			{/if}
 		</div>
