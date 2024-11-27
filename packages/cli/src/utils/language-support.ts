@@ -28,6 +28,7 @@ export type ResolveDependencyOptions = {
 	category: string;
 	isSubDir: boolean;
 	excludeDeps: string[];
+	cwd: string;
 };
 
 export type FormatOptions = {
@@ -54,7 +55,7 @@ const typescript: Lang = {
 		fileName.endsWith('.js') ||
 		fileName.endsWith('.tsx') ||
 		fileName.endsWith('.jsx'),
-	resolveDependencies: ({ filePath, category, isSubDir, excludeDeps }) => {
+	resolveDependencies: ({ filePath, isSubDir, excludeDeps, cwd }) => {
 		const project = new Project();
 
 		const blockFile = project.addSourceFileAtPath(filePath);
@@ -70,9 +71,11 @@ const typescript: Lang = {
 		for (const relativeImport of relativeImports) {
 			const mod = relativeImport.getModuleSpecifierValue();
 
-			const localDep = resolveLocalImport(mod, category, isSubDir);
+			const localDep = resolveLocalImport(mod, isSubDir, { filePath, cwd });
 
-			if (localDep) localDeps.add(localDep);
+			if (localDep.isErr()) return Err(localDep.unwrapErr());
+
+			if (localDep) localDeps.add(localDep.unwrap());
 		}
 
 		const deps = imports
@@ -113,7 +116,7 @@ const typescript: Lang = {
 
 const svelte: Lang = {
 	matches: (fileName) => fileName.endsWith('.svelte'),
-	resolveDependencies: ({ filePath, category, isSubDir, excludeDeps }) => {
+	resolveDependencies: ({ filePath, isSubDir, excludeDeps, cwd }) => {
 		const sourceCode = fs.readFileSync(filePath).toString();
 
 		const root = sv.parse(sourceCode, { modern: true, filename: filePath });
@@ -130,13 +133,14 @@ const svelte: Lang = {
 				if (node.type === 'ImportDeclaration') {
 					if (typeof node.source.value === 'string') {
 						if (node.source.value.startsWith('.')) {
-							const localDep = resolveLocalImport(
-								node.source.value,
-								category,
-								isSubDir
-							);
+							const localDep = resolveLocalImport(node.source.value, isSubDir, {
+								filePath,
+								cwd,
+							});
 
-							if (localDep) localDeps.add(localDep);
+							if (localDep.isErr()) return Err(localDep.unwrapErr());
+
+							if (localDep) localDeps.add(localDep.unwrap());
 						} else {
 							deps.add(node.source.value);
 						}
@@ -175,7 +179,7 @@ const svelte: Lang = {
 
 const vue: Lang = {
 	matches: (fileName) => fileName.endsWith('.vue'),
-	resolveDependencies: ({ filePath, category, isSubDir, excludeDeps }) => {
+	resolveDependencies: ({ filePath, isSubDir, excludeDeps, cwd }) => {
 		const sourceCode = fs.readFileSync(filePath).toString();
 
 		const parsed = v.parse(sourceCode, { filename: filePath });
@@ -199,9 +203,14 @@ const vue: Lang = {
 
 		for (const imp of imports) {
 			if (imp.source.startsWith('.')) {
-				const localDep = resolveLocalImport(imp.source, category, isSubDir);
+				const localDep = resolveLocalImport(imp.source, isSubDir, {
+					filePath,
+					cwd,
+				});
 
-				if (localDep) localDeps.add(localDep);
+				if (localDep.isErr()) return Err(localDep.unwrapErr());
+
+				if (localDep) localDeps.add(localDep.unwrap());
 			} else {
 				deps.add(imp.source);
 			}
@@ -248,26 +257,34 @@ const yaml: Lang = {
 
 const resolveLocalImport = (
 	mod: string,
-	category: string,
-	isSubDir: boolean
-): string | undefined => {
-	// do not add local deps that are within the same folder
-	if (isSubDir && mod.startsWith('./')) return undefined;
+	isSubDir: boolean,
+	{ filePath, cwd }: { filePath: string; cwd: string }
+): Result<string, string> => {
+	// get the path to the current category
+	const categoryDir = isSubDir ? path.join(filePath, '../../') : path.join(filePath, '../');
 
-	if (mod.startsWith('./')) {
-		return `${category}/${path.parse(path.basename(mod)).name}`;
+	// get the actual path to the module
+	const modPath = path.join(path.join(filePath, '../'), mod);
+
+	// get the full path to the current category
+	const fullDir = path.join(cwd, path.join(categoryDir, '../'));
+
+	// mod paths that reference outside of the current blocks directory are invalid
+	if (modPath.startsWith(fullDir)) {
+		// only valid blocks can make it to here
+		let [category, block] = modPath.slice(fullDir.length).split('/');
+
+		// remove file extension
+		if (block.includes('.')) {
+			block = block.slice(0, block.length - path.parse(block).ext.length);
+		}
+
+		return Ok(`${category}/${block}`);
 	}
 
-	if (isSubDir && mod.startsWith('../') && !mod.startsWith('../.')) {
-		return `${category}/${path.parse(path.basename(mod)).name}`;
-	}
-
-	const segments = mod.replaceAll('../', '').split('/');
-
-	// invalid path
-	if (segments.length < 2) return undefined;
-
-	return `${segments[0]}/${segments[1]}`;
+	return Err(
+		`${filePath}:\n${mod} references code not contained in ${categoryDir} and cannot be resolved.`
+	);
 };
 
 /** Iterates over the dependency and resolves each one using the nearest package.json file.
