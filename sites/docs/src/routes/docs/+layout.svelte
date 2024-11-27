@@ -30,7 +30,12 @@
 					url
 				})
 			) {
-				return { route, next: routes[i + 1] ?? parentNext, previous: routes[i - 1], parent };
+				return {
+					route,
+					next: route.routes ? route.routes[0] : (routes[i + 1] ?? parentNext),
+					previous: routes[i - 1],
+					parent
+				};
 			}
 
 			if (route.routes) {
