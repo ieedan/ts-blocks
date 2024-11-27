@@ -131,6 +131,7 @@ const buildBlocksDirectory = (
 						category: categoryName,
 						isSubDir: false,
 						excludeDeps,
+						cwd,
 					})
 					.match(
 						(val) => val,
@@ -224,6 +225,7 @@ const buildBlocksDirectory = (
 							category: categoryName,
 							isSubDir: true,
 							excludeDeps,
+							cwd,
 						})
 						.match(
 							(val) => val,
