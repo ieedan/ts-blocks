@@ -91,7 +91,7 @@ const typescript: Lang = {
 			devDependencies,
 		} satisfies ResolvedDependencies);
 	},
-	comment: (content) => `/*\n${content}\n*/`,
+	comment: (content) => `/*\n${lines.join(lines.get(content), { prefix: () => '\t' })}\n*/`,
 	format: async (code, { formatter, filePath, prettierOptions, biomeOptions }) => {
 		if (!formatter) return code;
 
@@ -156,7 +156,7 @@ const svelte: Lang = {
 			local: Array.from(localDeps),
 		} satisfies ResolvedDependencies);
 	},
-	comment: (content) => `<!--\n${content}\n-->`,
+	comment: (content) => `<!--\n${lines.join(lines.get(content), { prefix: () => '\t' })}\n-->`,
 	// not great support for svelte maybe we can add it another time
 	format: async (code) => code,
 };
@@ -206,7 +206,7 @@ const vue: Lang = {
 			local: Array.from(localDeps),
 		} satisfies ResolvedDependencies);
 	},
-	comment: (content) => `<!--\n${content}\n-->`,
+	comment: (content) => `<!--\n${lines.join(lines.get(content), { prefix: () => '\t' })}\n-->`,
 	format: async (code, { formatter, prettierOptions }) => {
 		if (!formatter) return code;
 
