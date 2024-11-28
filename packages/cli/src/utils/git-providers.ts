@@ -1,4 +1,5 @@
 import color from 'chalk';
+import fetch from 'node-fetch';
 import { Octokit } from 'octokit';
 import * as v from 'valibot';
 import type { RemoteBlock } from './blocks';
@@ -6,7 +7,6 @@ import { Err, Ok, type Result } from './blocks/types/result';
 import { type Category, categorySchema } from './build';
 import { OUTPUT_FILE } from './context';
 import * as persisted from './persisted';
-import betterFetch from 'node-fetch';
 
 export type Info = {
 	refs: 'tags' | 'heads';
@@ -117,7 +117,7 @@ const github: Provider = {
 				headers.append('Authorization', `token ${token}`);
 			}
 
-			const response = await betterFetch(url, { headers });
+			const response = await fetch(url, { headers });
 
 			verbose?.(`Got a response from ${url} ${response.status} ${response.statusText}`);
 
