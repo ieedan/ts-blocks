@@ -321,8 +321,11 @@ const _add = async (blockNames: string[], options: Options) => {
 			completedMessage: `Added ${fullSpecifier}`,
 			run: async () => {
 				verbose(`Creating directory ${color.bold(directory)}`);
+
 				// in case the directory didn't already exist
 				fs.mkdirSync(directory, { recursive: true });
+
+				verbose(`Created directory ${color.bold(directory)}`);
 
 				const files: { content: string; destPath: string }[] = [];
 
@@ -351,6 +354,8 @@ const _add = async (blockNames: string[], options: Options) => {
 						destPath = path.join(directory, sourceFile);
 					}
 
+					verbose(`Adding ${color.bold(sourcePath)}`);
+
 					const content = await getSourceFile(sourcePath);
 
 					fs.mkdirSync(destPath.slice(0, destPath.length - sourceFile.length), {
@@ -358,6 +363,8 @@ const _add = async (blockNames: string[], options: Options) => {
 					});
 
 					files.push({ content, destPath });
+
+					verbose(`Got ${color.bold(sourcePath)}`);
 				}
 
 				for (const file of files) {
@@ -372,6 +379,8 @@ const _add = async (blockNames: string[], options: Options) => {
 							content = `${comment}\n\n${content}`;
 						}
 
+						verbose(`Formatting ${color.bold(file)}`);
+
 						content = await lang.format(content, {
 							filePath: file.destPath,
 							formatter: config.formatter,
@@ -379,6 +388,8 @@ const _add = async (blockNames: string[], options: Options) => {
 							biomeOptions,
 						});
 					}
+
+					verbose(`Writing ${color.bold(file)} to ${color.bold(file.destPath)}`);
 
 					fs.writeFileSync(file.destPath, content);
 				}
