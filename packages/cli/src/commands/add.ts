@@ -358,9 +358,15 @@ const _add = async (blockNames: string[], options: Options) => {
 
 					const content = await getSourceFile(sourcePath);
 
+					const pathFolder = destPath.slice(0, destPath.length - sourceFile.length);
+
+					verbose(`Creating directory ${color.bold(pathFolder)}`);
+
 					fs.mkdirSync(destPath.slice(0, destPath.length - sourceFile.length), {
 						recursive: true,
 					});
+
+					verbose(`Created directory ${color.bold(pathFolder)}`);
 
 					files.push({ content, destPath });
 
@@ -379,7 +385,7 @@ const _add = async (blockNames: string[], options: Options) => {
 							content = `${comment}\n\n${content}`;
 						}
 
-						verbose(`Formatting ${color.bold(file)}`);
+						verbose(`Formatting ${color.bold(file.destPath)}`);
 
 						content = await lang.format(content, {
 							filePath: file.destPath,
@@ -389,7 +395,7 @@ const _add = async (blockNames: string[], options: Options) => {
 						});
 					}
 
-					verbose(`Writing ${color.bold(file)} to ${color.bold(file.destPath)}`);
+					verbose(`Writing to ${color.bold(file.destPath)}`);
 
 					fs.writeFileSync(file.destPath, content);
 				}
