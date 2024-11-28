@@ -1,5 +1,11 @@
 # jsrepo
 
+## 1.12.3
+
+### Patch Changes
+
+- b976ea0: Improved error message when failing to fetch manifest file with some troubleshooting steps.
+
 ## 1.12.2
 
 ### Patch Changes
