@@ -9,7 +9,8 @@
 <DocHeader title="GitHub" description="How to use GitHub as your jsrepo registry." />
 <SubHeading>Branches and Tags</SubHeading>
 <Blockquote variant="primary">
-	The default branch is <CodeSpan>main</CodeSpan>.
+	<Jsrepo /> uses <CodeSpan>octokit</CodeSpan> to detect the default branch if a branch or tag is not
+	supplied.
 </Blockquote>
 <p>
 	<Jsrepo /> supports <Link target="_blank" href="https://github.com">GitHub</Link> so that you can just
@@ -26,7 +27,7 @@ https://github.com/ieedan/std/tree/next # branch reference
 />
 <Blockquote variant="primary">
 	To check if a ref is a tag or a branch the CLI calls
-	<Link target="_blank" href="https://github.com/octokit/octokit.js">octokit</Link> to check the tags.
+	<CodeSpan>octokit</CodeSpan> to check the tags.
 </Blockquote>
 <SubHeading>Using Tags for Versioning</SubHeading>
 <p>
