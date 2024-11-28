@@ -70,7 +70,7 @@ const manifestErrorMessage = (info: Info, defaultBranch: string) => {
 	return Err(
 		`There was an error fetching the \`${color.bold(OUTPUT_FILE)}\` from ${color.bold(info.url)}.
 
-This may be for one of the following reasons:
+${color.bold('This may be for one of the following reasons:')}
 1. The \`${color.bold(OUTPUT_FILE)}\` actually doesn't exist
 2. Your repository path is incorrect (wrong branch, wrong tag) default branches other than \`${color.bold(defaultBranch)}\` must be specified \`${color.bold('github/<owner>/<name>/tree/<branch>')}\`
 3. You are using an expired access token or a token that doesn't have access to this repository
