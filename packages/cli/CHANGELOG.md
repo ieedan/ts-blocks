@@ -1,5 +1,11 @@
 # jsrepo
 
+## 1.12.6
+
+### Patch Changes
+
+- 5c322a5: More verbose logging.
+
 ## 1.12.5
 
 ### Patch Changes
