@@ -89,7 +89,8 @@ const github: Provider = {
 This may be for one of the following reasons:
 1. The \`${color.bold(OUTPUT_FILE)}\` actually doesn't exist
 2. Your repository path is incorrect (wrong branch, wrong tag) default branches other than \`${color.bold('main')}\` must be specified \`github/<owner>/<name>/tree/<branch>\`
-3. You are using an expired access token or a token that doesn't have access to this repository`
+3. You are using an expired access token or a token that doesn't have access to this repository
+`
 			);
 		};
 
@@ -201,7 +202,8 @@ const gitlab: Provider = {
 This may be for one of the following reasons:
 1. The \`${color.bold(OUTPUT_FILE)}\` actually doesn't exist
 2. Your repository path is incorrect (wrong branch, wrong tag) default branches other than \`${color.bold('main')}\` must be specified \`github/<owner>/<name>/tree/<branch>\`
-3. You are using an expired access token or a token that doesn't have access to this repository`
+3. You are using an expired access token or a token that doesn't have access to this repository
+`
 			);
 		};
 
@@ -306,7 +308,8 @@ const bitbucket: Provider = {
 This may be for one of the following reasons:
 1. The \`${color.bold(OUTPUT_FILE)}\` actually doesn't exist
 2. Your repository path is incorrect (wrong branch, wrong tag) default branches other than \`${color.bold('master')}\` must be specified \`github/<owner>/<name>/tree/<branch>\`
-3. You are using an expired access token or a token that doesn't have access to this repository`
+3. You are using an expired access token or a token that doesn't have access to this repository
+`
 			);
 		};
 
