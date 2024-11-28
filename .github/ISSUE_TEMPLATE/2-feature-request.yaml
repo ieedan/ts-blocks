@@ -1,0 +1,17 @@
+name: 🆕 Feature request
+description: Help us improve jsrepo.
+labels: ["feature"]
+body:
+  - type: markdown
+    attributes: 
+      value: |
+        Thanks for helping us improve **jsrepo**!
+  - type: textarea
+    id: desc
+    attributes:
+      label: Describe the feature
+      description: What doesn't jsrepo do now? What should it do?
+    validations:
+      required: true
+
+

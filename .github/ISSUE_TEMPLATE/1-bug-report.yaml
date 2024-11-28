@@ -1,0 +1,54 @@
+name: 🐞 Bug report
+description: Help us improve jsrepo.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes: 
+      value: |
+        Thanks for helping us fix **jsrepo**!
+  - type: textarea
+    id: desc
+    attributes:
+      label: Describe the issue
+      description: What is happening right now? What is supposed to happen?
+    validations:
+      required: true
+  - type: markdown
+    attributes: 
+      value: |
+        Most of the time it will be difficult to reproduce your issue if we don't have access to the source registry. 
+        Please provide a public registry in any supported provider that can be used to produce your issue.
+
+        Assuming we have access to the registry
+  - type: input
+    id: repro
+    attributes:
+      label: Link to public reproduction
+      description: "https://github.com/ieedan/std"
+    validations:
+      required: true
+
+---
+name: "\U0001F41E Bug report"
+about: Help us fix jsrepo
+title: ''
+labels: bug
+assignees: ''
+
+---
+
+**Describe the bug**
+<!-- What is happening, what is supposed to happen. -->
+
+**Reproduction** 
+<!-- 
+  Please provide a public reproduction of your issue a repository in any of the providers we support is 
+  sufficient. 
+
+  To get started you can use the a project or registry template:
+  - [project](https://stackblitz.com/github/ieedan/jsrepo/tree/main/examples/project)
+  - [registry](https://stackblitz.com/github/ieedan/jsrepo/tree/main/examples/registry)  
+-->
+
+**Checks**
+- [ ] I have checked other issues to see if my issue was already reported or addressed
