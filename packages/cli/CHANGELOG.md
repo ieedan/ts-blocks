@@ -1,5 +1,11 @@
 # jsrepo
 
+## 1.12.8
+
+### Patch Changes
+
+- 86949c9: More logging
+
 ## 1.12.7
 
 ### Patch Changes
