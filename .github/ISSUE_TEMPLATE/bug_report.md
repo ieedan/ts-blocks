@@ -2,13 +2,13 @@
 name: Bug report
 about: Help us make jsrepo better.
 title: ''
-labels: ''
+labels: bug
 assignees: ''
 
 ---
 
 **Describe the bug**
-What is happening, what is supposed to happen.
+<!-- What is happening, what is supposed to happen. -->
 
 **Reproduction** 
 <!-- 
@@ -20,4 +20,5 @@ What is happening, what is supposed to happen.
   - [registry](https://stackblitz.com/github/ieedan/jsrepo/tree/main/examples/registry)  
 -->
 
+**Checks**
 - [ ] I have checked other issues to see if my issue was already reported or addressed
