@@ -1,6 +1,6 @@
 ---
-name: Bug report
-about: Help us make jsrepo better.
+name: "\U0001F41E Bug report"
+about: Help us fix jsrepo
 title: ''
 labels: bug
 assignees: ''
