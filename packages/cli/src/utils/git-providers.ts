@@ -63,12 +63,12 @@ export interface Provider {
 	matches: (repoPath: string) => boolean;
 }
 
-const manifestErrorMessage = (info: Info, defaultBranch: string) => {
+const rawErrorMessage = (info: Info, filePath: string, defaultBranch: string) => {
 	return Err(
-		`There was an error fetching the \`${color.bold(OUTPUT_FILE)}\` from ${color.bold(info.url)}.
+		`There was an error fetching the \`${color.bold(filePath)}\` from ${color.bold(info.url)}.
 
 ${color.bold('This may be for one of the following reasons:')}
-1. The \`${color.bold(OUTPUT_FILE)}\` or containing repository doesn't exist
+1. The \`${color.bold(filePath)}\` or containing repository doesn't exist
 2. Your repository path is incorrect (wrong branch, wrong tag) default branches other than \`${color.bold(defaultBranch)}\` must be specified \`${color.bold('github/<owner>/<name>/tree/<branch>')}\`
 3. You are using an expired access token or a token that doesn't have access to this repository
 `
@@ -109,12 +109,12 @@ const github: Provider = {
 			const response = await fetch(url, { headers });
 
 			if (!response.ok) {
-				return manifestErrorMessage(info, github.defaultBranch());
+				return rawErrorMessage(info, resourcePath, github.defaultBranch());
 			}
 
 			return Ok(await response.text());
 		} catch {
-			return manifestErrorMessage(info, github.defaultBranch());
+			return rawErrorMessage(info, resourcePath, github.defaultBranch());
 		}
 	},
 	fetchManifest: async (repoPath) => {
@@ -223,12 +223,12 @@ const gitlab: Provider = {
 			const response = await fetch(url, { headers });
 
 			if (!response.ok) {
-				return manifestErrorMessage(info, gitlab.defaultBranch());
+				return rawErrorMessage(info, resourcePath, gitlab.defaultBranch());
 			}
 
 			return Ok(await response.text());
 		} catch {
-			return manifestErrorMessage(info, gitlab.defaultBranch());
+			return rawErrorMessage(info, resourcePath, gitlab.defaultBranch());
 		}
 	},
 	fetchManifest: async (repoPath) => {
@@ -318,12 +318,12 @@ const bitbucket: Provider = {
 			const response = await fetch(url, { headers });
 
 			if (!response.ok) {
-				return manifestErrorMessage(info, bitbucket.defaultBranch());
+				return rawErrorMessage(info, resourcePath, bitbucket.defaultBranch());
 			}
 
 			return Ok(await response.text());
 		} catch {
-			return manifestErrorMessage(info, bitbucket.defaultBranch());
+			return rawErrorMessage(info, resourcePath, bitbucket.defaultBranch());
 		}
 	},
 	fetchManifest: async (repoPath) => {
