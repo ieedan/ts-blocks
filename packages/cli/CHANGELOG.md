@@ -1,5 +1,15 @@
 # jsrepo
 
+## 1.13.0
+
+### Minor Changes
+
+- 7d6d5d4: Use `node-fetch` instead of fetch to prevent infinite hanging behavior in some environments.
+
+### Patch Changes
+
+- 8bb4da8: More logging
+
 ## 1.12.8
 
 ### Patch Changes
