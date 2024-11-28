@@ -1,5 +1,11 @@
 # jsrepo
 
+## 1.12.5
+
+### Patch Changes
+
+- 954a2a4: More logging for `--verbose` option on `add` command.
+
 ## 1.12.4
 
 ### Patch Changes
