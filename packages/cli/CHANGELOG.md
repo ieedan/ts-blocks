@@ -1,5 +1,11 @@
 # jsrepo
 
+## 1.12.7
+
+### Patch Changes
+
+- 1638603: Request logging for add.
+
 ## 1.12.6
 
 ### Patch Changes
