@@ -55,6 +55,7 @@
 		"diff": "^7.0.0",
 		"estree-walker": "^3.0.3",
 		"execa": "^9.5.1",
+		"node-fetch": "^3.3.2",
 		"octokit": "^4.0.2",
 		"package-manager-detector": "^0.2.4",
 		"pathe": "^1.1.2",

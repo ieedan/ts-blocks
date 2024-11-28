@@ -6,6 +6,7 @@ import { Err, Ok, type Result } from './blocks/types/result';
 import { type Category, categorySchema } from './build';
 import { OUTPUT_FILE } from './context';
 import * as persisted from './persisted';
+import betterFetch from 'node-fetch';
 
 export type Info = {
 	refs: 'tags' | 'heads';
@@ -116,7 +117,7 @@ const github: Provider = {
 				headers.append('Authorization', `token ${token}`);
 			}
 
-			const response = await fetch(url, { headers });
+			const response = await betterFetch(url, { headers });
 
 			verbose?.(`Got a response from ${url} ${response.status} ${response.statusText}`);
 
