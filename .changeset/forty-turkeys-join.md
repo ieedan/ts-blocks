@@ -2,4 +2,4 @@
 "jsrepo": patch
 ---
 
-`github` provider will not detect default branch if a branch is not supplied.
+`github` provider will now detect default branch if a branch is not supplied.
