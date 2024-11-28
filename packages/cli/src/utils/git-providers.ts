@@ -1,4 +1,5 @@
 import color from 'chalk';
+import fetch from 'node-fetch';
 import { Octokit } from 'octokit';
 import * as v from 'valibot';
 import type { RemoteBlock } from './blocks';
@@ -121,11 +122,20 @@ const github: Provider = {
 			verbose?.(`Got a response from ${url} ${response.status} ${response.statusText}`);
 
 			if (!response.ok) {
+				verbose?.('response not ok');
 				return rawErrorMessage(info, resourcePath, github.defaultBranch());
 			}
 
-			return Ok(await response.text());
-		} catch {
+			verbose?.('Waiting for response.text()');
+
+			const text = await response.text();
+
+			verbose?.('response.text() done.');
+
+			return Ok(text);
+		} catch (err) {
+			verbose?.(`erroring in response ${err} `);
+
 			return rawErrorMessage(info, resourcePath, github.defaultBranch());
 		}
 	},
