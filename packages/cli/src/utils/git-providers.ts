@@ -1,6 +1,7 @@
 import color from 'chalk';
 import { Octokit } from 'octokit';
 import * as v from 'valibot';
+import * as ascii from './ascii';
 import type { RemoteBlock } from './blocks';
 import { Err, Ok, type Result } from './blocks/types/result';
 import { type Category, categorySchema } from './build';
@@ -77,11 +78,18 @@ const github: Provider = {
 		);
 	},
 	fetchRaw: async (repoPath, resourcePath) => {
-		const url = await github.resolveRaw(repoPath, resourcePath);
+		const info = await github.info(repoPath);
 
-		const errorMessage = (err: string) => {
+		const url = await github.resolveRaw(info, resourcePath);
+
+		const errorMessage = () => {
 			return Err(
-				`There was an error fetching the \`${OUTPUT_FILE}\` from the repository \`${url.href}\` make sure the target repository has a \`${OUTPUT_FILE}\` in its root.\n Error: ${err}`
+				`There was an error fetching the \`${color.bold(OUTPUT_FILE)}\` from ${color.bold(info.url)}.
+
+This may be for one of the following reasons:
+1. The \`${color.bold(OUTPUT_FILE)}\` actually doesn't exist
+2. Your repository path is incorrect (wrong branch, wrong tag) default branches other than \`${color.bold('main')}\` must be specified \`github/<owner>/<name>/tree/<branch>\`
+3. You are using an expired access token or a token that doesn't have access to this repository`
 			);
 		};
 
@@ -97,12 +105,12 @@ const github: Provider = {
 			const response = await fetch(url, { headers });
 
 			if (!response.ok) {
-				return errorMessage(`${response.status} ${response.text}`);
+				return errorMessage();
 			}
 
 			return Ok(await response.text());
-		} catch (err) {
-			return errorMessage(`${err}`);
+		} catch {
+			return errorMessage();
 		}
 	},
 	fetchManifest: async (repoPath) => {
@@ -182,11 +190,18 @@ const gitlab: Provider = {
 		);
 	},
 	fetchRaw: async (repoPath, resourcePath) => {
-		const url = await gitlab.resolveRaw(repoPath, resourcePath);
+		const info = await github.info(repoPath);
 
-		const errorMessage = (err: string) => {
+		const url = await gitlab.resolveRaw(info, resourcePath);
+
+		const errorMessage = () => {
 			return Err(
-				`There was an error fetching the \`${OUTPUT_FILE}\` from the repository \`${url.href}\` make sure the target repository has a \`${OUTPUT_FILE}\` in its root.\n Error: ${err}`
+				`There was an error fetching the \`${color.bold(OUTPUT_FILE)}\` from ${color.bold(info.url)}.
+
+This may be for one of the following reasons:
+1. The \`${color.bold(OUTPUT_FILE)}\` actually doesn't exist
+2. Your repository path is incorrect (wrong branch, wrong tag) default branches other than \`${color.bold('main')}\` must be specified \`github/<owner>/<name>/tree/<branch>\`
+3. You are using an expired access token or a token that doesn't have access to this repository`
 			);
 		};
 
@@ -202,12 +217,12 @@ const gitlab: Provider = {
 			const response = await fetch(url, { headers });
 
 			if (!response.ok) {
-				return errorMessage(`${response.status} ${response.text}`);
+				return errorMessage();
 			}
 
 			return Ok(await response.text());
-		} catch (err) {
-			return errorMessage(`${err}`);
+		} catch {
+			return errorMessage();
 		}
 	},
 	fetchManifest: async (repoPath) => {
@@ -280,11 +295,18 @@ const bitbucket: Provider = {
 		);
 	},
 	fetchRaw: async (repoPath, resourcePath) => {
-		const url = await bitbucket.resolveRaw(repoPath, resourcePath);
+		const info = await bitbucket.info(repoPath);
 
-		const errorMessage = (err: string) => {
+		const url = await bitbucket.resolveRaw(info, resourcePath);
+
+		const errorMessage = () => {
 			return Err(
-				`There was an error fetching the \`${OUTPUT_FILE}\` from the repository \`${url.href}\` make sure the target repository has a \`${OUTPUT_FILE}\` in its root.\n Error: ${err}`
+				`There was an error fetching the \`${color.bold(OUTPUT_FILE)}\` from ${color.bold(info.url)}.
+
+This may be for one of the following reasons:
+1. The \`${color.bold(OUTPUT_FILE)}\` actually doesn't exist
+2. Your repository path is incorrect (wrong branch, wrong tag) default branches other than \`${color.bold('master')}\` must be specified \`github/<owner>/<name>/tree/<branch>\`
+3. You are using an expired access token or a token that doesn't have access to this repository`
 			);
 		};
 
@@ -300,12 +322,12 @@ const bitbucket: Provider = {
 			const response = await fetch(url, { headers });
 
 			if (!response.ok) {
-				return errorMessage(`${response.status} ${response.text}`);
+				return errorMessage();
 			}
 
 			return Ok(await response.text());
-		} catch (err) {
-			return errorMessage(`${err}`);
+		} catch {
+			return errorMessage();
 		}
 	},
 	fetchManifest: async (repoPath) => {
