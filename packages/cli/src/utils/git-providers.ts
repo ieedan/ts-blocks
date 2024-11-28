@@ -1,14 +1,11 @@
 import color from 'chalk';
 import { Octokit } from 'octokit';
 import * as v from 'valibot';
-import * as ascii from './ascii';
 import type { RemoteBlock } from './blocks';
 import { Err, Ok, type Result } from './blocks/types/result';
 import { type Category, categorySchema } from './build';
 import { OUTPUT_FILE } from './context';
 import * as persisted from './persisted';
-
-const octokit = new Octokit({});
 
 export type Info = {
 	refs: 'tags' | 'heads';
@@ -71,7 +68,7 @@ const manifestErrorMessage = (info: Info, defaultBranch: string) => {
 		`There was an error fetching the \`${color.bold(OUTPUT_FILE)}\` from ${color.bold(info.url)}.
 
 ${color.bold('This may be for one of the following reasons:')}
-1. The \`${color.bold(OUTPUT_FILE)}\` actually doesn't exist
+1. The \`${color.bold(OUTPUT_FILE)}\` or containing repository doesn't exist
 2. Your repository path is incorrect (wrong branch, wrong tag) default branches other than \`${color.bold(defaultBranch)}\` must be specified \`${color.bold('github/<owner>/<name>/tree/<branch>')}\`
 3. You are using an expired access token or a token that doesn't have access to this repository
 `
@@ -138,8 +135,20 @@ const github: Provider = {
 
 		let ref = github.defaultBranch();
 
+		const token = persisted.get().get(`${github.name()}-token`);
+
+		const octokit = new Octokit({ auth: token });
+
 		if (rest[0] === 'tree') {
 			ref = rest[1];
+		} else {
+			try {
+				const { data: repo } = await octokit.rest.repos.get({ owner, repo: repoName });
+
+				ref = repo.default_branch;
+			} catch {
+				// we just want to continue on blissfully unaware the user will get an error later
+			}
 		}
 
 		// checks if the type of the ref is tags or heads
