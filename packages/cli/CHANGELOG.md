@@ -1,5 +1,11 @@
 # jsrepo
 
+## 1.12.4
+
+### Patch Changes
+
+- 54e4721: `github` provider will now detect default branch if a branch is not supplied.
+
 ## 1.12.3
 
 ### Patch Changes
