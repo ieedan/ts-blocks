@@ -17,6 +17,10 @@ export type Info = {
 	provider: Provider;
 };
 
+export type FetchOptions = {
+	verbose: (str: string) => void;
+};
+
 export interface Provider {
 	/** Get the name of the provider
 	 *
@@ -41,7 +45,11 @@ export interface Provider {
 	 * @param resourcePath
 	 * @returns
 	 */
-	fetchRaw: (repoPath: string | Info, resourcePath: string) => Promise<Result<string, string>>;
+	fetchRaw: (
+		repoPath: string | Info,
+		resourcePath: string,
+		opts?: Partial<FetchOptions>
+	) => Promise<Result<string, string>>;
 	/** Returns the manifest for the provided repoPath
 	 *
 	 * @param repoPath
@@ -92,10 +100,12 @@ const github: Provider = {
 			`https://raw.githubusercontent.com/${info.owner}/${info.repoName}/refs/${info.refs}/${info.ref}/`
 		);
 	},
-	fetchRaw: async (repoPath, resourcePath) => {
+	fetchRaw: async (repoPath, resourcePath, { verbose } = {}) => {
 		const info = await github.info(repoPath);
 
 		const url = await github.resolveRaw(info, resourcePath);
+
+		verbose?.(`Trying to fetch from ${url}`);
 
 		try {
 			const token = persisted.get().get(`${github.name()}-token`);
@@ -107,6 +117,8 @@ const github: Provider = {
 			}
 
 			const response = await fetch(url, { headers });
+
+			verbose?.(`Got a response from ${url} ${response.status} ${response.statusText}`);
 
 			if (!response.ok) {
 				return rawErrorMessage(info, resourcePath, github.defaultBranch());
@@ -206,10 +218,12 @@ const gitlab: Provider = {
 			`https://gitlab.com/api/v4/projects/${encodeURIComponent(`${info.owner}/${info.repoName}`)}/repository/files/`
 		);
 	},
-	fetchRaw: async (repoPath, resourcePath) => {
+	fetchRaw: async (repoPath, resourcePath, { verbose } = {}) => {
 		const info = await github.info(repoPath);
 
 		const url = await gitlab.resolveRaw(info, resourcePath);
+
+		verbose?.(`Trying to fetch from ${url}`);
 
 		try {
 			const token = persisted.get().get(`${gitlab.name()}-token`);
@@ -221,6 +235,8 @@ const gitlab: Provider = {
 			}
 
 			const response = await fetch(url, { headers });
+
+			verbose?.(`Got a response from ${url} ${response.status} ${response.statusText}`);
 
 			if (!response.ok) {
 				return rawErrorMessage(info, resourcePath, gitlab.defaultBranch());
@@ -301,10 +317,12 @@ const bitbucket: Provider = {
 			`https://api.bitbucket.org/2.0/repositories/${info.owner}/${info.repoName}/src/${info.ref}/`
 		);
 	},
-	fetchRaw: async (repoPath, resourcePath) => {
+	fetchRaw: async (repoPath, resourcePath, { verbose } = {}) => {
 		const info = await bitbucket.info(repoPath);
 
 		const url = await bitbucket.resolveRaw(info, resourcePath);
+
+		verbose?.(`Trying to fetch from ${url}`);
 
 		try {
 			const token = persisted.get().get(`${bitbucket.name()}-token`);
@@ -316,6 +334,8 @@ const bitbucket: Provider = {
 			}
 
 			const response = await fetch(url, { headers });
+
+			verbose?.(`Got a response from ${url} ${response.status} ${response.statusText}`);
 
 			if (!response.ok) {
 				return rawErrorMessage(info, resourcePath, bitbucket.defaultBranch());

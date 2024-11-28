@@ -330,7 +330,9 @@ const _add = async (blockNames: string[], options: Options) => {
 				const files: { content: string; destPath: string }[] = [];
 
 				const getSourceFile = async (filePath: string) => {
-					const content = await providerInfo.provider.fetchRaw(providerInfo, filePath);
+					const content = await providerInfo.provider.fetchRaw(providerInfo, filePath, {
+						verbose,
+					});
 
 					if (content.isErr()) {
 						loading.stop(color.red(`Error fetching ${color.bold(filePath)}`));
