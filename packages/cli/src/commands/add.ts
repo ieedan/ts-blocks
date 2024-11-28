@@ -334,12 +334,16 @@ const _add = async (blockNames: string[], options: Options) => {
 						verbose,
 					});
 
+					verbose(`Came back with response content for ${color.cyan(filePath)}`);
+
 					if (content.isErr()) {
 						loading.stop(color.red(`Error fetching ${color.bold(filePath)}`));
 						program.error(
 							color.red(`There was an error trying to get ${fullSpecifier}`)
 						);
 					}
+
+					verbose(`Came back with success response content for ${color.cyan(filePath)}`);
 
 					return content.unwrap();
 				};
@@ -359,6 +363,8 @@ const _add = async (blockNames: string[], options: Options) => {
 					verbose(`Adding ${color.bold(sourcePath)}`);
 
 					const content = await getSourceFile(sourcePath);
+
+					verbose(`Setting up pathFolder for ${destPath}`);
 
 					const pathFolder = destPath.slice(0, destPath.length - sourceFile.length);
 
