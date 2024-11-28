@@ -1,6 +1,7 @@
 import color from 'chalk';
 import { Octokit } from 'octokit';
 import * as v from 'valibot';
+import * as ascii from './ascii';
 import type { RemoteBlock } from './blocks';
 import { Err, Ok, type Result } from './blocks/types/result';
 import { type Category, categorySchema } from './build';
@@ -25,6 +26,11 @@ export interface Provider {
 	 * @returns the name of the provider
 	 */
 	name: () => string;
+	/** Get the name of the default branch
+	 *
+	 * @returns
+	 */
+	defaultBranch: () => string;
 	/** Returns a URL to the raw path of the resource provided in the resourcePath
 	 *
 	 * @param repoPath
@@ -60,6 +66,18 @@ export interface Provider {
 	matches: (repoPath: string) => boolean;
 }
 
+const manifestErrorMessage = (info: Info, defaultBranch: string) => {
+	return Err(
+		`There was an error fetching the \`${color.bold(OUTPUT_FILE)}\` from ${color.bold(info.url)}.
+
+${color.bold('This may be for one of the following reasons:')}
+1. The \`${color.bold(OUTPUT_FILE)}\` actually doesn't exist
+2. Your repository path is incorrect (wrong branch, wrong tag) default branches other than \`${color.bold(defaultBranch)}\` must be specified \`${color.bold('github/<owner>/<name>/tree/<branch>')}\`
+3. You are using an expired access token or a token that doesn't have access to this repository
+`
+	);
+};
+
 /** Valid paths
  *
  *  `https://github.com/<owner>/<repo>/[tree]/[ref]`
@@ -68,6 +86,7 @@ export interface Provider {
  */
 const github: Provider = {
 	name: () => 'github',
+	defaultBranch: () => 'main',
 	resolveRaw: async (repoPath, resourcePath) => {
 		const info = await github.info(repoPath);
 
@@ -77,13 +96,9 @@ const github: Provider = {
 		);
 	},
 	fetchRaw: async (repoPath, resourcePath) => {
-		const url = await github.resolveRaw(repoPath, resourcePath);
+		const info = await github.info(repoPath);
 
-		const errorMessage = (err: string) => {
-			return Err(
-				`There was an error fetching the \`${OUTPUT_FILE}\` from the repository \`${url.href}\` make sure the target repository has a \`${OUTPUT_FILE}\` in its root.\n Error: ${err}`
-			);
-		};
+		const url = await github.resolveRaw(info, resourcePath);
 
 		try {
 			const token = persisted.get().get(`${github.name()}-token`);
@@ -97,12 +112,12 @@ const github: Provider = {
 			const response = await fetch(url, { headers });
 
 			if (!response.ok) {
-				return errorMessage(`${response.status} ${response.text}`);
+				return manifestErrorMessage(info, github.defaultBranch());
 			}
 
 			return Ok(await response.text());
-		} catch (err) {
-			return errorMessage(`${err}`);
+		} catch {
+			return manifestErrorMessage(info, github.defaultBranch());
 		}
 	},
 	fetchManifest: async (repoPath) => {
@@ -121,7 +136,7 @@ const github: Provider = {
 
 		const [owner, repoName, ...rest] = repo.split('/');
 
-		let ref = 'main';
+		let ref = github.defaultBranch();
 
 		if (rest[0] === 'tree') {
 			ref = rest[1];
@@ -130,7 +145,7 @@ const github: Provider = {
 		// checks if the type of the ref is tags or heads
 		let refs: 'heads' | 'tags' = 'heads';
 		// no need to check if ref is main
-		if (ref !== 'main') {
+		if (ref !== github.defaultBranch()) {
 			try {
 				const { data: tags } = await octokit.rest.git.listMatchingRefs({
 					owner,
@@ -173,6 +188,7 @@ const github: Provider = {
  */
 const gitlab: Provider = {
 	name: () => 'gitlab',
+	defaultBranch: () => 'main',
 	resolveRaw: async (repoPath, resourcePath) => {
 		const info = await gitlab.info(repoPath);
 
@@ -182,13 +198,9 @@ const gitlab: Provider = {
 		);
 	},
 	fetchRaw: async (repoPath, resourcePath) => {
-		const url = await gitlab.resolveRaw(repoPath, resourcePath);
+		const info = await github.info(repoPath);
 
-		const errorMessage = (err: string) => {
-			return Err(
-				`There was an error fetching the \`${OUTPUT_FILE}\` from the repository \`${url.href}\` make sure the target repository has a \`${OUTPUT_FILE}\` in its root.\n Error: ${err}`
-			);
-		};
+		const url = await gitlab.resolveRaw(info, resourcePath);
 
 		try {
 			const token = persisted.get().get(`${gitlab.name()}-token`);
@@ -202,12 +214,12 @@ const gitlab: Provider = {
 			const response = await fetch(url, { headers });
 
 			if (!response.ok) {
-				return errorMessage(`${response.status} ${response.text}`);
+				return manifestErrorMessage(info, gitlab.defaultBranch());
 			}
 
 			return Ok(await response.text());
-		} catch (err) {
-			return errorMessage(`${err}`);
+		} catch {
+			return manifestErrorMessage(info, gitlab.defaultBranch());
 		}
 	},
 	fetchManifest: async (repoPath) => {
@@ -226,7 +238,7 @@ const gitlab: Provider = {
 
 		const [owner, repoName, ...rest] = repo.split('/');
 
-		let ref = 'main';
+		let ref = gitlab.defaultBranch();
 		let refs: Info['refs'] = 'heads';
 
 		if (rest[0] === '-' && rest[1] === 'tree') {
@@ -271,6 +283,7 @@ const gitlab: Provider = {
  */
 const bitbucket: Provider = {
 	name: () => 'bitbucket',
+	defaultBranch: () => 'master',
 	resolveRaw: async (repoPath, resourcePath) => {
 		const info = await bitbucket.info(repoPath);
 
@@ -280,13 +293,9 @@ const bitbucket: Provider = {
 		);
 	},
 	fetchRaw: async (repoPath, resourcePath) => {
-		const url = await bitbucket.resolveRaw(repoPath, resourcePath);
+		const info = await bitbucket.info(repoPath);
 
-		const errorMessage = (err: string) => {
-			return Err(
-				`There was an error fetching the \`${OUTPUT_FILE}\` from the repository \`${url.href}\` make sure the target repository has a \`${OUTPUT_FILE}\` in its root.\n Error: ${err}`
-			);
-		};
+		const url = await bitbucket.resolveRaw(info, resourcePath);
 
 		try {
 			const token = persisted.get().get(`${bitbucket.name()}-token`);
@@ -300,12 +309,12 @@ const bitbucket: Provider = {
 			const response = await fetch(url, { headers });
 
 			if (!response.ok) {
-				return errorMessage(`${response.status} ${response.text}`);
+				return manifestErrorMessage(info, bitbucket.defaultBranch());
 			}
 
 			return Ok(await response.text());
-		} catch (err) {
-			return errorMessage(`${err}`);
+		} catch {
+			return manifestErrorMessage(info, bitbucket.defaultBranch());
 		}
 	},
 	fetchManifest: async (repoPath) => {
@@ -327,7 +336,7 @@ const bitbucket: Provider = {
 		// pretty sure this just auto detects
 		const refs = 'heads';
 
-		let ref = 'master';
+		let ref = bitbucket.defaultBranch();
 
 		if (rest[0] === 'src') {
 			ref = rest[1];
