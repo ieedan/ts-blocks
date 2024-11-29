@@ -1,5 +1,11 @@
 # jsrepo
 
+## 1.13.3
+
+### Patch Changes
+
+- 80070c5: Minify output for reduced package size.
+
 ## 1.13.2
 
 ### Patch Changes
