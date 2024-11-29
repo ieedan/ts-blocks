@@ -19,5 +19,7 @@ body:
       options:
         - label: I have checked other issues to see if my feature was already requested or added
           required: true
+        - label: I am willing to file a pull request for this feature
+          required: false
 
 
