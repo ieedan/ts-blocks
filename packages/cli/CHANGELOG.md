@@ -1,5 +1,13 @@
 # jsrepo
 
+## 1.13.2
+
+### Patch Changes
+
+- 3a95769: Improve package README
+- 3a95769: Remove unnecessary use of bin.mjs.
+- 3a95769: Only include `./dist` and `schema.json` in package now.
+
 ## 1.13.1
 
 ### Patch Changes
