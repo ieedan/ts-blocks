@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { program } from 'commander';
@@ -24,6 +25,8 @@ const context: CLIContext = {
 	},
 	resolveRelativeToRoot,
 };
+
+console.clear(); // make sure we start from the top
 
 program
 	.name(name)
