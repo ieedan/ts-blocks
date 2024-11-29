@@ -1,4 +1,4 @@
-name: Bug report
+name: 🐞 Bug report
 description: Help us improve jsrepo.
 labels: ["bug"]
 body:
@@ -46,8 +46,8 @@ body:
     - type: checkboxes
       id: terms
       attributes:
+          label: Validations
+          description: Please make sure you have checked all of the following.
           options:
               - label: I have checked other issues to see if my issue was already reported or addressed
                 required: true
-              - label: I am willing to file a pull request for this feature
-                required: false
