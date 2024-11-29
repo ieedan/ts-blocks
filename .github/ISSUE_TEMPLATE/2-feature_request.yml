@@ -6,6 +6,7 @@ body:
       attributes:
           value: |
               Thanks for helping us improve **jsrepo**!
+
     - type: textarea
       id: desc
       attributes:
@@ -13,6 +14,7 @@ body:
           description: What doesn't jsrepo do now? What should it do?
       validations:
           required: true
+          
     - type: checkboxes
       id: terms
       attributes:
