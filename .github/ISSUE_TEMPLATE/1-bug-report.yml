@@ -26,14 +26,14 @@ body:
         Using the public registry please reproduce your issue in our 
         [project template](https://stackblitz.com/github/ieedan/jsrepo/tree/main/examples/project) then provide a link to the instance as well as any reproduction steps.
   - type: input
-    id: repro-link
+    id: reproLink
     attributes:
       label: Reproduction Link
       description: "https://github.com/ieedan/std"
     validations:
       required: true
   - type: textarea
-    id: repro-steps
+    id: reproSteps
     attributes:
       label: Steps to reproduce
       description: |
