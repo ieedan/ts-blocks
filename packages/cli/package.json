@@ -1,7 +1,7 @@
 {
 	"name": "jsrepo",
 	"description": "A CLI to add shared code from remote repositories.",
-	"version": "1.12.4",
+	"version": "1.13.1",
 	"repository": {
 		"type": "git",
 		"url": "git+https://github.com/ieedan/jsrepo"
@@ -58,6 +58,7 @@
 		"diff": "^7.0.0",
 		"estree-walker": "^3.0.3",
 		"execa": "^9.5.1",
+		"node-fetch": "^3.3.2",
 		"octokit": "^4.0.2",
 		"package-manager-detector": "^0.2.4",
 		"pathe": "^1.1.2",

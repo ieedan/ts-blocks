@@ -191,7 +191,9 @@ const _update = async (blockNames: string[], options: Options) => {
 		const files: { content: string; destPath: string; fileName: string }[] = [];
 
 		const getSourceFile = async (filePath: string) => {
-			const content = await providerInfo.provider.fetchRaw(providerInfo, filePath);
+			const content = await providerInfo.provider.fetchRaw(providerInfo, filePath, {
+				verbose,
+			});
 
 			if (content.isErr()) {
 				loading.stop(color.red(`Error fetching ${color.bold(filePath)}`));
@@ -321,14 +323,14 @@ const _update = async (blockNames: string[], options: Options) => {
 			}
 		}
 
-		if (config.includeTests) {
+		if (config.includeTests && block.tests) {
 			verbose('Trying to include tests');
 
 			const { devDependencies } = JSON.parse(
 				fs.readFileSync(path.join(options.cwd, 'package.json')).toString()
 			);
 
-			if (devDependencies.vitest === undefined) {
+			if (devDependencies === undefined || devDependencies.vitest === undefined) {
 				devDeps.add('vitest');
 			}
 		}

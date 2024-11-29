@@ -65,9 +65,9 @@ const resolveTree = async (
 			return Err(`Invalid block! ${color.bold(blockSpecifier)} does not exist!`);
 		}
 
-		const fullSpecifier = `${block.sourceRepo.name}/${block.sourceRepo.owner}/${block.sourceRepo.repoName}/${block.category}/${block.name}`;
+		const specifier = `${block.category}/${block.name}`;
 
-		blocks.set(fullSpecifier, { name: fullSpecifier, subDependency: false, block });
+		blocks.set(specifier, { name: block.name, subDependency: false, block });
 
 		if (block.localDependencies && block.localDependencies.length > 0) {
 			const subDeps = await resolveTree(

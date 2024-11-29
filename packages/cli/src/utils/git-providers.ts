@@ -1,4 +1,5 @@
 import color from 'chalk';
+import fetch from 'node-fetch';
 import { Octokit } from 'octokit';
 import * as v from 'valibot';
 import type { RemoteBlock } from './blocks';
@@ -15,6 +16,10 @@ export type Info = {
 	owner: string;
 	ref: string;
 	provider: Provider;
+};
+
+export type FetchOptions = {
+	verbose: (str: string) => void;
 };
 
 export interface Provider {
@@ -41,7 +46,11 @@ export interface Provider {
 	 * @param resourcePath
 	 * @returns
 	 */
-	fetchRaw: (repoPath: string | Info, resourcePath: string) => Promise<Result<string, string>>;
+	fetchRaw: (
+		repoPath: string | Info,
+		resourcePath: string,
+		opts?: Partial<FetchOptions>
+	) => Promise<Result<string, string>>;
 	/** Returns the manifest for the provided repoPath
 	 *
 	 * @param repoPath
@@ -63,12 +72,12 @@ export interface Provider {
 	matches: (repoPath: string) => boolean;
 }
 
-const manifestErrorMessage = (info: Info, defaultBranch: string) => {
+const rawErrorMessage = (info: Info, filePath: string, defaultBranch: string) => {
 	return Err(
-		`There was an error fetching the \`${color.bold(OUTPUT_FILE)}\` from ${color.bold(info.url)}.
+		`There was an error fetching the \`${color.bold(filePath)}\` from ${color.bold(info.url)}.
 
 ${color.bold('This may be for one of the following reasons:')}
-1. The \`${color.bold(OUTPUT_FILE)}\` or containing repository doesn't exist
+1. The \`${color.bold(filePath)}\` or containing repository doesn't exist
 2. Your repository path is incorrect (wrong branch, wrong tag) default branches other than \`${color.bold(defaultBranch)}\` must be specified \`${color.bold('github/<owner>/<name>/tree/<branch>')}\`
 3. You are using an expired access token or a token that doesn't have access to this repository
 `
@@ -92,10 +101,12 @@ const github: Provider = {
 			`https://raw.githubusercontent.com/${info.owner}/${info.repoName}/refs/${info.refs}/${info.ref}/`
 		);
 	},
-	fetchRaw: async (repoPath, resourcePath) => {
+	fetchRaw: async (repoPath, resourcePath, { verbose } = {}) => {
 		const info = await github.info(repoPath);
 
 		const url = await github.resolveRaw(info, resourcePath);
+
+		verbose?.(`Trying to fetch from ${url}`);
 
 		try {
 			const token = persisted.get().get(`${github.name()}-token`);
@@ -108,13 +119,17 @@ const github: Provider = {
 
 			const response = await fetch(url, { headers });
 
+			verbose?.(`Got a response from ${url} ${response.status} ${response.statusText}`);
+
 			if (!response.ok) {
-				return manifestErrorMessage(info, github.defaultBranch());
+				return rawErrorMessage(info, resourcePath, github.defaultBranch());
 			}
 
 			return Ok(await response.text());
-		} catch {
-			return manifestErrorMessage(info, github.defaultBranch());
+		} catch (err) {
+			verbose?.(`erroring in response ${err} `);
+
+			return rawErrorMessage(info, resourcePath, github.defaultBranch());
 		}
 	},
 	fetchManifest: async (repoPath) => {
@@ -206,10 +221,12 @@ const gitlab: Provider = {
 			`https://gitlab.com/api/v4/projects/${encodeURIComponent(`${info.owner}/${info.repoName}`)}/repository/files/`
 		);
 	},
-	fetchRaw: async (repoPath, resourcePath) => {
+	fetchRaw: async (repoPath, resourcePath, { verbose } = {}) => {
 		const info = await github.info(repoPath);
 
 		const url = await gitlab.resolveRaw(info, resourcePath);
+
+		verbose?.(`Trying to fetch from ${url}`);
 
 		try {
 			const token = persisted.get().get(`${gitlab.name()}-token`);
@@ -222,13 +239,15 @@ const gitlab: Provider = {
 
 			const response = await fetch(url, { headers });
 
+			verbose?.(`Got a response from ${url} ${response.status} ${response.statusText}`);
+
 			if (!response.ok) {
-				return manifestErrorMessage(info, gitlab.defaultBranch());
+				return rawErrorMessage(info, resourcePath, gitlab.defaultBranch());
 			}
 
 			return Ok(await response.text());
 		} catch {
-			return manifestErrorMessage(info, gitlab.defaultBranch());
+			return rawErrorMessage(info, resourcePath, gitlab.defaultBranch());
 		}
 	},
 	fetchManifest: async (repoPath) => {
@@ -301,10 +320,12 @@ const bitbucket: Provider = {
 			`https://api.bitbucket.org/2.0/repositories/${info.owner}/${info.repoName}/src/${info.ref}/`
 		);
 	},
-	fetchRaw: async (repoPath, resourcePath) => {
+	fetchRaw: async (repoPath, resourcePath, { verbose } = {}) => {
 		const info = await bitbucket.info(repoPath);
 
 		const url = await bitbucket.resolveRaw(info, resourcePath);
+
+		verbose?.(`Trying to fetch from ${url}`);
 
 		try {
 			const token = persisted.get().get(`${bitbucket.name()}-token`);
@@ -317,13 +338,15 @@ const bitbucket: Provider = {
 
 			const response = await fetch(url, { headers });
 
+			verbose?.(`Got a response from ${url} ${response.status} ${response.statusText}`);
+
 			if (!response.ok) {
-				return manifestErrorMessage(info, bitbucket.defaultBranch());
+				return rawErrorMessage(info, resourcePath, bitbucket.defaultBranch());
 			}
 
 			return Ok(await response.text());
 		} catch {
-			return manifestErrorMessage(info, bitbucket.defaultBranch());
+			return rawErrorMessage(info, resourcePath, bitbucket.defaultBranch());
 		}
 	},
 	fetchManifest: async (repoPath) => {

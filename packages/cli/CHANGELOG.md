@@ -1,5 +1,48 @@
 # jsrepo
 
+## 1.13.1
+
+### Patch Changes
+
+- 0ec0d11: Fix a few things with logging
+- 0ec0d11: Show `<category>/<block>` when asking if users would like to overwrite a block.
+- 0ec0d11: Ensure `vitest` is only included as a devDependency if the block includes tests.
+- 0ec0d11: Use `<category>/<name>` as the key when resolving blocks to improve consistency.
+
+## 1.13.0
+
+### Minor Changes
+
+- 7d6d5d4: Use `node-fetch` instead of fetch to prevent infinite hanging behavior in some environments.
+
+### Patch Changes
+
+- 8bb4da8: More logging
+
+## 1.12.8
+
+### Patch Changes
+
+- 86949c9: More logging
+
+## 1.12.7
+
+### Patch Changes
+
+- 1638603: Request logging for add.
+
+## 1.12.6
+
+### Patch Changes
+
+- 5c322a5: More verbose logging.
+
+## 1.12.5
+
+### Patch Changes
+
+- 954a2a4: More logging for `--verbose` option on `add` command.
+
 ## 1.12.4
 
 ### Patch Changes

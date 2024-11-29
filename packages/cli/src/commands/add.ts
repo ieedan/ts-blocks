@@ -292,6 +292,7 @@ const _add = async (blockNames: string[], options: Options) => {
 
 	for (const { block } of installingBlocks) {
 		const fullSpecifier = `${block.sourceRepo.url}/${block.category}/${block.name}`;
+		const shortSpecifier = `${block.category}/${block.name}`;
 		const watermark = getWatermark(context.package.version, block.sourceRepo.url);
 
 		const providerInfo = block.sourceRepo;
@@ -306,7 +307,7 @@ const _add = async (blockNames: string[], options: Options) => {
 
 		if (blockExists && !options.yes) {
 			const result = await confirm({
-				message: `${color.bold(block.name)} already exists in your project would you like to overwrite it?`,
+				message: `${color.cyan(shortSpecifier)} already exists in your project would you like to overwrite it?`,
 				initialValue: false,
 			});
 
@@ -321,13 +322,18 @@ const _add = async (blockNames: string[], options: Options) => {
 			completedMessage: `Added ${fullSpecifier}`,
 			run: async () => {
 				verbose(`Creating directory ${color.bold(directory)}`);
+
 				// in case the directory didn't already exist
 				fs.mkdirSync(directory, { recursive: true });
+
+				verbose(`Created directory ${color.bold(directory)}`);
 
 				const files: { content: string; destPath: string }[] = [];
 
 				const getSourceFile = async (filePath: string) => {
-					const content = await providerInfo.provider.fetchRaw(providerInfo, filePath);
+					const content = await providerInfo.provider.fetchRaw(providerInfo, filePath, {
+						verbose,
+					});
 
 					if (content.isErr()) {
 						loading.stop(color.red(`Error fetching ${color.bold(filePath)}`));
@@ -351,13 +357,23 @@ const _add = async (blockNames: string[], options: Options) => {
 						destPath = path.join(directory, sourceFile);
 					}
 
+					verbose(`Adding ${color.bold(sourcePath)}`);
+
 					const content = await getSourceFile(sourcePath);
 
-					fs.mkdirSync(destPath.slice(0, destPath.length - sourceFile.length), {
+					const pathFolder = destPath.slice(0, destPath.length - sourceFile.length);
+
+					verbose(`Creating directory ${color.bold(pathFolder)}`);
+
+					fs.mkdirSync(pathFolder, {
 						recursive: true,
 					});
 
+					verbose(`Created directory ${color.bold(pathFolder)}`);
+
 					files.push({ content, destPath });
+
+					verbose(`Got ${color.bold(sourcePath)}`);
 				}
 
 				for (const file of files) {
@@ -372,6 +388,8 @@ const _add = async (blockNames: string[], options: Options) => {
 							content = `${comment}\n\n${content}`;
 						}
 
+						verbose(`Formatting ${color.bold(file.destPath)}`);
+
 						content = await lang.format(content, {
 							filePath: file.destPath,
 							formatter: config.formatter,
@@ -380,17 +398,19 @@ const _add = async (blockNames: string[], options: Options) => {
 						});
 					}
 
+					verbose(`Writing to ${color.bold(file.destPath)}`);
+
 					fs.writeFileSync(file.destPath, content);
 				}
 
-				if (config.includeTests) {
+				if (config.includeTests && block.tests) {
 					verbose('Trying to include tests');
 
 					const { devDependencies } = JSON.parse(
 						fs.readFileSync(path.join(options.cwd, 'package.json')).toString()
 					);
 
-					if (devDependencies.vitest === undefined) {
+					if (devDependencies === undefined || devDependencies.vitest === undefined) {
 						devDeps.add('vitest');
 					}
 				}
