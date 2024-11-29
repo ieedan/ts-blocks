@@ -1,5 +1,14 @@
 # jsrepo
 
+## 1.13.1
+
+### Patch Changes
+
+- 0ec0d11: Fix a few things with logging
+- 0ec0d11: Show `<category>/<block>` when asking if users would like to overwrite a block.
+- 0ec0d11: Ensure `vitest` is only included as a devDependency if the block includes tests.
+- 0ec0d11: Use `<category>/<name>` as the key when resolving blocks to improve consistency.
+
 ## 1.13.0
 
 ### Minor Changes
