@@ -323,14 +323,14 @@ const _update = async (blockNames: string[], options: Options) => {
 			}
 		}
 
-		if (config.includeTests) {
+		if (config.includeTests && block.tests) {
 			verbose('Trying to include tests');
 
 			const { devDependencies } = JSON.parse(
 				fs.readFileSync(path.join(options.cwd, 'package.json')).toString()
 			);
 
-			if (devDependencies.vitest === undefined) {
+			if (devDependencies === undefined || devDependencies.vitest === undefined) {
 				devDeps.add('vitest');
 			}
 		}

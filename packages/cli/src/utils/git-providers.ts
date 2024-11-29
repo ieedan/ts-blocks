@@ -122,17 +122,10 @@ const github: Provider = {
 			verbose?.(`Got a response from ${url} ${response.status} ${response.statusText}`);
 
 			if (!response.ok) {
-				verbose?.('response not ok');
 				return rawErrorMessage(info, resourcePath, github.defaultBranch());
 			}
 
-			verbose?.('Waiting for response.text()');
-
-			const text = await response.text();
-
-			verbose?.('response.text() done.');
-
-			return Ok(text);
+			return Ok(await response.text());
 		} catch (err) {
 			verbose?.(`erroring in response ${err} `);
 

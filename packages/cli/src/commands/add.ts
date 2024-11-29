@@ -292,6 +292,7 @@ const _add = async (blockNames: string[], options: Options) => {
 
 	for (const { block } of installingBlocks) {
 		const fullSpecifier = `${block.sourceRepo.url}/${block.category}/${block.name}`;
+		const shortSpecifier = `${block.category}/${block.name}`;
 		const watermark = getWatermark(context.package.version, block.sourceRepo.url);
 
 		const providerInfo = block.sourceRepo;
@@ -306,7 +307,7 @@ const _add = async (blockNames: string[], options: Options) => {
 
 		if (blockExists && !options.yes) {
 			const result = await confirm({
-				message: `${color.bold(block.name)} already exists in your project would you like to overwrite it?`,
+				message: `${color.cyan(shortSpecifier)} already exists in your project would you like to overwrite it?`,
 				initialValue: false,
 			});
 
@@ -334,16 +335,12 @@ const _add = async (blockNames: string[], options: Options) => {
 						verbose,
 					});
 
-					verbose(`Came back with response content for ${color.cyan(filePath)}`);
-
 					if (content.isErr()) {
 						loading.stop(color.red(`Error fetching ${color.bold(filePath)}`));
 						program.error(
 							color.red(`There was an error trying to get ${fullSpecifier}`)
 						);
 					}
-
-					verbose(`Came back with success response content for ${color.cyan(filePath)}`);
 
 					return content.unwrap();
 				};
@@ -364,13 +361,11 @@ const _add = async (blockNames: string[], options: Options) => {
 
 					const content = await getSourceFile(sourcePath);
 
-					verbose(`Setting up pathFolder for ${destPath}`);
-
 					const pathFolder = destPath.slice(0, destPath.length - sourceFile.length);
 
 					verbose(`Creating directory ${color.bold(pathFolder)}`);
 
-					fs.mkdirSync(destPath.slice(0, destPath.length - sourceFile.length), {
+					fs.mkdirSync(pathFolder, {
 						recursive: true,
 					});
 
@@ -408,14 +403,14 @@ const _add = async (blockNames: string[], options: Options) => {
 					fs.writeFileSync(file.destPath, content);
 				}
 
-				if (config.includeTests) {
+				if (config.includeTests && block.tests) {
 					verbose('Trying to include tests');
 
 					const { devDependencies } = JSON.parse(
 						fs.readFileSync(path.join(options.cwd, 'package.json')).toString()
 					);
 
-					if (devDependencies.vitest === undefined) {
+					if (devDependencies === undefined || devDependencies.vitest === undefined) {
 						devDeps.add('vitest');
 					}
 				}
