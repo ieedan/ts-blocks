@@ -6,16 +6,7 @@
 		"type": "git",
 		"url": "git+https://github.com/ieedan/jsrepo"
 	},
-	"keywords": [
-		"repo",
-		"cli",
-		"svelte",
-		"vue",
-		"typescript",
-		"javascript",
-		"shadcn",
-		"registry"
-	],
+	"keywords": ["repo", "cli", "svelte", "vue", "typescript", "javascript", "shadcn", "registry"],
 	"author": {
 		"name": "Aidan Bleser",
 		"url": "https://github.com/ieedan"
@@ -29,10 +20,7 @@
 	"bin": "./dist/index.js",
 	"exports": "./dist/index.js",
 	"type": "module",
-	"files": [
-		"schema.json",
-		"dist"
-	],
+	"files": ["schema.json", "dist"],
 	"scripts": {
 		"start": "tsup --silent && node ./dist/index.js",
 		"build": "tsup",
