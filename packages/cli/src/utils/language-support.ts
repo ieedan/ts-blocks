@@ -362,15 +362,21 @@ const resolveLocalImport = (
 	);
 };
 
+/** Tries to resolve the modules as an alias using the tsconfig. */
 const tryResolveLocalAlias = (
 	mod: string,
 	isSubDir: boolean,
 	{ filePath, dirs, cwd }: { filePath: string; dirs: string[]; cwd: string }
 ): Result<string | undefined, string> => {
-	const config = getTsconfig(filePath);
+	let config = getTsconfig(filePath, 'tsconfig.json');
 
 	if (!config) {
-		return Ok(undefined);
+		// if we don't find the config at first check for a jsconfig
+		config = getTsconfig(filePath, 'jsconfig.json');
+
+		if (!config) {
+			return Ok(undefined);
+		}
 	}
 
 	const matcher = createPathsMatcher(config);

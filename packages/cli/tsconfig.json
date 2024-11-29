@@ -10,5 +10,5 @@
 		"strict": true,
 		"noEmit": true
 	},
-	"include": ["src/**/*.ts", "blocks/**/*.ts"]
+	"include": ["src/**/*.ts"]
 }
