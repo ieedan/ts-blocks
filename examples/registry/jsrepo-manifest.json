@@ -1,0 +1,63 @@
+[
+	{
+		"name": "types",
+		"blocks": [
+			{
+				"name": "point",
+				"directory": "src/types",
+				"category": "types",
+				"tests": false,
+				"subdirectory": false,
+				"files": [
+					"point.ts"
+				],
+				"localDependencies": [],
+				"dependencies": [],
+				"devDependencies": []
+			}
+		]
+	},
+	{
+		"name": "utils",
+		"blocks": [
+			{
+				"name": "math",
+				"directory": "src/utils/math",
+				"category": "utils",
+				"tests": true,
+				"subdirectory": true,
+				"files": [
+					"add.test.ts",
+					"add.ts",
+					"create-point.ts",
+					"format-answer.ts",
+					"index.ts",
+					"subtract.test.ts",
+					"subtract.ts"
+				],
+				"localDependencies": [
+					"types/point",
+					"utils/pretty-print"
+				],
+				"dependencies": [],
+				"devDependencies": []
+			},
+			{
+				"name": "pretty-print",
+				"directory": "src/utils/pretty-print",
+				"category": "utils",
+				"tests": false,
+				"subdirectory": true,
+				"files": [
+					"index.ts",
+					"print.ts"
+				],
+				"localDependencies": [],
+				"dependencies": [
+					"chalk@^5.3.0"
+				],
+				"devDependencies": []
+			}
+		]
+	}
+]
