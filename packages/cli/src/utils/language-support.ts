@@ -318,8 +318,8 @@ const resolveLocalImport = (
 
 		return Ok(`${category}/${block}`);
 	} else if (alias) {
-		// here we need to figure out where the heck this is from
-		// it can now be from anywhere so we may want to pass down dirs
+		// we need to pass down dirs then for each dir we check if the path of the module starts with that 
+		// directory if it does then we can do the same as above
 
 		throw new Error('dont publish this!!!')
 		console.log(modPath);
