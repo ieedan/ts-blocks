@@ -5,7 +5,8 @@ body:
     - type: markdown
       attributes:
           value: |
-              Thanks for helping us fix **jsrepo**!
+              ## Thanks for helping us fix jsrepo!
+              Before continuing make sure you have checked other issues to see if your issue has already been reported / addressed.
     - type: textarea
       id: desc
       attributes:
@@ -16,8 +17,10 @@ body:
     - type: markdown
       attributes:
           value: |
+              ## Reproduction
+
               Most of the time it will be difficult to reproduce your issue if we don't have access to the source registry. 
-              Please provide a public repository from any supported provider that can be used to produce your issue.
+              Please provide a public registry from any supported provider that can be used to produce your issue.
 
               **For build issues**: 
               Provide a link to the source repository where the issue can be produced as well as any reproduction steps.
@@ -26,21 +29,30 @@ body:
               Using the public registry please reproduce your issue in our 
               [project template](https://stackblitz.com/github/ieedan/jsrepo/tree/main/examples/project) then provide a link to the instance as well as any reproduction steps.
     - type: input
-      id: reproLink
+      id: registry-link
+      attributes:
+          label: Registry Link
+          description: Link the registry to use to reproduce.
+      validations:
+          required: false
+    - type: input
+      id: repro-link
       attributes:
           label: Reproduction Link
-          description: "https://github.com/ieedan/std"
+          description: Link to the reproduction.
       validations:
           required: true
     - type: textarea
-      id: reproSteps
+      id: repro-steps
       attributes:
           label: Steps to reproduce
-          description: |
-              Run:
-              ```
-              jsrepo add utils/test
-              ```
+          description: What steps should be taken to reproduce your issue. 
+          placeholder: |
+            Run:
+
+            ```
+            jsrepo add utils/math
+            ```
       validations:
           required: true
     - type: checkboxes
