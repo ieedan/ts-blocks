@@ -17,38 +17,37 @@ body:
     attributes: 
       value: |
         Most of the time it will be difficult to reproduce your issue if we don't have access to the source registry. 
-        Please provide a public registry in any supported provider that can be used to produce your issue.
+        Please provide a public repository from any supported provider that can be used to produce your issue.
 
-        Assuming we have access to the registry
+        **For build issues**: 
+        Provide a link to the source repository where the issue can be produced as well as any reproduction steps.
+
+        **For install issues**:
+        Using the public registry please reproduce your issue in our 
+        [project template](https://stackblitz.com/github/ieedan/jsrepo/tree/main/examples/project) then provide a link to the instance as well as any reproduction steps.
   - type: input
-    id: repro
+    id: repro-link
     attributes:
-      label: Link to public reproduction
+      label: Reproduction Link
       description: "https://github.com/ieedan/std"
     validations:
       required: true
-
----
-name: "\U0001F41E Bug report"
-about: Help us fix jsrepo
-title: ''
-labels: bug
-assignees: ''
-
----
-
-**Describe the bug**
-<!-- What is happening, what is supposed to happen. -->
-
-**Reproduction** 
-<!-- 
-  Please provide a public reproduction of your issue a repository in any of the providers we support is 
-  sufficient. 
-
-  To get started you can use the a project or registry template:
-  - [project](https://stackblitz.com/github/ieedan/jsrepo/tree/main/examples/project)
-  - [registry](https://stackblitz.com/github/ieedan/jsrepo/tree/main/examples/registry)  
--->
-
-**Checks**
-- [ ] I have checked other issues to see if my issue was already reported or addressed
+  - type: textarea
+    id: repro-steps
+    attributes:
+      label: Steps to reproduce
+      description: |
+        Run:
+        ```
+        jsrepo add utils/test
+        ```
+    validations:
+      required: true
+  - type: checkboxes
+    id: terms
+    attributes:
+      options:
+        - label: I have checked other issues to see if my issue was already reported or addressed
+          required: true
+        - label: I am willing to file a pull request for this issue
+          required: false
