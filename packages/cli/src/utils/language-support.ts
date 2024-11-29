@@ -5,6 +5,7 @@ import type { PartialConfiguration } from '@biomejs/wasm-nodejs';
 import * as v from '@vue/compiler-sfc';
 import color from 'chalk';
 import { walk } from 'estree-walker';
+import { createPathsMatcher, getTsconfig } from 'get-tsconfig';
 import path from 'pathe';
 import * as prettier from 'prettier';
 import * as sv from 'svelte/compiler';
@@ -16,7 +17,6 @@ import * as lines from './blocks/utils/lines';
 import type { Formatter } from './config';
 import { findNearestPackageJson } from './package';
 import { parsePackageName } from './parse-package-name';
-import { createFilesMatcher, createPathsMatcher, getTsconfig } from 'get-tsconfig';
 
 export type ResolvedDependencies = {
 	local: string[];
@@ -339,7 +339,9 @@ const resolveLocalImport = (
 		}
 
 		return Ok(`${category}/${block}`);
-	} else if (alias) {
+	}
+
+	if (alias) {
 		for (const dir of dirs) {
 			const containingPath = path.resolve(path.join(cwd, dir));
 			if (modPath.startsWith(containingPath)) {
@@ -392,12 +394,14 @@ const tryResolveLocalAlias = (
 				alias: true,
 				dirs,
 				cwd,
-				modIsFile: foundMod.type == 'file',
+				modIsFile: foundMod.type === 'file',
 			});
 
 			if (localDep.isErr()) return Err(localDep.unwrapErr());
 
 			if (localDep.unwrap()) return Ok(localDep.unwrap()!);
+
+			break;
 		}
 	}
 
@@ -432,8 +436,10 @@ const searchForModule = (
 	const files = fs.readdirSync(containing);
 
 	for (const file of files) {
+		// this way the extension doesn't matter
 		if (file.startsWith(path.basename(modPath))) {
-			const filePath = path.join(modPath, file);
+			const filePath = path.join(containing, file);
+
 			return {
 				path: filePath,
 				type: fs.statSync(filePath).isDirectory() ? 'directory' : 'file',

@@ -236,6 +236,9 @@ const buildBlocksDirectory = (
 						);
 
 					for (const dep of local) {
+						// don't add self
+						if (dep === `${categoryName}/${blockName}`) continue;
+
 						localDepsSet.add(dep);
 					}
 
