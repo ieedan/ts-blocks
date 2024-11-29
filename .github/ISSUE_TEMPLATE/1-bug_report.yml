@@ -1,4 +1,4 @@
-name: "\U0001F41E Bug report"
+name: Bug report
 description: Help us improve jsrepo.
 labels: ["bug"]
 body:
