@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { program } from 'commander';
