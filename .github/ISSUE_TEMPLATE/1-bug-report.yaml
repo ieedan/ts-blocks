@@ -49,5 +49,3 @@ body:
       options:
         - label: I have checked other issues to see if my issue was already reported or addressed
           required: true
-        - label: I am willing to file a pull request for this issue
-          required: false
