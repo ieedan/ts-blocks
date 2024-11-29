@@ -1,11 +1,13 @@
 name: 🆕 Feature request
 description: Help us improve jsrepo.
 labels: ["feature"]
+title: "feat: "
 body:
   - type: markdown
     attributes:
       value: |
-        Thanks for helping us improve **jsrepo**!
+        ## Thanks for helping us improve jsrepo!
+        Before continuing make sure you have checked other issues to see if your feature was already requested / added.
         
   - type: textarea
     id: desc
