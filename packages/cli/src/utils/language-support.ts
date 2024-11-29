@@ -1,22 +1,22 @@
-import fs from "node:fs";
-import { builtinModules } from "node:module";
-import { Biome, Distribution } from "@biomejs/js-api";
-import type { PartialConfiguration } from "@biomejs/wasm-nodejs";
-import * as v from "@vue/compiler-sfc";
-import color from "chalk";
-import { walk } from "estree-walker";
-import path from "pathe";
-import * as prettier from "prettier";
-import * as sv from "svelte/compiler";
-import { Project } from "ts-morph";
-import validatePackageName from "validate-npm-package-name";
-import * as ascii from "./ascii";
-import { Err, Ok, type Result } from "./blocks/types/result";
-import * as lines from "./blocks/utils/lines";
-import type { Formatter } from "./config";
-import { findNearestPackageJson } from "./package";
-import { parsePackageName } from "./parse-package-name";
-import { createFilesMatcher, createPathsMatcher, getTsconfig } from "get-tsconfig";
+import fs from 'node:fs';
+import { builtinModules } from 'node:module';
+import { Biome, Distribution } from '@biomejs/js-api';
+import type { PartialConfiguration } from '@biomejs/wasm-nodejs';
+import * as v from '@vue/compiler-sfc';
+import color from 'chalk';
+import { walk } from 'estree-walker';
+import path from 'pathe';
+import * as prettier from 'prettier';
+import * as sv from 'svelte/compiler';
+import { Project } from 'ts-morph';
+import validatePackageName from 'validate-npm-package-name';
+import * as ascii from './ascii';
+import { Err, Ok, type Result } from './blocks/types/result';
+import * as lines from './blocks/utils/lines';
+import type { Formatter } from './config';
+import { findNearestPackageJson } from './package';
+import { parsePackageName } from './parse-package-name';
+import { createFilesMatcher, createPathsMatcher, getTsconfig } from 'get-tsconfig';
 
 export type ResolvedDependencies = {
 	local: string[];
@@ -29,6 +29,7 @@ export type ResolveDependencyOptions = {
 	isSubDir: boolean;
 	excludeDeps: string[];
 	cwd: string;
+	dirs: string[];
 };
 
 export type FormatOptions = {
@@ -51,18 +52,25 @@ export type Lang = {
 
 const typescript: Lang = {
 	matches: (fileName) =>
-		fileName.endsWith(".ts") || fileName.endsWith(".js") || fileName.endsWith(".tsx") || fileName.endsWith(".jsx"),
-	resolveDependencies: ({ filePath, isSubDir, excludeDeps }) => {
+		fileName.endsWith('.ts') ||
+		fileName.endsWith('.js') ||
+		fileName.endsWith('.tsx') ||
+		fileName.endsWith('.jsx'),
+	resolveDependencies: ({ filePath, isSubDir, excludeDeps, dirs, cwd }) => {
 		const project = new Project();
 
 		const blockFile = project.addSourceFileAtPath(filePath);
 
-		const imports = blockFile.getImportDeclarations().map((imp) => imp.getModuleSpecifierValue());
+		const imports = blockFile
+			.getImportDeclarations()
+			.map((imp) => imp.getModuleSpecifierValue());
 
 		const resolveResult = resolveImports({
 			moduleSpecifiers: imports,
 			filePath,
 			isSubDir,
+			dirs,
+			cwd,
 			doNotInstall: excludeDeps,
 		});
 
@@ -71,17 +79,17 @@ const typescript: Lang = {
 				resolveResult
 					.unwrapErr()
 					.map((err) => `${ascii.VERTICAL_LINE}  ${ascii.ERROR} ${err}`)
-					.join("\n")
+					.join('\n')
 			);
 		}
 
 		return Ok(resolveResult.unwrap());
 	},
-	comment: (content) => `/*\n${lines.join(lines.get(content), { prefix: () => "\t" })}\n*/`,
+	comment: (content) => `/*\n${lines.join(lines.get(content), { prefix: () => '\t' })}\n*/`,
 	format: async (code, { formatter, filePath, prettierOptions, biomeOptions }) => {
 		if (!formatter) return code;
 
-		if (formatter === "prettier") {
+		if (formatter === 'prettier') {
 			return await prettier.format(code, { filepath: filePath, ...prettierOptions });
 		}
 
@@ -98,8 +106,8 @@ const typescript: Lang = {
 };
 
 const svelte: Lang = {
-	matches: (fileName) => fileName.endsWith(".svelte"),
-	resolveDependencies: ({ filePath, isSubDir, excludeDeps }) => {
+	matches: (fileName) => fileName.endsWith('.svelte'),
+	resolveDependencies: ({ filePath, isSubDir, excludeDeps, dirs, cwd }) => {
 		const sourceCode = fs.readFileSync(filePath).toString();
 
 		const root = sv.parse(sourceCode, { modern: true, filename: filePath });
@@ -112,8 +120,8 @@ const svelte: Lang = {
 		// biome-ignore lint/suspicious/noExplicitAny: The root instance is just missing the `id` prop
 		walk(root.instance as any, {
 			enter: (node) => {
-				if (node.type === "ImportDeclaration") {
-					if (typeof node.source.value === "string") {
+				if (node.type === 'ImportDeclaration') {
+					if (typeof node.source.value === 'string') {
 						imports.push(node.source.value);
 					}
 				}
@@ -124,7 +132,9 @@ const svelte: Lang = {
 			moduleSpecifiers: imports,
 			filePath,
 			isSubDir,
-			doNotInstall: ["svelte", ...excludeDeps],
+			dirs,
+			cwd,
+			doNotInstall: ['svelte', '@sveltejs/kit', ...excludeDeps],
 		});
 
 		if (resolveResult.isErr()) {
@@ -132,21 +142,21 @@ const svelte: Lang = {
 				resolveResult
 					.unwrapErr()
 					.map((err) => `${ascii.VERTICAL_LINE}  ${ascii.ERROR} ${err}`)
-					.join("\n")
+					.join('\n')
 			);
 		}
 
 		return Ok(resolveResult.unwrap());
 	},
-	comment: (content) => `<!--\n${lines.join(lines.get(content), { prefix: () => "\t" })}\n-->`,
+	comment: (content) => `<!--\n${lines.join(lines.get(content), { prefix: () => '\t' })}\n-->`,
 	format: async (code, { formatter, filePath, prettierOptions }) => {
 		if (!formatter) return code;
 
 		// only attempt to format if svelte plugin is included in the config.
 		if (
-			formatter === "prettier" &&
+			formatter === 'prettier' &&
 			prettierOptions &&
-			prettierOptions.plugins?.find((plugin) => plugin === "prettier-plugin-svelte")
+			prettierOptions.plugins?.find((plugin) => plugin === 'prettier-plugin-svelte')
 		) {
 			return await prettier.format(code, { filepath: filePath, ...prettierOptions });
 		}
@@ -156,8 +166,8 @@ const svelte: Lang = {
 };
 
 const vue: Lang = {
-	matches: (fileName) => fileName.endsWith(".vue"),
-	resolveDependencies: ({ filePath, isSubDir, excludeDeps }) => {
+	matches: (fileName) => fileName.endsWith('.vue'),
+	resolveDependencies: ({ filePath, isSubDir, excludeDeps, dirs, cwd }) => {
 		const sourceCode = fs.readFileSync(filePath).toString();
 
 		const parsed = v.parse(sourceCode, { filename: filePath });
@@ -165,12 +175,9 @@ const vue: Lang = {
 		if (!parsed.descriptor.script?.content && !parsed.descriptor.scriptSetup?.content)
 			return Ok({ dependencies: [], devDependencies: [], local: [] });
 
-		const localDeps = new Set<string>();
-		const deps = new Set<string>();
-
 		let compiled: v.SFCScriptBlock;
 		try {
-			compiled = v.compileScript(parsed.descriptor, { id: "shut-it" }); // you need this id to remove a warning
+			compiled = v.compileScript(parsed.descriptor, { id: 'shut-it' }); // you need this id to remove a warning
 		} catch (err) {
 			return Err(`Compile error: ${err}`);
 		}
@@ -183,7 +190,9 @@ const vue: Lang = {
 			moduleSpecifiers: imports,
 			filePath,
 			isSubDir,
-			doNotInstall: ["vue", ...excludeDeps],
+			dirs,
+			cwd,
+			doNotInstall: ['vue', 'nuxt', ...excludeDeps],
 		});
 
 		if (resolveResult.isErr()) {
@@ -191,18 +200,18 @@ const vue: Lang = {
 				resolveResult
 					.unwrapErr()
 					.map((err) => `${ascii.VERTICAL_LINE}  ${ascii.ERROR} ${err}`)
-					.join("\n")
+					.join('\n')
 			);
 		}
 
 		return Ok(resolveResult.unwrap());
 	},
-	comment: (content) => `<!--\n${lines.join(lines.get(content), { prefix: () => "\t" })}\n-->`,
+	comment: (content) => `<!--\n${lines.join(lines.get(content), { prefix: () => '\t' })}\n-->`,
 	format: async (code, { formatter, prettierOptions }) => {
 		if (!formatter) return code;
 
-		if (formatter === "prettier") {
-			return await prettier.format(code, { parser: "vue", ...prettierOptions });
+		if (formatter === 'prettier') {
+			return await prettier.format(code, { parser: 'vue', ...prettierOptions });
 		}
 
 		// biome has issues with vue support
@@ -211,14 +220,14 @@ const vue: Lang = {
 };
 
 const yaml: Lang = {
-	matches: (fileName) => fileName.endsWith(".yml") || fileName.endsWith(".yaml"),
+	matches: (fileName) => fileName.endsWith('.yml') || fileName.endsWith('.yaml'),
 	resolveDependencies: () => Ok({ dependencies: [], local: [], devDependencies: [] }),
-	comment: (content: string) => lines.join(lines.get(content), { prefix: () => "# " }),
+	comment: (content: string) => lines.join(lines.get(content), { prefix: () => '# ' }),
 	format: async (code, { formatter, prettierOptions }) => {
 		if (!formatter) return code;
 
-		if (formatter === "prettier") {
-			return await prettier.format(code, { parser: "yaml", ...prettierOptions });
+		if (formatter === 'prettier') {
+			return await prettier.format(code, { parser: 'yaml', ...prettierOptions });
 		}
 
 		return code;
@@ -230,6 +239,8 @@ export type ResolveImportOptions = {
 	isSubDir: boolean;
 	filePath: string;
 	doNotInstall?: string[];
+	dirs: string[];
+	cwd: string;
 };
 
 const resolveImports = ({
@@ -237,6 +248,8 @@ const resolveImports = ({
 	isSubDir,
 	filePath,
 	doNotInstall,
+	dirs,
+	cwd,
 }: ResolveImportOptions): Result<ResolvedDependencies, string[]> => {
 	const errors: string[] = [];
 
@@ -244,9 +257,11 @@ const resolveImports = ({
 	const localDeps = new Set<string>();
 
 	for (const specifier of moduleSpecifiers) {
-		if (specifier.startsWith(".")) {
+		if (specifier.startsWith('.')) {
 			const localDep = resolveLocalImport(specifier, isSubDir, {
 				filePath,
+				dirs,
+				cwd,
 			});
 
 			if (localDep.isErr()) {
@@ -261,6 +276,8 @@ const resolveImports = ({
 
 		const localDep = tryResolveLocalAlias(specifier, isSubDir, {
 			filePath,
+			dirs,
+			cwd,
 		});
 
 		if (localDep.isErr()) {
@@ -293,45 +310,60 @@ const resolveImports = ({
 const resolveLocalImport = (
 	mod: string,
 	isSubDir: boolean,
-	{ filePath, alias }: { filePath: string; alias?: boolean; modIsFile?: boolean }
+	{
+		filePath,
+		alias,
+		dirs,
+		cwd,
+	}: { filePath: string; dirs: string[]; alias?: boolean; modIsFile?: boolean; cwd: string }
 ): Result<string | undefined, string> => {
-	if (isSubDir && (mod.startsWith("./") || mod === ".")) return Ok(undefined);
+	if (isSubDir && (mod.startsWith('./') || mod === '.')) return Ok(undefined);
 
 	// get the path to the current category
-	const categoryDir = isSubDir ? path.join(filePath, "../../") : path.join(filePath, "../");
+	const categoryDir = isSubDir ? path.join(filePath, '../../') : path.join(filePath, '../');
 
 	// get the actual path to the module
-	const modPath = path.join(path.join(filePath, "../"), mod);
+	const modPath = path.join(path.join(filePath, '../'), mod);
 
-	// get the full path to the current category
-	const fullDir = path.join(categoryDir, "../");
+	// get the full path to the current category containing folder
+	const fullDir = path.join(categoryDir, '../');
 
 	// mod paths that reference outside of the current blocks directory are invalid unless it's an alias
 	if (modPath.startsWith(fullDir)) {
 		// only valid blocks can make it to here
-		let [category, block] = modPath.slice(fullDir.length).split("/");
+		let [category, block] = modPath.slice(fullDir.length).split('/');
 
 		// remove file extension
-		if (block.includes(".")) {
+		if (block.includes('.')) {
 			block = block.slice(0, block.length - path.parse(block).ext.length);
 		}
 
 		return Ok(`${category}/${block}`);
 	} else if (alias) {
-		// we need to pass down dirs then for each dir we check if the path of the module starts with that 
-		// directory if it does then we can do the same as above
+		for (const dir of dirs) {
+			const containingPath = path.resolve(path.join(cwd, dir));
+			if (modPath.startsWith(containingPath)) {
+				let [category, block] = modPath.slice(containingPath.length + 1).split('/');
 
-		throw new Error('dont publish this!!!')
-		console.log(modPath);
+				// remove file extension
+				if (block.includes('.')) {
+					block = block.slice(0, block.length - path.parse(block).ext.length);
+				}
+
+				return Ok(`${category}/${block}`);
+			}
+		}
 	}
 
-	return Err(`${filePath}:\n${mod} references code not contained in ${categoryDir} and cannot be resolved.`);
+	return Err(
+		`${filePath}:\n${mod} references code not contained in ${categoryDir} and cannot be resolved.`
+	);
 };
 
 const tryResolveLocalAlias = (
 	mod: string,
 	isSubDir: boolean,
-	{ filePath }: { filePath: string }
+	{ filePath, dirs, cwd }: { filePath: string; dirs: string[]; cwd: string }
 ): Result<string | undefined, string> => {
 	const config = getTsconfig(filePath);
 
@@ -350,12 +382,17 @@ const tryResolveLocalAlias = (
 
 			if (!foundMod) continue;
 
-			const relativeSolved = path.relative(path.resolve(path.join(filePath, "../")), foundMod.path);
+			const relativeSolved = path.relative(
+				path.resolve(path.join(filePath, '../')),
+				foundMod.path
+			);
 
 			const localDep = resolveLocalImport(relativeSolved, isSubDir, {
 				filePath,
 				alias: true,
-				modIsFile: foundMod.type == "file",
+				dirs,
+				cwd,
+				modIsFile: foundMod.type == 'file',
 			});
 
 			if (localDep.isErr()) return Err(localDep.unwrapErr());
@@ -371,21 +408,23 @@ const tryResolveLocalAlias = (
  *
  * @param path
  */
-const searchForModule = (modPath: string): { path: string; type: "file" | "directory" } | undefined => {
+const searchForModule = (
+	modPath: string
+): { path: string; type: 'file' | 'directory' } | undefined => {
 	if (fs.existsSync(modPath)) {
-		return { path: modPath, type: fs.statSync(modPath).isDirectory() ? "directory" : "file" };
+		return { path: modPath, type: fs.statSync(modPath).isDirectory() ? 'directory' : 'file' };
 	}
 
 	const extension = path.parse(modPath).ext;
 
 	// sometimes it will point to .js because it will resolve in prod but not for us
-	if (extension === ".js") {
+	if (extension === '.js') {
 		const newPath = `${modPath.slice(0, modPath.length - 3)}.ts`;
 
-		if (fs.existsSync(newPath)) return { path: modPath, type: "file" };
+		if (fs.existsSync(newPath)) return { path: modPath, type: 'file' };
 	}
 
-	const containing = path.join(modPath, "../");
+	const containing = path.join(modPath, '../');
 
 	// open containing folder
 	if (!fs.existsSync(containing)) return undefined;
@@ -395,7 +434,10 @@ const searchForModule = (modPath: string): { path: string; type: "file" | "direc
 	for (const file of files) {
 		if (file.startsWith(path.basename(modPath))) {
 			const filePath = path.join(modPath, file);
-			return { path: filePath, type: fs.statSync(filePath).isDirectory() ? "directory" : "file" };
+			return {
+				path: filePath,
+				type: fs.statSync(filePath).isDirectory() ? 'directory' : 'file',
+			};
 		}
 	}
 
@@ -418,17 +460,18 @@ const resolveRemoteDeps = (
 ) => {
 	const exemptDeps = new Set(doNotInstall);
 
-	const filteredDeps = deps.filter((dep) => !builtinModules.includes(dep) && !dep.startsWith("node:"));
+	const filteredDeps = deps.filter(
+		(dep) => !builtinModules.includes(dep) && !dep.startsWith('node:')
+	);
 
-	const pkgPath = findNearestPackageJson(path.dirname(filePath), "");
+	const pkgPath = findNearestPackageJson(path.dirname(filePath), '');
 
 	const dependencies = new Set<string>();
 	const devDependencies = new Set<string>();
 
 	if (pkgPath) {
-		const { devDependencies: packageDevDependencies, dependencies: packageDependencies } = JSON.parse(
-			fs.readFileSync(pkgPath, "utf-8")
-		);
+		const { devDependencies: packageDevDependencies, dependencies: packageDependencies } =
+			JSON.parse(fs.readFileSync(pkgPath, 'utf-8'));
 
 		for (const dep of filteredDeps) {
 			const parsed = parsePackageName(dep);

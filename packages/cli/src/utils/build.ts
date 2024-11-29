@@ -39,6 +39,7 @@ type Options = {
 	includeBlocks: string[];
 	includeCategories: string[];
 	errorOnWarn: boolean;
+	dirs: string[];
 };
 
 /** Using the provided path to the blocks folder builds the blocks into categories and also resolves dependencies
@@ -48,7 +49,7 @@ type Options = {
  */
 const buildBlocksDirectory = (
 	blocksPath: string,
-	{ cwd, excludeDeps, includeBlocks, includeCategories, errorOnWarn }: Options
+	{ cwd, excludeDeps, includeBlocks, includeCategories, errorOnWarn, dirs }: Options
 ): Category[] => {
 	let paths: string[];
 
@@ -131,6 +132,7 @@ const buildBlocksDirectory = (
 						isSubDir: false,
 						excludeDeps,
 						cwd,
+						dirs,
 					})
 					.match(
 						(val) => val,
@@ -224,6 +226,7 @@ const buildBlocksDirectory = (
 							isSubDir: true,
 							excludeDeps,
 							cwd,
+							dirs,
 						})
 						.match(
 							(val) => val,
