@@ -2,31 +2,27 @@
 	"name": "jsrepo",
 	"description": "A CLI to add shared code from remote repositories.",
 	"version": "1.13.1",
+	"license": "MIT",
+	"homepage": "https://jsrepo.dev",
+	"author": {
+		"name": "Aidan Bleser",
+		"url": "https://github.com/ieedan"
+	},
 	"repository": {
 		"type": "git",
 		"url": "git+https://github.com/ieedan/jsrepo"
 	},
-	"keywords": ["repo", "cli"],
-	"author": "Aidan Bleser",
-	"license": "MIT",
 	"bugs": {
 		"url": "https://github.com/ieedan/jsrepo/issues"
 	},
-	"homepage": "https://ieedan.github.io/jsrepo/",
-	"main": "bin.mjs",
-	"bin": "./bin.mjs",
+	"keywords": ["repo", "cli", "svelte", "vue", "typescript", "javascript", "shadcn", "registry"],
 	"type": "module",
-	"files": [
-		"bin.mjs",
-		"package.json",
-		"pnpm-lock.yaml",
-		"README.md",
-		"schema.json",
-		"dist/**/*",
-		"src/**/*"
-	],
+	"exports": "./dist/index.js",
+	"bin": "./dist/index.js",
+	"main": "./dist/index.js",
+	"files": ["schema.json", "dist"],
 	"scripts": {
-		"start": "tsup --silent && node bin.mjs",
+		"start": "tsup --silent && node ./dist/index.js",
 		"build": "tsup",
 		"format": "biome format --write",
 		"lint": "biome lint --write",
