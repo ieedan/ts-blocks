@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
-    "build": "jsrepo build --dirs ./src",
+    "build": "jsrepo build --dirs ./src ./blocks",
     "test": "vitest"
   },
   "keywords": [],

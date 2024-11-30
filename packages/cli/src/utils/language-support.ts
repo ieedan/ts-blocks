@@ -5,6 +5,7 @@ import type { PartialConfiguration } from '@biomejs/wasm-nodejs';
 import * as v from '@vue/compiler-sfc';
 import color from 'chalk';
 import { walk } from 'estree-walker';
+import { createPathsMatcher, getTsconfig } from 'get-tsconfig';
 import path from 'pathe';
 import * as prettier from 'prettier';
 import * as sv from 'svelte/compiler';
@@ -28,6 +29,7 @@ export type ResolveDependencyOptions = {
 	isSubDir: boolean;
 	excludeDeps: string[];
 	cwd: string;
+	dirs: string[];
 };
 
 export type FormatOptions = {
@@ -54,44 +56,34 @@ const typescript: Lang = {
 		fileName.endsWith('.js') ||
 		fileName.endsWith('.tsx') ||
 		fileName.endsWith('.jsx'),
-	resolveDependencies: ({ filePath, isSubDir, excludeDeps }) => {
+	resolveDependencies: ({ filePath, isSubDir, excludeDeps, dirs, cwd }) => {
 		const project = new Project();
 
 		const blockFile = project.addSourceFileAtPath(filePath);
 
-		const imports = blockFile.getImportDeclarations();
+		const imports = blockFile
+			.getImportDeclarations()
+			.map((imp) => imp.getModuleSpecifierValue());
 
-		const relativeImports = imports.filter((declaration) =>
-			declaration.getModuleSpecifierValue().startsWith('.')
-		);
+		const resolveResult = resolveImports({
+			moduleSpecifiers: imports,
+			filePath,
+			isSubDir,
+			dirs,
+			cwd,
+			doNotInstall: excludeDeps,
+		});
 
-		const localDeps = new Set<string>();
-
-		for (const relativeImport of relativeImports) {
-			const mod = relativeImport.getModuleSpecifierValue();
-
-			const localDep = resolveLocalImport(mod, isSubDir, { filePath });
-
-			if (localDep.isErr()) return Err(localDep.unwrapErr());
-
-			if (localDep.unwrap()) localDeps.add(localDep.unwrap()!);
+		if (resolveResult.isErr()) {
+			return Err(
+				resolveResult
+					.unwrapErr()
+					.map((err) => formatError(err))
+					.join('\n')
+			);
 		}
 
-		const deps = imports
-			.filter((declaration) => !declaration.getModuleSpecifierValue().startsWith('.'))
-			.map((declaration) => declaration.getModuleSpecifierValue());
-
-		const { devDependencies, dependencies } = resolveRemoteDeps(
-			Array.from(deps),
-			filePath,
-			excludeDeps
-		);
-
-		return Ok({
-			local: Array.from(localDeps),
-			dependencies,
-			devDependencies,
-		} satisfies ResolvedDependencies);
+		return Ok(resolveResult.unwrap());
 	},
 	comment: (content) => `/*\n${lines.join(lines.get(content), { prefix: () => '\t' })}\n*/`,
 	format: async (code, { formatter, filePath, prettierOptions, biomeOptions }) => {
@@ -115,7 +107,7 @@ const typescript: Lang = {
 
 const svelte: Lang = {
 	matches: (fileName) => fileName.endsWith('.svelte'),
-	resolveDependencies: ({ filePath, isSubDir, excludeDeps }) => {
+	resolveDependencies: ({ filePath, isSubDir, excludeDeps, dirs, cwd }) => {
 		const sourceCode = fs.readFileSync(filePath).toString();
 
 		const root = sv.parse(sourceCode, { modern: true, filename: filePath });
@@ -123,40 +115,38 @@ const svelte: Lang = {
 		// if no script tag then no dependencies
 		if (!root.instance) return Ok({ dependencies: [], devDependencies: [], local: [] });
 
-		const localDeps = new Set<string>();
-		const deps = new Set<string>();
+		const imports: string[] = [];
 
 		// biome-ignore lint/suspicious/noExplicitAny: The root instance is just missing the `id` prop
 		walk(root.instance as any, {
 			enter: (node) => {
 				if (node.type === 'ImportDeclaration') {
 					if (typeof node.source.value === 'string') {
-						if (node.source.value.startsWith('.')) {
-							const localDep = resolveLocalImport(node.source.value, isSubDir, {
-								filePath,
-							});
-
-							if (localDep.isErr()) return Err(localDep.unwrapErr());
-
-							if (localDep.unwrap()) localDeps.add(localDep.unwrap()!);
-						} else {
-							deps.add(node.source.value);
-						}
+						imports.push(node.source.value);
 					}
 				}
 			},
 		});
 
-		const { devDependencies, dependencies } = resolveRemoteDeps(Array.from(deps), filePath, [
-			'svelte',
-			...excludeDeps,
-		]);
+		const resolveResult = resolveImports({
+			moduleSpecifiers: imports,
+			filePath,
+			isSubDir,
+			dirs,
+			cwd,
+			doNotInstall: ['svelte', '@sveltejs/kit', ...excludeDeps],
+		});
 
-		return Ok({
-			dependencies,
-			devDependencies,
-			local: Array.from(localDeps),
-		} satisfies ResolvedDependencies);
+		if (resolveResult.isErr()) {
+			return Err(
+				resolveResult
+					.unwrapErr()
+					.map((err) => formatError(err))
+					.join('\n')
+			);
+		}
+
+		return Ok(resolveResult.unwrap());
 	},
 	comment: (content) => `<!--\n${lines.join(lines.get(content), { prefix: () => '\t' })}\n-->`,
 	format: async (code, { formatter, filePath, prettierOptions }) => {
@@ -177,16 +167,13 @@ const svelte: Lang = {
 
 const vue: Lang = {
 	matches: (fileName) => fileName.endsWith('.vue'),
-	resolveDependencies: ({ filePath, isSubDir, excludeDeps }) => {
+	resolveDependencies: ({ filePath, isSubDir, excludeDeps, dirs, cwd }) => {
 		const sourceCode = fs.readFileSync(filePath).toString();
 
 		const parsed = v.parse(sourceCode, { filename: filePath });
 
 		if (!parsed.descriptor.script?.content && !parsed.descriptor.scriptSetup?.content)
 			return Ok({ dependencies: [], devDependencies: [], local: [] });
-
-		const localDeps = new Set<string>();
-		const deps = new Set<string>();
 
 		let compiled: v.SFCScriptBlock;
 		try {
@@ -197,32 +184,27 @@ const vue: Lang = {
 
 		if (!compiled.imports) return Ok({ dependencies: [], devDependencies: [], local: [] });
 
-		const imports = Object.values(compiled.imports);
+		const imports = Object.values(compiled.imports).map((imp) => imp.source);
 
-		for (const imp of imports) {
-			if (imp.source.startsWith('.')) {
-				const localDep = resolveLocalImport(imp.source, isSubDir, {
-					filePath,
-				});
+		const resolveResult = resolveImports({
+			moduleSpecifiers: imports,
+			filePath,
+			isSubDir,
+			dirs,
+			cwd,
+			doNotInstall: ['vue', 'nuxt', ...excludeDeps],
+		});
 
-				if (localDep.isErr()) return Err(localDep.unwrapErr());
-
-				if (localDep.unwrap()) localDeps.add(localDep.unwrap()!);
-			} else {
-				deps.add(imp.source);
-			}
+		if (resolveResult.isErr()) {
+			return Err(
+				resolveResult
+					.unwrapErr()
+					.map((err) => formatError(err))
+					.join('\n')
+			);
 		}
 
-		const { devDependencies, dependencies } = resolveRemoteDeps(Array.from(deps), filePath, [
-			'vue',
-			...excludeDeps,
-		]);
-
-		return Ok({
-			dependencies,
-			devDependencies,
-			local: Array.from(localDeps),
-		} satisfies ResolvedDependencies);
+		return Ok(resolveResult.unwrap());
 	},
 	comment: (content) => `<!--\n${lines.join(lines.get(content), { prefix: () => '\t' })}\n-->`,
 	format: async (code, { formatter, prettierOptions }) => {
@@ -252,10 +234,98 @@ const yaml: Lang = {
 	},
 };
 
+export type ResolveImportOptions = {
+	moduleSpecifiers: string[];
+	isSubDir: boolean;
+	filePath: string;
+	doNotInstall?: string[];
+	dirs: string[];
+	cwd: string;
+};
+
+const formatError = (err: string) => {
+	return `${lines.join(lines.get(err), {
+		prefix: (l) => {
+			if (l === 0) return `${ascii.VERTICAL_LINE}  ${ascii.ERROR} `;
+
+			return `${ascii.VERTICAL_LINE}  `;
+		},
+	})}`;
+};
+
+const resolveImports = ({
+	moduleSpecifiers,
+	isSubDir,
+	filePath,
+	doNotInstall,
+	dirs,
+	cwd,
+}: ResolveImportOptions): Result<ResolvedDependencies, string[]> => {
+	const errors: string[] = [];
+
+	const deps = new Set<string>();
+	const localDeps = new Set<string>();
+
+	for (const specifier of moduleSpecifiers) {
+		if (specifier.startsWith('.')) {
+			const localDep = resolveLocalImport(specifier, isSubDir, {
+				filePath,
+				dirs,
+				cwd,
+			});
+
+			if (localDep.isErr()) {
+				errors.push(localDep.unwrapErr());
+				continue;
+			}
+
+			if (localDep.unwrap()) localDeps.add(localDep.unwrap()!);
+
+			continue;
+		}
+
+		const localDep = tryResolveLocalAlias(specifier, isSubDir, {
+			filePath,
+			dirs,
+			cwd,
+		});
+
+		if (localDep.isErr()) {
+			errors.push(localDep.unwrapErr());
+			continue;
+		}
+
+		if (localDep.unwrap()) {
+			localDeps.add(localDep.unwrap()!);
+		} else {
+			deps.add(specifier);
+		}
+	}
+
+	if (errors.length > 0) {
+		return Err(errors);
+	}
+
+	const { devDependencies, dependencies } = resolveRemoteDeps(Array.from(deps), filePath, {
+		doNotInstall: doNotInstall ? doNotInstall : [],
+	});
+
+	return Ok({
+		dependencies,
+		devDependencies,
+		local: Array.from(localDeps),
+	} satisfies ResolvedDependencies);
+};
+
 const resolveLocalImport = (
 	mod: string,
 	isSubDir: boolean,
-	{ filePath }: { filePath: string }
+	{
+		filePath,
+		alias,
+		dirs,
+		cwd,
+	}: { filePath: string; dirs: string[]; alias?: string; modIsFile?: boolean; cwd: string }
 ): Result<string | undefined, string> => {
 	if (isSubDir && (mod.startsWith('./') || mod === '.')) return Ok(undefined);
 
@@ -265,10 +335,10 @@ const resolveLocalImport = (
 	// get the actual path to the module
 	const modPath = path.join(path.join(filePath, '../'), mod);
 
-	// get the full path to the current category
+	// get the full path to the current category containing folder
 	const fullDir = path.join(categoryDir, '../');
 
-	// mod paths that reference outside of the current blocks directory are invalid
+	// mod paths that reference outside of the current blocks directory are invalid unless it's an alias
 	if (modPath.startsWith(fullDir)) {
 		// only valid blocks can make it to here
 		let [category, block] = modPath.slice(fullDir.length).split('/');
@@ -281,9 +351,124 @@ const resolveLocalImport = (
 		return Ok(`${category}/${block}`);
 	}
 
+	if (alias) {
+		for (const dir of dirs) {
+			const containingPath = path.resolve(path.join(cwd, dir));
+			const absPath = path.resolve(modPath);
+			if (absPath.startsWith(containingPath)) {
+				let [category, block] = absPath.slice(containingPath.length + 1).split('/');
+
+				// remove file extension
+				if (block.includes('.')) {
+					block = block.slice(0, block.length - path.parse(block).ext.length);
+				}
+
+				return Ok(`${category}/${block}`);
+			}
+		}
+
+		return Err(
+			`${filePath}:\n${alias} references code not contained in ${color.bold(dirs.join(', '))} and cannot be resolved.`
+		);
+	}
+
 	return Err(
 		`${filePath}:\n${mod} references code not contained in ${categoryDir} and cannot be resolved.`
 	);
+};
+
+/** Tries to resolve the modules as an alias using the tsconfig. */
+const tryResolveLocalAlias = (
+	mod: string,
+	isSubDir: boolean,
+	{ filePath, dirs, cwd }: { filePath: string; dirs: string[]; cwd: string }
+): Result<string | undefined, string> => {
+	let config = getTsconfig(filePath, 'tsconfig.json');
+
+	if (!config) {
+		// if we don't find the config at first check for a jsconfig
+		config = getTsconfig(filePath, 'jsconfig.json');
+
+		if (!config) {
+			return Ok(undefined);
+		}
+	}
+
+	const matcher = createPathsMatcher(config);
+
+	if (matcher) {
+		// if the mod is actually remote the returns paths will be empty
+		const paths = matcher(mod);
+
+		for (const modPath of paths) {
+			const foundMod = searchForModule(modPath);
+
+			if (!foundMod) continue;
+
+			const relativeSolved = path.relative(
+				path.resolve(path.join(filePath, '../')),
+				foundMod.path
+			);
+
+			const localDep = resolveLocalImport(relativeSolved, isSubDir, {
+				filePath,
+				alias: mod,
+				dirs,
+				cwd,
+				modIsFile: foundMod.type === 'file',
+			});
+
+			if (localDep.isErr()) return Err(localDep.unwrapErr());
+
+			if (localDep.unwrap()) return Ok(localDep.unwrap()!);
+
+			break;
+		}
+	}
+
+	return Ok(undefined);
+};
+
+/** Searches around for the module
+ *
+ * @param path
+ */
+const searchForModule = (
+	modPath: string
+): { path: string; type: 'file' | 'directory' } | undefined => {
+	if (fs.existsSync(modPath)) {
+		return { path: modPath, type: fs.statSync(modPath).isDirectory() ? 'directory' : 'file' };
+	}
+
+	const extension = path.parse(modPath).ext;
+
+	// sometimes it will point to .js because it will resolve in prod but not for us
+	if (extension === '.js') {
+		const newPath = `${modPath.slice(0, modPath.length - 3)}.ts`;
+
+		if (fs.existsSync(newPath)) return { path: modPath, type: 'file' };
+	}
+
+	const containing = path.join(modPath, '../');
+
+	// open containing folder
+	if (!fs.existsSync(containing)) return undefined;
+
+	const files = fs.readdirSync(containing);
+
+	for (const file of files) {
+		// this way the extension doesn't matter
+		if (file.startsWith(path.basename(modPath))) {
+			const filePath = path.join(containing, file);
+
+			return {
+				path: filePath,
+				type: fs.statSync(filePath).isDirectory() ? 'directory' : 'file',
+			};
+		}
+	}
+
+	return undefined;
 };
 
 /** Iterates over the dependency and resolves each one using the nearest package.json file.
@@ -293,7 +478,13 @@ const resolveLocalImport = (
  * @param filePath
  * @returns
  */
-const resolveRemoteDeps = (deps: string[], filePath: string, doNotInstall: string[] = []) => {
+const resolveRemoteDeps = (
+	deps: string[],
+	filePath: string,
+	{ doNotInstall }: { doNotInstall: string[] } = {
+		doNotInstall: [],
+	}
+) => {
 	const exemptDeps = new Set(doNotInstall);
 
 	const filteredDeps = deps.filter(

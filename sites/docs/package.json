@@ -14,25 +14,25 @@
 	"devDependencies": {
 		"@fontsource-variable/jetbrains-mono": "^5.1.1",
 		"@fontsource/poppins": "^5.1.0",
-		"@sveltejs/kit": "^2.8.2",
-		"@sveltejs/vite-plugin-svelte": "^4.0.0",
+		"@sveltejs/kit": "^2.9.0",
+		"@sveltejs/vite-plugin-svelte": "^5.0.1",
 		"@tailwindcss/typography": "^0.5.15",
 		"@types/eslint": "^9.6.0",
 		"autoprefixer": "^10.4.20",
 		"bits-ui": "1.0.0-next.63",
 		"clsx": "^2.1.1",
-		"eslint": "^9.7.0",
+		"eslint": "^9.16.0",
 		"eslint-config-prettier": "^9.1.0",
-		"eslint-plugin-svelte": "^2.36.0",
+		"eslint-plugin-svelte": "^2.46.1",
 		"globals": "^15.0.0",
-		"lucide-svelte": "^0.460.1",
+		"lucide-svelte": "^0.462.0",
 		"mode-watcher": "^0.5.0",
 		"octokit": "^4.0.2",
-		"package-manager-detector": "^0.2.4",
-		"prettier": "^3.3.2",
+		"package-manager-detector": "^0.2.6",
+		"prettier": "^3.4.1",
 		"prettier-plugin-svelte": "^3.3.2",
-		"shiki": "^1.23.1",
-		"svelte": "^5.2.7",
+		"shiki": "^1.24.0",
+		"svelte": "^5.2.11",
 		"svelte-check": "^4.1.0",
 		"svelte-persisted-store": "^0.12.0",
 		"tailwind-merge": "^2.5.4",
@@ -40,11 +40,11 @@
 		"tailwindcss": "^3.4.9",
 		"tailwindcss-animate": "^1.0.7",
 		"typescript": "^5.7.2",
-		"typescript-eslint": "^8.0.0",
+		"typescript-eslint": "^8.16.0",
 		"vaul-svelte": "1.0.0-next.3",
-		"vite": "^5.0.3"
+		"vite": "^6.0.1"
 	},
 	"dependencies": {
-		"@sveltejs/adapter-vercel": "^5.4.8"
+		"@sveltejs/adapter-vercel": "^5.5.0"
 	}
 }

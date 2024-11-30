@@ -8,7 +8,11 @@
 		"target": "ES2022",
 		"skipLibCheck": true,
 		"strict": true,
-		"noEmit": true
+		"paths": {
+			"$types/*": ["./src/types/*"],
+			"$utils/*": ["./src/utils/*"],
+			"$logging/*": ["./blocks/logging/*"],
+		}
 	},
 	"include": ["src/**/*.ts"]
 }

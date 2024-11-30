@@ -1,5 +1,6 @@
-import color from "chalk"
+import color from "chalk";
+import { log } from "$logging/logger";
 
-const print = (str: string) => console.log(color.cyan(str));
+const print = (str: string) => log(color.cyan(str));
 
-export { print }
+export { print };
