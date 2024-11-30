@@ -1,5 +1,11 @@
 # jsrepo
 
+## 1.14.0
+
+### Minor Changes
+
+- e54ae5f: Add support for path aliases 🎉
+
 ## 1.13.3
 
 ### Patch Changes
