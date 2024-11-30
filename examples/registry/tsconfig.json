@@ -10,7 +10,8 @@
 		"strict": true,
 		"paths": {
 			"$types/*": ["./src/types/*"],
-			"$utils/*": ["./src/utils/*"]
+			"$utils/*": ["./src/utils/*"],
+			"$logging/*": ["./blocks/logging/*"],
 		}
 	},
 	"include": ["src/**/*.ts"]

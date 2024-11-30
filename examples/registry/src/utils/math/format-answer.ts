@@ -1,4 +1,4 @@
-import { print } from "$utils/pretty-print"
+import { print } from "../pretty-print"
 import { add } from "."
 
 const format = (answer: number) => `answer was ${print(answer.toString())}`;

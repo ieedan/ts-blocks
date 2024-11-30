@@ -78,7 +78,7 @@ const typescript: Lang = {
 			return Err(
 				resolveResult
 					.unwrapErr()
-					.map((err) => `${ascii.VERTICAL_LINE}  ${ascii.ERROR} ${err}`)
+					.map((err) => formatError(err))
 					.join('\n')
 			);
 		}
@@ -141,7 +141,7 @@ const svelte: Lang = {
 			return Err(
 				resolveResult
 					.unwrapErr()
-					.map((err) => `${ascii.VERTICAL_LINE}  ${ascii.ERROR} ${err}`)
+					.map((err) => formatError(err))
 					.join('\n')
 			);
 		}
@@ -199,7 +199,7 @@ const vue: Lang = {
 			return Err(
 				resolveResult
 					.unwrapErr()
-					.map((err) => `${ascii.VERTICAL_LINE}  ${ascii.ERROR} ${err}`)
+					.map((err) => formatError(err))
 					.join('\n')
 			);
 		}
@@ -241,6 +241,16 @@ export type ResolveImportOptions = {
 	doNotInstall?: string[];
 	dirs: string[];
 	cwd: string;
+};
+
+const formatError = (err: string) => {
+	return `${lines.join(lines.get(err), {
+		prefix: (l) => {
+			if (l === 0) return `${ascii.VERTICAL_LINE}  ${ascii.ERROR} `;
+
+			return `${ascii.VERTICAL_LINE}  `;
+		},
+	})}`;
 };
 
 const resolveImports = ({
@@ -315,7 +325,7 @@ const resolveLocalImport = (
 		alias,
 		dirs,
 		cwd,
-	}: { filePath: string; dirs: string[]; alias?: boolean; modIsFile?: boolean; cwd: string }
+	}: { filePath: string; dirs: string[]; alias?: string; modIsFile?: boolean; cwd: string }
 ): Result<string | undefined, string> => {
 	if (isSubDir && (mod.startsWith('./') || mod === '.')) return Ok(undefined);
 
@@ -344,8 +354,9 @@ const resolveLocalImport = (
 	if (alias) {
 		for (const dir of dirs) {
 			const containingPath = path.resolve(path.join(cwd, dir));
-			if (modPath.startsWith(containingPath)) {
-				let [category, block] = modPath.slice(containingPath.length + 1).split('/');
+			const absPath = path.resolve(modPath);
+			if (absPath.startsWith(containingPath)) {
+				let [category, block] = absPath.slice(containingPath.length + 1).split('/');
 
 				// remove file extension
 				if (block.includes('.')) {
@@ -355,6 +366,10 @@ const resolveLocalImport = (
 				return Ok(`${category}/${block}`);
 			}
 		}
+
+		return Err(
+			`${filePath}:\n${alias} references code not contained in ${color.bold(dirs.join(', '))} and cannot be resolved.`
+		);
 	}
 
 	return Err(
@@ -397,7 +412,7 @@ const tryResolveLocalAlias = (
 
 			const localDep = resolveLocalImport(relativeSolved, isSubDir, {
 				filePath,
-				alias: true,
+				alias: mod,
 				dirs,
 				cwd,
 				modIsFile: foundMod.type === 'file',
