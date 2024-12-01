@@ -9,7 +9,7 @@
 <DocHeader title="GitLab" description="How to use GitLab as your jsrepo registry." />
 <SubHeading>Branches and Tags</SubHeading>
 <Blockquote variant="primary">
-	The default branch is <CodeSpan>main</CodeSpan>.
+	<Jsrepo /> will automatically detect the default branch for you.
 </Blockquote>
 <p>
 	<Jsrepo /> supports <Link target="_blank" href="https://gitlab.com">GitLab</Link> so that you can just
@@ -19,9 +19,9 @@
 <Code
 	showLines={false}
 	lang="bash"
-	code={`https://gitlab.com/ieedan/std # main shorthand
-https://gitlab.com/ieedan/std/tree/v1.5.0 # tag reference
-https://gitlab.com/ieedan/std/tree/next # branch reference
+	code={`https://gitlab.com/ieedan/std # default branch shorthand
+https://gitlab.com/ieedan/std/-/tree/v1.5.0 # tag reference
+https://gitlab.com/ieedan/std/-/tree/next # branch reference
 `}
 />
 <SubHeading>Using Tags for Versioning</SubHeading>

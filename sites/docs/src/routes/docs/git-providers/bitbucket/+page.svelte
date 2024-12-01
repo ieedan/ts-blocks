@@ -9,7 +9,7 @@
 <DocHeader title="BitBucket" description="How to use BitBucket as your jsrepo registry." />
 <SubHeading>Branches and Tags</SubHeading>
 <Blockquote variant="primary">
-	The default branch is <CodeSpan>master</CodeSpan>.
+	<Jsrepo /> will automatically detect the default branch for you.
 </Blockquote>
 <p>
 	<Jsrepo /> supports <Link target="_blank" href="https://bitbucket.org">BitBucket</Link> so that you
@@ -19,7 +19,7 @@
 <Code
 	showLines={false}
 	lang="bash"
-	code={`https://bitbucket.org/ieedan/std # master shorthand
+	code={`https://bitbucket.org/ieedan/std # default branch shorthand
 https://bitbucket.org/ieedan/std/src/v1.5.0 # tag reference
 https://bitbucket.org/ieedan/std/src/next # branch reference
 `}

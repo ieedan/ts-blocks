@@ -9,8 +9,7 @@
 <DocHeader title="GitHub" description="How to use GitHub as your jsrepo registry." />
 <SubHeading>Branches and Tags</SubHeading>
 <Blockquote variant="primary">
-	<Jsrepo /> uses <CodeSpan>octokit</CodeSpan> to detect the default branch if a branch or tag is not
-	supplied.
+	<Jsrepo /> will automatically detect the default branch for you.
 </Blockquote>
 <p>
 	<Jsrepo /> supports <Link target="_blank" href="https://github.com">GitHub</Link> so that you can just
@@ -20,15 +19,11 @@
 <Code
 	showLines={false}
 	lang="bash"
-	code={`https://github.com/ieedan/std # main shorthand
+	code={`https://github.com/ieedan/std # default branch shorthand
 https://github.com/ieedan/std/tree/v1.5.0 # tag reference
 https://github.com/ieedan/std/tree/next # branch reference
 `}
 />
-<Blockquote variant="primary">
-	To check if a ref is a tag or a branch the CLI calls
-	<CodeSpan>octokit</CodeSpan> to check the tags.
-</Blockquote>
 <SubHeading>Using Tags for Versioning</SubHeading>
 <p>
 	Tags can be a great solution to ensuring remote tests and blocks stay on a consistent version.
