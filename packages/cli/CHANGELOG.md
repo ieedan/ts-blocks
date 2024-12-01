@@ -1,5 +1,11 @@
 # jsrepo
 
+## 1.14.1
+
+### Patch Changes
+
+- 20314c1: Auto detect default branch on **GitLab** and **BitBucket**.
+
 ## 1.14.0
 
 ### Minor Changes
