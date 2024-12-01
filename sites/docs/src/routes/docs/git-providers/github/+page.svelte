@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { DocHeader, Jsrepo, Link, Blockquote, SubHeading, Code } from '$lib/components/site/docs';
+	import { DocHeader, Jsrepo, Link, SubHeading, Code } from '$lib/components/site/docs';
 	import CodeSpan from '$lib/components/site/docs/code-span.svelte';
 	import { Snippet } from '$lib/components/ui/snippet';
 
@@ -8,10 +8,6 @@
 
 <DocHeader title="GitHub" description="How to use GitHub as your jsrepo registry." />
 <SubHeading>Branches and Tags</SubHeading>
-<Blockquote variant="primary">
-	<Jsrepo /> uses <CodeSpan>octokit</CodeSpan> to detect the default branch if a branch or tag is not
-	supplied.
-</Blockquote>
 <p>
 	<Jsrepo /> supports <Link target="_blank" href="https://github.com">GitHub</Link> so that you can just
 	paste a link to the repo homepage and it will be handled correctly.
@@ -20,15 +16,11 @@
 <Code
 	showLines={false}
 	lang="bash"
-	code={`https://github.com/ieedan/std # main shorthand
+	code={`https://github.com/ieedan/std # default branch shorthand
 https://github.com/ieedan/std/tree/v1.5.0 # tag reference
 https://github.com/ieedan/std/tree/next # branch reference
 `}
 />
-<Blockquote variant="primary">
-	To check if a ref is a tag or a branch the CLI calls
-	<CodeSpan>octokit</CodeSpan> to check the tags.
-</Blockquote>
 <SubHeading>Using Tags for Versioning</SubHeading>
 <p>
 	Tags can be a great solution to ensuring remote tests and blocks stay on a consistent version.
