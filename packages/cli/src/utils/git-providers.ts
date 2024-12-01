@@ -283,6 +283,32 @@ const gitlab: Provider = {
 			} else {
 				ref = rest[2];
 			}
+		} else {
+			try {
+				const token = persisted.get().get(`${gitlab.name()}-token`);
+
+				const headers = new Headers();
+
+				if (token !== undefined) {
+					headers.append('Authorization', `Bearer ${token}`);
+				}
+
+				const response = await fetch(
+					`https://gitlab.com/api/v4/projects/${encodeURIComponent(`${owner}/${repoName}`)}`,
+					{
+						headers,
+					}
+				);
+
+				if (response.ok) {
+					const data = await response.json();
+
+					// @ts-ignore yes but we know
+					ref = data.default_branch;
+				}
+			} catch {
+				// well find out it isn't correct later with a better error
+			}
 		}
 
 		return {
