@@ -372,6 +372,32 @@ const bitbucket: Provider = {
 
 		if (rest[0] === 'src') {
 			ref = rest[1];
+		} else {
+			try {
+				const token = persisted.get().get(`${bitbucket.name()}-token`);
+
+				const headers = new Headers();
+
+				if (token !== undefined) {
+					headers.append('Authorization', `Bearer ${token}`);
+				}
+
+				const response = await fetch(
+					`https://api.bitbucket.org/2.0/repositories/${owner}/${repoName}`,
+					{
+						headers,
+					}
+				);
+
+				if (response.ok) {
+					const data = await response.json();
+
+					// @ts-ignore yes but we know
+					ref = data.mainbranch.name;
+				}
+			} catch {
+				// well find out it isn't correct later with a better error
+			}
 		}
 
 		return {
