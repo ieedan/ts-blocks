@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { DocHeader, Jsrepo, Link, Blockquote, SubHeading, Code } from '$lib/components/site/docs';
+	import { DocHeader, Jsrepo, Link, SubHeading, Code } from '$lib/components/site/docs';
 	import CodeSpan from '$lib/components/site/docs/code-span.svelte';
 	import { Snippet } from '$lib/components/ui/snippet';
 
@@ -8,9 +8,6 @@
 
 <DocHeader title="GitHub" description="How to use GitHub as your jsrepo registry." />
 <SubHeading>Branches and Tags</SubHeading>
-<Blockquote variant="primary">
-	<Jsrepo /> will automatically detect the default branch for you.
-</Blockquote>
 <p>
 	<Jsrepo /> supports <Link target="_blank" href="https://github.com">GitHub</Link> so that you can just
 	paste a link to the repo homepage and it will be handled correctly.
