@@ -9,7 +9,7 @@ import { context } from '..';
 import * as ascii from '../utils/ascii';
 import { getInstalled } from '../utils/blocks';
 import { type Block, isTestFile } from '../utils/build';
-import { getConfig } from '../utils/config';
+import { getConfig, resolvePaths } from '../utils/config';
 import { formatDiff } from '../utils/diff';
 import { getWatermark } from '../utils/get-watermark';
 import * as gitProviders from '../utils/git-providers';
@@ -91,6 +91,14 @@ const _diff = async (options: Options) => {
 
 	const installedBlocks = getInstalled(blocksMap, config, options.cwd);
 
+	const resolvedPathsResult = resolvePaths(config.paths, options.cwd);
+
+	if (resolvedPathsResult.isErr()) {
+		program.error(color.red(resolvedPathsResult.unwrapErr()));
+	}
+
+	const resolvedPaths = resolvedPathsResult.unwrap();
+
 	for (const blockSpecifier of installedBlocks) {
 		let found = false;
 
@@ -128,13 +136,22 @@ const _diff = async (options: Options) => {
 
 				let remoteContent = response.unwrap();
 
-				const directory = path.join(options.cwd, config.path, block.category);
+				let directory: string;
+				let prettyDirectory: string;
+
+				if (resolvedPaths[block.category] !== undefined) {
+					prettyDirectory = resolvedPaths[block.category];
+					directory = path.join(options.cwd, resolvedPaths[block.category]);
+				} else {
+					prettyDirectory = path.join(resolvedPaths['*'], block.category);
+					directory = path.join(options.cwd, resolvedPaths['*'], block.category);
+				}
 
 				let localPath = path.join(directory, file);
-				let prettyLocalPath = path.join(config.path, block.category, file);
+				let prettyLocalPath = path.join(prettyDirectory, file);
 				if (block.subdirectory) {
 					localPath = path.join(directory, block.name, file);
-					prettyLocalPath = path.join(config.path, block.category, block.name, file);
+					prettyLocalPath = path.join(prettyDirectory, block.name, file);
 				}
 
 				let fileContent = '';
