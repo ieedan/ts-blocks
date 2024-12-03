@@ -119,7 +119,7 @@ const _initProject = async (options: Options) => {
 		validate(value) {
 			if (value.trim() === '') return 'Please provide a value';
 		},
-		initialValue: initialConfig.isOk() ? initialConfig.unwrap().paths['*'] : 'src/blocks',
+		initialValue: initialConfig.isOk() ? initialConfig.unwrap().paths['*'] : './src/blocks',
 	});
 
 	if (isCancel(defaultPathResult)) {
@@ -229,7 +229,7 @@ const _initProject = async (options: Options) => {
 						validate(value) {
 							if (value.trim() === '') return 'Please provide a value';
 						},
-						placeholder: `src/${category}`,
+						placeholder: `./src/${category}`,
 					});
 
 					if (isCancel(categoryPath)) {
