@@ -70,7 +70,7 @@ html.dark .shiki span {
 
 @layer base {
 	* {
-		@apply border-border;
+		@apply border-border selection:bg-primary/20;
 	}
 	body {
 		@apply bg-background text-foreground;

@@ -26,7 +26,9 @@ import {
 	getConfig,
 } from '../utils/config';
 import { installDependencies } from '../utils/dependencies';
+import { loadFormatterConfig } from '../utils/format';
 import { providers } from '../utils/git-providers';
+import { json } from '../utils/language-support';
 import * as persisted from '../utils/persisted';
 import { intro, nextSteps } from '../utils/prompts';
 
@@ -291,10 +293,21 @@ const _initProject = async (options: Options) => {
 
 	loading.start(`Writing config to \`${CONFIG_NAME}\``);
 
-	fs.writeFileSync(
-		path.join(options.cwd, CONFIG_NAME),
-		`${JSON.stringify(config, null, '\t')}\n`
-	);
+	const { prettierOptions, biomeOptions } = await loadFormatterConfig({
+		formatter: config.formatter,
+		cwd: options.cwd,
+	});
+
+	const configPath = path.join(options.cwd, CONFIG_NAME);
+
+	const configContent = await json.format(JSON.stringify(config, null, '\t'), {
+		biomeOptions,
+		prettierOptions,
+		filePath: configPath,
+		formatter: config.formatter,
+	});
+
+	fs.writeFileSync(configPath, configContent);
 
 	loading.stop(`Wrote config to \`${CONFIG_NAME}\`.`);
 };

@@ -239,6 +239,31 @@ const yaml: Lang = {
 	},
 };
 
+const json: Lang = {
+	matches: (fileName) => fileName.endsWith('.json'),
+	resolveDependencies: () =>
+		Ok({ dependencies: [], local: [], devDependencies: [], imports: {} }),
+	// json doesn't support comments
+	comment: (content: string) => content,
+	format: async (code, { formatter, prettierOptions, biomeOptions, filePath }) => {
+		if (!formatter) return code;
+
+		if (formatter === 'prettier') {
+			return await prettier.format(code, { filepath: filePath, ...prettierOptions });
+		}
+
+		const biome = await Biome.create({
+			distribution: Distribution.NODE,
+		});
+
+		if (biomeOptions) {
+			biome.applyConfiguration(biomeOptions);
+		}
+
+		return biome.formatContent(code, { filePath }).content;
+	},
+};
+
 export type ResolveImportOptions = {
 	moduleSpecifiers: string[];
 	isSubDir: boolean;
@@ -596,6 +621,6 @@ const resolveRemoteDeps = (
 	};
 };
 
-const languages: Lang[] = [typescript, svelte, vue, yaml];
+const languages: Lang[] = [typescript, svelte, vue, yaml, json];
 
-export { typescript, svelte, vue, yaml, languages };
+export { typescript, svelte, vue, yaml, json, languages };

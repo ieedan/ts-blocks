@@ -88,7 +88,7 @@ export type Point = {
 />
 
 <SubHeading>formatter</SubHeading>
-<p>The formatter to use when adding or updating blocks.</p>
+<p>The formatter to use when writing files in your project.</p>
 <Code
 	lang="json"
 	code={`{

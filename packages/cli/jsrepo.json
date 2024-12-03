@@ -1,6 +1,6 @@
 {
-	"$schema": "https://unpkg.com/jsrepo@1.11.0/schema.json",
-	"repos": ["github/ieedan/std/tree/map-categories"],
+	"$schema": "https://unpkg.com/jsrepo@1.15.0/schema.json",
+	"repos": ["github/ieedan/std"],
 	"includeTests": false,
 	"watermark": true,
 	"formatter": "biome",
