@@ -137,9 +137,13 @@ const github: Provider = {
 
 		if (manifest.isErr()) return Err(manifest.unwrapErr());
 
-		const categories = v.parse(v.array(categorySchema), JSON.parse(manifest.unwrap()));
+		const categories = v.safeParse(v.array(categorySchema), JSON.parse(manifest.unwrap()));
 
-		return Ok(categories);
+		if (!categories.success) {
+			return Err(`Error parsing categories: ${categories.issues}`)
+		}
+
+		return Ok(categories.output);
 	},
 	info: async (repoPath) => {
 		if (typeof repoPath !== 'string') return repoPath;
@@ -255,9 +259,13 @@ const gitlab: Provider = {
 
 		if (manifest.isErr()) return Err(manifest.unwrapErr());
 
-		const categories = v.parse(v.array(categorySchema), JSON.parse(manifest.unwrap()));
+		const categories = v.safeParse(v.array(categorySchema), JSON.parse(manifest.unwrap()));
 
-		return Ok(categories);
+		if (!categories.success) {
+			return Err(`Error parsing categories: ${categories.issues}`)
+		}
+
+		return Ok(categories.output);
 	},
 	info: async (repoPath) => {
 		if (typeof repoPath !== 'string') return repoPath;
@@ -380,9 +388,13 @@ const bitbucket: Provider = {
 
 		if (manifest.isErr()) return Err(manifest.unwrapErr());
 
-		const categories = v.parse(v.array(categorySchema), JSON.parse(manifest.unwrap()));
+		const categories = v.safeParse(v.array(categorySchema), JSON.parse(manifest.unwrap()));
 
-		return Ok(categories);
+		if (!categories.success) {
+			return Err(`Error parsing categories: ${categories.issues}`)
+		}
+
+		return Ok(categories.output);
 	},
 	info: async (repoPath) => {
 		if (typeof repoPath !== 'string') return repoPath;

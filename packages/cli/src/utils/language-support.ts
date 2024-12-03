@@ -22,6 +22,8 @@ export type ResolvedDependencies = {
 	local: string[];
 	devDependencies: string[];
 	dependencies: string[];
+	/** Maps a literal import to a template import to be replaced during add/update */
+	imports: Record<string, string>;
 };
 
 export type ResolveDependencyOptions = {
@@ -113,7 +115,8 @@ const svelte: Lang = {
 		const root = sv.parse(sourceCode, { modern: true, filename: filePath });
 
 		// if no script tag then no dependencies
-		if (!root.instance) return Ok({ dependencies: [], devDependencies: [], local: [] });
+		if (!root.instance)
+			return Ok({ dependencies: [], devDependencies: [], local: [], imports: {} });
 
 		const imports: string[] = [];
 
@@ -173,7 +176,7 @@ const vue: Lang = {
 		const parsed = v.parse(sourceCode, { filename: filePath });
 
 		if (!parsed.descriptor.script?.content && !parsed.descriptor.scriptSetup?.content)
-			return Ok({ dependencies: [], devDependencies: [], local: [] });
+			return Ok({ dependencies: [], devDependencies: [], local: [], imports: {} });
 
 		let compiled: v.SFCScriptBlock;
 		try {
@@ -182,7 +185,8 @@ const vue: Lang = {
 			return Err(`Compile error: ${err}`);
 		}
 
-		if (!compiled.imports) return Ok({ dependencies: [], devDependencies: [], local: [] });
+		if (!compiled.imports)
+			return Ok({ dependencies: [], devDependencies: [], local: [], imports: {} });
 
 		const imports = Object.values(compiled.imports).map((imp) => imp.source);
 
@@ -221,7 +225,8 @@ const vue: Lang = {
 
 const yaml: Lang = {
 	matches: (fileName) => fileName.endsWith('.yml') || fileName.endsWith('.yaml'),
-	resolveDependencies: () => Ok({ dependencies: [], local: [], devDependencies: [] }),
+	resolveDependencies: () =>
+		Ok({ dependencies: [], local: [], devDependencies: [], imports: {} }),
 	comment: (content: string) => lines.join(lines.get(content), { prefix: () => '# ' }),
 	format: async (code, { formatter, prettierOptions }) => {
 		if (!formatter) return code;
@@ -265,6 +270,7 @@ const resolveImports = ({
 
 	const deps = new Set<string>();
 	const localDeps = new Set<string>();
+	const imports: Record<string, string> = {};
 
 	for (const specifier of moduleSpecifiers) {
 		if (specifier.startsWith('.')) {
@@ -279,7 +285,12 @@ const resolveImports = ({
 				continue;
 			}
 
-			if (localDep.unwrap()) localDeps.add(localDep.unwrap()!);
+			const dep = localDep.unwrap();
+
+			if (dep) {
+				localDeps.add(dep.dependency);
+				imports[specifier] = dep.template;
+			}
 
 			continue;
 		}
@@ -295,8 +306,11 @@ const resolveImports = ({
 			continue;
 		}
 
-		if (localDep.unwrap()) {
-			localDeps.add(localDep.unwrap()!);
+		const dep = localDep.unwrap();
+
+		if (dep) {
+			localDeps.add(dep.dependency);
+			imports[specifier] = dep.template;
 		} else {
 			deps.add(specifier);
 		}
@@ -314,7 +328,15 @@ const resolveImports = ({
 		dependencies,
 		devDependencies,
 		local: Array.from(localDeps),
+		imports,
 	} satisfies ResolvedDependencies);
+};
+
+type ResolveLocalImportResult = {
+	/** The local block that is a dependency */
+	dependency: string;
+	/** A template used to resolve the import during add/update */
+	template: string;
 };
 
 const resolveLocalImport = (
@@ -326,7 +348,7 @@ const resolveLocalImport = (
 		dirs,
 		cwd,
 	}: { filePath: string; dirs: string[]; alias?: string; modIsFile?: boolean; cwd: string }
-): Result<string | undefined, string> => {
+): Result<ResolveLocalImportResult | undefined, string> => {
 	if (isSubDir && (mod.startsWith('./') || mod === '.')) return Ok(undefined);
 
 	// get the path to the current category
@@ -340,15 +362,7 @@ const resolveLocalImport = (
 
 	// mod paths that reference outside of the current blocks directory are invalid unless it's an alias
 	if (modPath.startsWith(fullDir)) {
-		// only valid blocks can make it to here
-		let [category, block] = modPath.slice(fullDir.length).split('/');
-
-		// remove file extension
-		if (block.includes('.')) {
-			block = block.slice(0, block.length - path.parse(block).ext.length);
-		}
-
-		return Ok(`${category}/${block}`);
+		return Ok(parsePath(modPath.slice(fullDir.length)));
 	}
 
 	if (alias) {
@@ -356,14 +370,7 @@ const resolveLocalImport = (
 			const containingPath = path.resolve(path.join(cwd, dir));
 			const absPath = path.resolve(modPath);
 			if (absPath.startsWith(containingPath)) {
-				let [category, block] = absPath.slice(containingPath.length + 1).split('/');
-
-				// remove file extension
-				if (block.includes('.')) {
-					block = block.slice(0, block.length - path.parse(block).ext.length);
-				}
-
-				return Ok(`${category}/${block}`);
+				return Ok(parsePath(absPath.slice(containingPath.length + 1)));
 			}
 		}
 
@@ -377,12 +384,41 @@ const resolveLocalImport = (
 	);
 };
 
+const parsePath = (localPath: string): ResolveLocalImportResult => {
+	const [category, block, ...rest] = localPath.split('/');
+
+	let trimmedBlock = block;
+
+	// remove file extension
+	if (trimmedBlock.includes('.')) {
+		trimmedBlock = trimmedBlock.slice(
+			0,
+			trimmedBlock.length - path.parse(trimmedBlock).ext.length
+		);
+	}
+
+	const blockSpecifier = `${category}/${trimmedBlock}`;
+
+	let template = `{{${blockSpecifier}}}`;
+
+	if (rest.length === 0) {
+		if (trimmedBlock.length !== block.length) {
+			// add extension to template
+			template += path.parse(block).ext;
+		}
+	} else {
+		template += `/${rest.join('/')}`;
+	}
+
+	return { dependency: blockSpecifier, template };
+};
+
 /** Tries to resolve the modules as an alias using the tsconfig. */
 const tryResolveLocalAlias = (
 	mod: string,
 	isSubDir: boolean,
 	{ filePath, dirs, cwd }: { filePath: string; dirs: string[]; cwd: string }
-): Result<string | undefined, string> => {
+): Result<ResolveLocalImportResult | undefined, string> => {
 	let config = getTsconfig(filePath, 'tsconfig.json');
 
 	if (!config) {
@@ -457,12 +493,21 @@ const searchForModule = (
 	const files = fs.readdirSync(containing);
 
 	for (const file of files) {
+		const fileWithoutExtension = path.parse(file).name;
+
 		// this way the extension doesn't matter
-		if (file.startsWith(path.basename(modPath))) {
+		if (fileWithoutExtension === path.basename(modPath)) {
 			const filePath = path.join(containing, file);
 
+			let normalizedFile = filePath;
+
+			// in this case the .ts extension was obviously not intended
+			if (normalizedFile.endsWith('.ts')) {
+				normalizedFile = normalizedFile.slice(0, normalizedFile.length - 3);
+			}
+
 			return {
-				path: filePath,
+				path: normalizedFile,
 				type: fs.statSync(filePath).isDirectory() ? 'directory' : 'file',
 			};
 		}
