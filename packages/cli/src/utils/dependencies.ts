@@ -2,6 +2,8 @@ import color from 'chalk';
 import { execa } from 'execa';
 import { type Agent, type ResolvedCommand, resolveCommand } from 'package-manager-detector';
 import { Err, Ok, type Result } from './blocks/types/result';
+import type { Config } from './config';
+import path from 'pathe';
 
 export type Options = {
 	pm: Agent;
@@ -46,4 +48,46 @@ const installDependencies = async ({
 	}
 };
 
-export { installDependencies };
+const templatePattern = /\{\{([^\/]+)\/([^\}]+)\}\}/g;
+
+export type ResolveOptions = {
+	template: string;
+	config: Config;
+	destPath: string;
+};
+
+/** Takes a template and uses replaces it with an alias or relative path that resolves to the correct block
+ *
+ * @param param0
+ * @returns
+ */
+const resolveLocalDependencyTemplate = ({ template, config, destPath }: ResolveOptions) => {
+	const destDir = path.join(destPath, '../');
+
+	return template.replace(templatePattern, (_, category, name) => {
+		if (config.paths[category] === undefined) {
+			// if relative make it relative
+			if (config.paths['*'].startsWith('.')) {
+				const relative = path.relative(
+					destDir,
+					path.join(config.paths['*'], category, name)
+				);
+
+				return relative.startsWith('.') ? relative : `./${relative}`;
+			}
+
+			return path.join(config.paths['*'], category, name);
+		}
+
+		// if relative make it relative
+		if (config.paths[category].startsWith('.')) {
+			const relative = path.relative(destDir, path.join(config.paths[category], name));
+
+			return relative.startsWith('.') ? relative : `./${relative}`;
+		}
+
+		return path.join(config.paths[category], name);
+	});
+};
+
+export { installDependencies, resolveLocalDependencyTemplate };

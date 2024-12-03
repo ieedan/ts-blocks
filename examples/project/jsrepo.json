@@ -4,8 +4,8 @@
 	"includeTests": false,
 	"watermark": true,
 	"paths": {
-		"*": "src/blocks",
-		"types": "src/types",
-		"utils": "src/utils"
+		"*": "./src/blocks",
+		"types": "$lib/types",
+		"utils": "$lib/utils"
 	}
 }

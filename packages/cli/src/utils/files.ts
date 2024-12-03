@@ -1,0 +1,77 @@
+import type { PartialConfiguration } from '@biomejs/wasm-nodejs';
+import type { Config } from './config';
+import type * as prettier from 'prettier';
+import { Err, Ok, type Result } from './blocks/types/result';
+import { languages } from './language-support';
+import color from 'chalk';
+import { resolveLocalDependencyTemplate } from './dependencies';
+
+type TransformRemoteContentOptions = {
+	file: {
+		/** The content of the file */
+		content: string;
+		/** The dest path of the file used to determine the language */
+		destPath: string;
+	};
+	config: Config;
+	watermark: string;
+	imports: Record<string, string>;
+	prettierOptions: prettier.Options | null;
+	biomeOptions: PartialConfiguration | null;
+	verbose?: (msg: string) => void;
+};
+
+/** Makes the necessary modifications to the content of the file to ensure it works properly in the users project
+ *
+ * @param param0
+ * @returns
+ */
+const transformRemoteContent = async ({
+	file,
+	config,
+	imports,
+	watermark,
+	prettierOptions,
+	biomeOptions,
+	verbose,
+}: TransformRemoteContentOptions): Promise<Result<string, string>> => {
+	const lang = languages.find((lang) => lang.matches(file.destPath));
+
+	let content: string = file.content;
+
+	if (lang) {
+		if (config.watermark) {
+			const comment = lang.comment(watermark);
+
+			content = `${comment}\n\n${content}`;
+		}
+
+		verbose?.(`Formatting ${color.bold(file.destPath)}`);
+
+		try {
+			content = await lang.format(content, {
+				filePath: file.destPath,
+				formatter: config.formatter,
+				prettierOptions,
+				biomeOptions,
+			});
+		} catch (err) {
+			return Err(`Error formatting ${color.bold(file.destPath)} ${err}`);
+		}
+	}
+
+	// transform imports
+	for (const [literal, template] of Object.entries(imports)) {
+		const resolvedImport = resolveLocalDependencyTemplate({
+			template,
+			config,
+			destPath: file.destPath,
+		});
+
+		content.replaceAll(literal, resolvedImport);
+	}
+
+	return Ok(content);
+};
+
+export { transformRemoteContent };

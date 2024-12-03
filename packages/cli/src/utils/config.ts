@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import path from 'pathe';
 import * as v from 'valibot';
 import { Err, Ok, type Result } from './blocks/types/result';
+import { createPathsMatcher, getTsconfig } from 'get-tsconfig';
 
 const CONFIG_NAME = 'jsrepo.json';
 
@@ -48,4 +49,62 @@ export type Config = v.InferOutput<typeof schema>;
 
 export type Formatter = v.InferOutput<typeof formatterSchema>;
 
-export { CONFIG_NAME, getConfig, schema, formatterSchema };
+/** Resolves the paths relative to the cwd */
+const resolvePaths = (paths: Paths, cwd: string): Result<Paths, string> => {
+	let config = getTsconfig(cwd, 'tsconfig.json');
+	let matcher: ((specifier: string) => string[]) | null = null;
+
+	if (!config) {
+		// if we don't find the config at first check for a jsconfig
+		config = getTsconfig(cwd, 'jsconfig.json');
+	}
+
+	if (config) {
+		matcher = createPathsMatcher(config);
+	}
+
+	let newPaths: Paths;
+
+	if (!paths['*'].startsWith('.')) {
+		if (matcher === null) {
+			return Err("Cannot resolve aliases because we couldn't find a tsconfig!");
+		}
+
+		newPaths = {
+			'*': resolvePath(paths['*'], matcher, cwd),
+		};
+	} else {
+		newPaths = {
+			'*': paths['*'],
+		};
+	}
+
+	for (const [category, p] of Object.entries(paths)) {
+		if (category === '*') continue; // we already resolved this one
+
+		if (p.startsWith('.')) {
+			newPaths[category] = p;
+			continue;
+		}
+
+		if (matcher === null) {
+			return Err("Cannot resolve aliases because we couldn't find a tsconfig!");
+		}
+
+		newPaths[category] = resolvePath(p, matcher, cwd);
+	}
+
+	return Ok(newPaths);
+};
+
+const resolvePath = (
+	unresolvedPath: string,
+	matcher: (specifier: string) => string[],
+	cwd: string
+): string => {
+	const paths = matcher(unresolvedPath);
+
+	return path.relative(cwd, paths[0]);
+};
+
+export { CONFIG_NAME, getConfig, schema, formatterSchema, resolvePaths };

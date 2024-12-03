@@ -4,8 +4,9 @@ import path from 'pathe';
 import { Err, Ok, type Result } from './blocks/types/result';
 import { mapToArray } from './blocks/utils/map-to-array';
 import type { Block } from './build';
-import type { Config } from './config';
+import { resolvePaths, type Config } from './config';
 import * as gitProviders from './git-providers';
+import { program } from 'commander';
 
 export type RemoteBlock = Block & { sourceRepo: gitProviders.Info };
 
@@ -106,8 +107,22 @@ const getInstalled = (
 ): InstalledBlock[] => {
 	const installedBlocks: InstalledBlock[] = [];
 
+	const resolvedPathsResult = resolvePaths(config.paths, cwd);
+
+	if (resolvedPathsResult.isErr()) {
+		program.error(color.red(resolvedPathsResult.unwrapErr()));
+	}
+
+	const resolvedPaths = resolvedPathsResult.unwrap();
+
 	for (const [_, block] of blocks) {
-		const baseDir = path.join(cwd, config.path, block.category);
+		let baseDir: string;
+
+		if (resolvedPaths[block.category] !== undefined) {
+			baseDir = path.join(cwd, resolvedPaths[block.category]);
+		} else {
+			baseDir = path.join(cwd, resolvedPaths['*'], block.category);
+		}
 
 		let blockPath = path.join(baseDir, block.files[0]);
 		if (block.subdirectory) {
