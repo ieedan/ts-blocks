@@ -253,6 +253,8 @@ const _test = async (blockNames: string[], options: Options) => {
 			directory = path.join(options.cwd, resolvedPaths['*'], block.category);
 		}
 
+		directory = path.relative(tempTestDirectory, directory);
+
 		const getSourceFile = async (filePath: string) => {
 			const content = await providerInfo.provider.fetchRaw(providerInfo, filePath);
 
@@ -294,14 +296,9 @@ const _test = async (blockNames: string[], options: Options) => {
 				// if the module is relative resolve it relative to the new path of the tests
 				if (moduleSpecifier.startsWith('.')) {
 					if (block.subdirectory) {
-						newModuleSpecifier = path.join(
-							'../',
-							directory,
-							block.name,
-							moduleSpecifier
-						);
+						newModuleSpecifier = path.join(directory, block.name, moduleSpecifier);
 					} else {
-						newModuleSpecifier = path.join('../', directory, moduleSpecifier);
+						newModuleSpecifier = path.join(directory, moduleSpecifier);
 					}
 				}
 
