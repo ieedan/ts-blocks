@@ -11,13 +11,13 @@ import { context } from '..';
 import * as ascii from '../utils/ascii';
 import { type RemoteBlock, getInstalled, resolveTree } from '../utils/blocks';
 import { isTestFile } from '../utils/build';
-import { getConfig } from '../utils/config';
+import { getConfig, resolvePaths } from '../utils/config';
 import { installDependencies } from '../utils/dependencies';
 import { formatDiff } from '../utils/diff';
+import { transformRemoteContent } from '../utils/files';
 import { loadFormatterConfig } from '../utils/format';
 import { getWatermark } from '../utils/get-watermark';
 import * as gitProviders from '../utils/git-providers';
-import { languages } from '../utils/language-support';
 import { returnShouldInstall } from '../utils/package';
 import { type Task, intro, nextSteps, runTasks } from '../utils/prompts';
 
@@ -177,6 +177,14 @@ const _update = async (blockNames: string[], options: Options) => {
 		cwd: options.cwd,
 	});
 
+	const resolvedPathsResult = resolvePaths(config.paths, options.cwd);
+
+	if (resolvedPathsResult.isErr()) {
+		program.error(color.red(resolvedPathsResult.unwrapErr()));
+	}
+
+	const resolvedPaths = resolvedPathsResult.unwrap();
+
 	for (const { block } of updatingBlocks) {
 		const fullSpecifier = `${block.sourceRepo.url}/${block.category}/${block.name}`;
 
@@ -186,7 +194,13 @@ const _update = async (blockNames: string[], options: Options) => {
 
 		verbose(`Attempting to add ${fullSpecifier}`);
 
-		const directory = path.join(options.cwd, config.path, block.category);
+		let directory: string;
+
+		if (resolvedPaths[block.category] !== undefined) {
+			directory = path.join(options.cwd, resolvedPaths[block.category]);
+		} else {
+			directory = path.join(options.cwd, resolvedPaths['*'], block.category);
+		}
 
 		const files: { content: string; destPath: string; fileName: string }[] = [];
 
@@ -229,24 +243,21 @@ const _update = async (blockNames: string[], options: Options) => {
 		process.stdout.write(`${ascii.VERTICAL_LINE}  ${fullSpecifier}\n`);
 
 		for (const file of files) {
-			const lang = languages.find((lang) => lang.matches(file.destPath));
+			const remoteContentResult = await transformRemoteContent({
+				file,
+				biomeOptions,
+				prettierOptions,
+				config,
+				imports: block._imports_,
+				watermark,
+				verbose,
+			});
 
-			let remoteContent: string = file.content;
-
-			if (lang) {
-				if (config.watermark) {
-					const comment = lang.comment(watermark);
-
-					remoteContent = `${comment}\n\n${remoteContent}`;
-				}
-
-				remoteContent = await lang.format(remoteContent, {
-					filePath: file.destPath,
-					formatter: config.formatter,
-					prettierOptions,
-					biomeOptions,
-				});
+			if (remoteContentResult.isErr()) {
+				program.error(color.red(remoteContentResult.unwrapErr()));
 			}
+
+			const remoteContent = remoteContentResult.unwrap();
 
 			let acceptedChanges = options.yes;
 
@@ -448,7 +459,7 @@ const _update = async (blockNames: string[], options: Options) => {
 			steps.push('');
 		}
 
-		steps.push(`Import the blocks from \`${color.cyan(config.path)}\``);
+		steps.push('Import and use the blocks!');
 
 		const next = nextSteps(steps);
 

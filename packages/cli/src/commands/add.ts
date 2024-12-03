@@ -12,13 +12,12 @@ import { getInstalled, resolveTree } from '../utils/blocks';
 import { type Block, isTestFile } from '../utils/build';
 import { type Config, getConfig, resolvePaths } from '../utils/config';
 import { installDependencies } from '../utils/dependencies';
+import { transformRemoteContent } from '../utils/files';
 import { loadFormatterConfig } from '../utils/format';
 import { getWatermark } from '../utils/get-watermark';
 import * as gitProviders from '../utils/git-providers';
-import { languages } from '../utils/language-support';
 import { returnShouldInstall } from '../utils/package';
 import { type Task, intro, nextSteps, runTasks } from '../utils/prompts';
-import { transformRemoteContent } from '../utils/files';
 
 const schema = v.object({
 	repo: v.optional(v.string()),

@@ -1,10 +1,10 @@
 import type { PartialConfiguration } from '@biomejs/wasm-nodejs';
-import type { Config } from './config';
+import color from 'chalk';
 import type * as prettier from 'prettier';
 import { Err, Ok, type Result } from './blocks/types/result';
-import { languages } from './language-support';
-import color from 'chalk';
+import type { Config } from './config';
 import { resolveLocalDependencyTemplate } from './dependencies';
+import { languages } from './language-support';
 
 type TransformRemoteContentOptions = {
 	file: {
