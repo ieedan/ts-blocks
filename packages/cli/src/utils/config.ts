@@ -75,7 +75,7 @@ const resolvePaths = (paths: Paths, cwd: string): Result<Paths, string> => {
 		};
 	} else {
 		newPaths = {
-			'*': paths['*'],
+			'*': path.relative(cwd, path.join(path.resolve(cwd), paths['*'])),
 		};
 	}
 
@@ -83,7 +83,7 @@ const resolvePaths = (paths: Paths, cwd: string): Result<Paths, string> => {
 		if (category === '*') continue; // we already resolved this one
 
 		if (p.startsWith('.')) {
-			newPaths[category] = p;
+			newPaths[category] = path.relative(cwd, path.join(path.resolve(cwd), p));
 			continue;
 		}
 
