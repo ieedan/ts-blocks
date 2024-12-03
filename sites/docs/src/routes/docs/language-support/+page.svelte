@@ -3,6 +3,7 @@
 	import * as Table from '$lib/components/ui/table/index.js';
 	import type { Snippet } from 'svelte';
 	import * as Icons from '$lib/components/icons';
+	import { Braces } from 'lucide-svelte';
 
 	type Support = {
 		logo?: (opts: { size: number }) => ReturnType<Snippet>;
@@ -45,6 +46,11 @@
 			logo: yaml,
 			name: '*.(yaml|yml)',
 			status: '⚠️'
+		},
+		{
+			logo: json,
+			name: '*.json',
+			status: '⚠️'
 		}
 	];
 </script>
@@ -77,6 +83,10 @@
 
 {#snippet yaml({ size }: { size: number })}
 	<Icons.Yaml height={size} class="size-auto" />
+{/snippet}
+
+{#snippet json({ size }: { size: number })}
+	<Braces height={size} class="size-[18px] text-[#f7df1e]" />
 {/snippet}
 
 <DocHeader

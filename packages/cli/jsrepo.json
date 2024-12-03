@@ -1,5 +1,5 @@
 {
-	"$schema": "https://unpkg.com/jsrepo@1.11.0/schema.json",
+	"$schema": "https://unpkg.com/jsrepo@1.15.0/schema.json",
 	"repos": ["github/ieedan/std/tree/map-categories"],
 	"includeTests": false,
 	"watermark": true,
