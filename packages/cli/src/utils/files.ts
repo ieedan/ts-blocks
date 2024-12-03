@@ -1,5 +1,6 @@
 import type { PartialConfiguration } from '@biomejs/wasm-nodejs';
 import color from 'chalk';
+import escapeStringRegexp from 'escape-string-regexp';
 import type * as prettier from 'prettier';
 import { Err, Ok, type Result } from './blocks/types/result';
 import type { Config } from './config';
@@ -72,7 +73,7 @@ const transformRemoteContent = async ({
 		});
 
 		// this way we only replace the exact import since it will be surrounded in quotes
-		const literalRegex = new RegExp(`(['"])${literal}\\1`, 'g');
+		const literalRegex = new RegExp(`(['"])${escapeStringRegexp(literal)}\\1`, 'g');
 
 		content = content.replaceAll(literalRegex, `$1${resolvedImport}$1`);
 	}

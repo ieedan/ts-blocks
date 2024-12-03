@@ -5,6 +5,8 @@
 	"watermark": true,
 	"formatter": "prettier",
 	"paths": {
-		"*": "./src/lib/ts"
+		"*": "./src/lib/ts",
+		"components": "$lib/components/ui",
+		"ui": "$lib/components/ui"
 	}
 }

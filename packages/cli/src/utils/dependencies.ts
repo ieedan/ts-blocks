@@ -63,7 +63,7 @@ export type ResolveOptions = {
  * @returns
  */
 const resolveLocalDependencyTemplate = ({ template, config, destPath, cwd }: ResolveOptions) => {
-	const destDir = path.join(cwd, destPath, '../');
+	const destDir = path.join(destPath, '../');
 
 	return template.replace(templatePattern, (_, category, name) => {
 		if (config.paths[category] === undefined) {
