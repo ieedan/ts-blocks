@@ -18,7 +18,7 @@
 		>
 			<div class="flex place-items-center gap-4 justify-center w-full">
 				<h1
-					class="bg-primary text-primary-foreground sm:text-6xl text-4xl font-serif font-bold py-4 px-4 w-fit"
+					class="bg-primary text-primary-foreground select-none sm:text-6xl text-4xl font-serif font-bold py-4 px-4 w-fit"
 				>
 					jsrepo
 				</h1>
