@@ -7,11 +7,22 @@ const CONFIG_NAME = 'jsrepo.json';
 
 const formatterSchema = v.union([v.literal('prettier'), v.literal('biome')]);
 
+const pathsSchema = v.objectWithRest(
+	{
+		'*': v.string(),
+	},
+	v.string()
+);
+
+export type Paths = v.InferInput<typeof pathsSchema>;
+
+v.includes('*');
+
 const schema = v.object({
 	$schema: v.string(),
 	repos: v.optional(v.array(v.string()), []),
 	includeTests: v.boolean(),
-	path: v.pipe(v.string(), v.minLength(1)),
+	paths: pathsSchema,
 	watermark: v.optional(v.boolean(), true),
 	formatter: v.optional(formatterSchema),
 });
@@ -33,8 +44,8 @@ const getConfig = (cwd: string): Result<Config, string> => {
 	return Ok(config.output);
 };
 
-type Config = v.InferOutput<typeof schema>;
+export type Config = v.InferOutput<typeof schema>;
 
-type Formatter = v.InferOutput<typeof formatterSchema>;
+export type Formatter = v.InferOutput<typeof formatterSchema>;
 
-export { type Config, type Formatter, CONFIG_NAME, getConfig, schema, formatterSchema };
+export { CONFIG_NAME, getConfig, schema, formatterSchema };

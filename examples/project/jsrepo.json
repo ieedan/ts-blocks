@@ -1,0 +1,11 @@
+{
+	"$schema": "https://unpkg.com/jsrepo@1.14.1/schema.json",
+	"repos": ["github/ieedan/std/tree/map-categories"],
+	"includeTests": false,
+	"watermark": true,
+	"paths": {
+		"*": "src/blocks",
+		"types": "src/types",
+		"utils": "src/utils"
+	}
+}

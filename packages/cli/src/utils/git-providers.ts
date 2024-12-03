@@ -140,7 +140,7 @@ const github: Provider = {
 		const categories = v.safeParse(v.array(categorySchema), JSON.parse(manifest.unwrap()));
 
 		if (!categories.success) {
-			return Err(`Error parsing categories: ${categories.issues}`)
+			return Err(`Error parsing categories: ${categories.issues}`);
 		}
 
 		return Ok(categories.output);
@@ -262,7 +262,7 @@ const gitlab: Provider = {
 		const categories = v.safeParse(v.array(categorySchema), JSON.parse(manifest.unwrap()));
 
 		if (!categories.success) {
-			return Err(`Error parsing categories: ${categories.issues}`)
+			return Err(`Error parsing categories: ${categories.issues}`);
 		}
 
 		return Ok(categories.output);
@@ -391,7 +391,7 @@ const bitbucket: Provider = {
 		const categories = v.safeParse(v.array(categorySchema), JSON.parse(manifest.unwrap()));
 
 		if (!categories.success) {
-			return Err(`Error parsing categories: ${categories.issues}`)
+			return Err(`Error parsing categories: ${categories.issues}`);
 		}
 
 		return Ok(categories.output);
