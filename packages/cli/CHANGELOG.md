@@ -1,5 +1,12 @@
 # jsrepo
 
+## 1.15.1
+
+### Patch Changes
+
+- 9f30e28: When running `init` if you choose to use a formatter your `jsrepo.json` file will be formatted using that formatter.
+- 9f30e28: Add `*.json` support.
+
 ## 1.15.0
 
 ### Minor Changes
