@@ -71,7 +71,10 @@ const transformRemoteContent = async ({
 			cwd,
 		});
 
-		content = content.replaceAll(literal, resolvedImport);
+		// this way we only replace the exact import since it will be surrounded in quotes
+		const literalRegex = new RegExp(`(['"])${literal}\\1`, 'g');
+
+		content = content.replaceAll(literalRegex, `$1${resolvedImport}$1`);
 	}
 
 	return Ok(content);

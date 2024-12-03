@@ -5,7 +5,6 @@
 	"watermark": true,
 	"formatter": "prettier",
 	"paths": {
-		"*": "./src/lib/ts",
-		"utils": "$lib/utils"
+		"*": "./src/lib/ts"
 	}
 }
