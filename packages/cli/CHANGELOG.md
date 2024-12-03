@@ -1,5 +1,11 @@
 # jsrepo
 
+## 1.15.0
+
+### Minor Changes
+
+- ea802f9: BREAKING: Enable mapping of categories to directories in your project.
+
 ## 1.14.1
 
 ### Patch Changes
