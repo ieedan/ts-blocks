@@ -54,6 +54,7 @@ export type ResolveOptions = {
 	template: string;
 	config: Config;
 	destPath: string;
+	cwd: string;
 };
 
 /** Takes a template and uses replaces it with an alias or relative path that resolves to the correct block
@@ -61,8 +62,8 @@ export type ResolveOptions = {
  * @param param0
  * @returns
  */
-const resolveLocalDependencyTemplate = ({ template, config, destPath }: ResolveOptions) => {
-	const destDir = path.join(destPath, '../');
+const resolveLocalDependencyTemplate = ({ template, config, destPath, cwd }: ResolveOptions) => {
+	const destDir = path.join(cwd, destPath, '../');
 
 	return template.replace(templatePattern, (_, category, name) => {
 		if (config.paths[category] === undefined) {
@@ -70,7 +71,7 @@ const resolveLocalDependencyTemplate = ({ template, config, destPath }: ResolveO
 			if (config.paths['*'].startsWith('.')) {
 				const relative = path.relative(
 					destDir,
-					path.join(config.paths['*'], category, name)
+					path.join(cwd, config.paths['*'], category, name)
 				);
 
 				return relative.startsWith('.') ? relative : `./${relative}`;
@@ -81,7 +82,7 @@ const resolveLocalDependencyTemplate = ({ template, config, destPath }: ResolveO
 
 		// if relative make it relative
 		if (config.paths[category].startsWith('.')) {
-			const relative = path.relative(destDir, path.join(config.paths[category], name));
+			const relative = path.relative(destDir, path.join(cwd, config.paths[category], name));
 
 			return relative.startsWith('.') ? relative : `./${relative}`;
 		}

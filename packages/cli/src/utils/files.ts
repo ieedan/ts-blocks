@@ -18,6 +18,7 @@ type TransformRemoteContentOptions = {
 	imports: Record<string, string>;
 	prettierOptions: prettier.Options | null;
 	biomeOptions: PartialConfiguration | null;
+	cwd: string;
 	verbose?: (msg: string) => void;
 };
 
@@ -33,6 +34,7 @@ const transformRemoteContent = async ({
 	watermark,
 	prettierOptions,
 	biomeOptions,
+	cwd,
 	verbose,
 }: TransformRemoteContentOptions): Promise<Result<string, string>> => {
 	const lang = languages.find((lang) => lang.matches(file.destPath));
@@ -66,9 +68,10 @@ const transformRemoteContent = async ({
 			template,
 			config,
 			destPath: file.destPath,
+			cwd,
 		});
 
-		content.replaceAll(literal, resolvedImport);
+		content = content.replaceAll(literal, resolvedImport);
 	}
 
 	return Ok(content);

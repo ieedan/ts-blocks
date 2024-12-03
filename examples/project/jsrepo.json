@@ -5,7 +5,7 @@
 	"watermark": true,
 	"paths": {
 		"*": "./src/blocks",
-		"types": "$lib/types",
-		"utils": "$lib/utils"
+		"types": "./src/types",
+		"utils": "./src/utils"
 	}
 }

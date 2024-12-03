@@ -251,6 +251,7 @@ const _update = async (blockNames: string[], options: Options) => {
 				imports: block._imports_,
 				watermark,
 				verbose,
+				cwd: options.cwd,
 			});
 
 			if (remoteContentResult.isErr()) {
