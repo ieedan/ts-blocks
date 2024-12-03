@@ -9,10 +9,6 @@
 				"type": "string"
 			}
 		},
-		"path": {
-			"description": "Path to add code to in your project.",
-			"type": "string"
-		},
 		"includeTests": {
 			"description": "When true includes the test files for each block in the same directory.",
 			"type": "boolean",
@@ -27,7 +23,24 @@
 			"description": "The formatter to use when adding or updating files.",
 			"type": "string",
 			"enum": ["prettier", "biome"]
+		},
+		"paths": {
+			"description": "Paths used to map categories to a directory.",
+			"type": "object",
+			"required": ["*"],
+			"properties": {
+				"*": {
+					"type": "string",
+					"description": "The default path for blocks to be installed in your project."
+				}
+			},
+			"additionalProperties": {
+				"type": "string"
+			},
+			"propertyNames": {
+				"type": "string"
+			}
 		}
 	},
-	"required": ["path", "includeTests"]
+	"required": ["paths", "includeTests"]
 }

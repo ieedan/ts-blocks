@@ -11,8 +11,8 @@ import * as v from 'valibot';
 import { context } from '..';
 import * as ascii from '../utils/ascii';
 import { getInstalled } from '../utils/blocks';
-import { type Block, categorySchema, isTestFile } from '../utils/build';
-import { getConfig } from '../utils/config';
+import { type Block, isTestFile } from '../utils/build';
+import { getConfig, resolvePaths } from '../utils/config';
 import { OUTPUT_FILE } from '../utils/context';
 import * as gitProviders from '../utils/git-providers';
 import { intro } from '../utils/prompts';
@@ -223,6 +223,14 @@ const _test = async (blockNames: string[], options: Options) => {
 		testingBlocksMapped.push({ name: blockSpecifier, block });
 	}
 
+	const resolvedPathsResult = resolvePaths(config.paths, options.cwd);
+
+	if (resolvedPathsResult.isErr()) {
+		program.error(color.red(resolvedPathsResult.unwrapErr()));
+	}
+
+	const resolvedPaths = resolvedPathsResult.unwrap();
+
 	for (const { block } of testingBlocksMapped) {
 		const providerInfo = block.sourceRepo;
 
@@ -236,6 +244,16 @@ const _test = async (blockNames: string[], options: Options) => {
 			loading.stop(`No tests found for ${color.cyan(fullSpecifier)}`);
 			continue;
 		}
+
+		let directory: string;
+
+		if (resolvedPaths[block.category] !== undefined) {
+			directory = path.join(options.cwd, resolvedPaths[block.category]);
+		} else {
+			directory = path.join(options.cwd, resolvedPaths['*'], block.category);
+		}
+
+		directory = path.relative(tempTestDirectory, directory);
 
 		const getSourceFile = async (filePath: string) => {
 			const content = await providerInfo.provider.fetchRaw(providerInfo, filePath);
@@ -278,20 +296,9 @@ const _test = async (blockNames: string[], options: Options) => {
 				// if the module is relative resolve it relative to the new path of the tests
 				if (moduleSpecifier.startsWith('.')) {
 					if (block.subdirectory) {
-						newModuleSpecifier = path.join(
-							'../',
-							config.path,
-							block.category,
-							block.name,
-							moduleSpecifier
-						);
+						newModuleSpecifier = path.join(directory, block.name, moduleSpecifier);
 					} else {
-						newModuleSpecifier = path.join(
-							'../',
-							config.path,
-							block.category,
-							moduleSpecifier
-						);
+						newModuleSpecifier = path.join(directory, moduleSpecifier);
 					}
 				}
 

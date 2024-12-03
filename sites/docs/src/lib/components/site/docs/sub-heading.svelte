@@ -1,15 +1,17 @@
 <script lang="ts">
 	import { page } from '$app/stores';
 	import { onThisPage } from '$lib/ts/on-this-page';
+	import { cn } from '$lib/utils';
 	import { onMount, type Snippet } from 'svelte';
 
 	type Props = {
 		children: Snippet<[]>;
+		class?: string;
 	};
 
 	const pageMap = onThisPage.get();
 
-	let { children }: Props = $props();
+	let { children, class: className }: Props = $props();
 
 	let ref = $state<HTMLHeadingElement>();
 
@@ -48,7 +50,7 @@
 <h2
 	id={ref?.innerText}
 	bind:this={ref}
-	class="border-b border-border py-2 text-2xl font-bold scroll-m-16"
+	class={cn('border-b border-border py-2 text-2xl font-bold scroll-m-16', className)}
 >
 	{@render children()}
 </h2>

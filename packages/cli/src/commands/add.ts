@@ -10,12 +10,12 @@ import { context } from '..';
 import * as ascii from '../utils/ascii';
 import { getInstalled, resolveTree } from '../utils/blocks';
 import { type Block, isTestFile } from '../utils/build';
-import { type Config, getConfig } from '../utils/config';
+import { type Config, getConfig, resolvePaths } from '../utils/config';
 import { installDependencies } from '../utils/dependencies';
+import { transformRemoteContent } from '../utils/files';
 import { loadFormatterConfig } from '../utils/format';
 import { getWatermark } from '../utils/get-watermark';
 import * as gitProviders from '../utils/git-providers';
-import { languages } from '../utils/language-support';
 import { returnShouldInstall } from '../utils/package';
 import { type Task, intro, nextSteps, runTasks } from '../utils/prompts';
 
@@ -85,7 +85,9 @@ const _add = async (blockNames: string[], options: Options) => {
 			$schema: '',
 			includeTests: false,
 			watermark: true,
-			path: './src/blocks',
+			paths: {
+				'*': './src/blocks',
+			},
 			repos: [],
 		};
 	} else {
@@ -243,9 +245,9 @@ const _add = async (blockNames: string[], options: Options) => {
 	if (noConfig) {
 		const blocksPath = await text({
 			message: 'Where would you like to add the blocks?',
-			initialValue: config.path,
-			defaultValue: config.path,
-			placeholder: config.path,
+			initialValue: config.paths['*'],
+			defaultValue: config.paths['*'],
+			placeholder: config.paths['*'],
 			validate(value) {
 				if (value.trim() === '') return 'Please provide a value';
 			},
@@ -256,7 +258,7 @@ const _add = async (blockNames: string[], options: Options) => {
 			process.exit(0);
 		}
 
-		config.path = blocksPath;
+		config.paths['*'] = blocksPath;
 
 		if (!options.yes) {
 			const includeTests = await confirm({
@@ -290,6 +292,14 @@ const _add = async (blockNames: string[], options: Options) => {
 		cwd: options.cwd,
 	});
 
+	const resolvedPathsResult = resolvePaths(config.paths, options.cwd);
+
+	if (resolvedPathsResult.isErr()) {
+		program.error(color.red(resolvedPathsResult.unwrapErr()));
+	}
+
+	const resolvedPaths = resolvedPathsResult.unwrap();
+
 	for (const { block } of installingBlocks) {
 		const fullSpecifier = `${block.sourceRepo.url}/${block.category}/${block.name}`;
 		const shortSpecifier = `${block.category}/${block.name}`;
@@ -299,7 +309,13 @@ const _add = async (blockNames: string[], options: Options) => {
 
 		verbose(`Setting up ${fullSpecifier}`);
 
-		const directory = path.join(options.cwd, config.path, block.category);
+		let directory: string;
+
+		if (resolvedPaths[block.category] !== undefined) {
+			directory = path.join(options.cwd, resolvedPaths[block.category]);
+		} else {
+			directory = path.join(options.cwd, resolvedPaths['*'], block.category);
+		}
 
 		const blockExists =
 			(!block.subdirectory && fs.existsSync(path.join(directory, block.files[0]))) ||
@@ -377,30 +393,24 @@ const _add = async (blockNames: string[], options: Options) => {
 				}
 
 				for (const file of files) {
-					const lang = languages.find((lang) => lang.matches(file.destPath));
+					const content = await transformRemoteContent({
+						file,
+						biomeOptions,
+						prettierOptions,
+						config,
+						imports: block._imports_,
+						watermark,
+						verbose,
+						cwd: options.cwd,
+					});
 
-					let content: string = file.content;
-
-					if (lang) {
-						if (config.watermark) {
-							const comment = lang.comment(watermark);
-
-							content = `${comment}\n\n${content}`;
-						}
-
-						verbose(`Formatting ${color.bold(file.destPath)}`);
-
-						content = await lang.format(content, {
-							filePath: file.destPath,
-							formatter: config.formatter,
-							prettierOptions,
-							biomeOptions,
-						});
+					if (content.isErr()) {
+						program.error(color.red(content.unwrapErr()));
 					}
 
 					verbose(`Writing to ${color.bold(file.destPath)}`);
 
-					fs.writeFileSync(file.destPath, content);
+					fs.writeFileSync(file.destPath, content.unwrap());
 				}
 
 				if (config.includeTests && block.tests) {
@@ -530,7 +540,7 @@ const _add = async (blockNames: string[], options: Options) => {
 			steps.push('');
 		}
 
-		steps.push(`Import the blocks from \`${color.cyan(config.path)}\``);
+		steps.push('Import and use the blocks!');
 
 		const next = nextSteps(steps);
 

@@ -17,6 +17,7 @@ export const blockSchema = v.object({
 	directory: v.string(),
 	subdirectory: v.boolean(),
 	files: v.array(v.string()),
+	_imports_: v.record(v.string(), v.string()),
 });
 
 export const categorySchema = v.object({
@@ -126,7 +127,7 @@ const buildBlocksDirectory = (
 					TEST_SUFFIXES.find((suffix) => f === `${name}${suffix}`)
 				);
 
-				const { dependencies, devDependencies, local } = lang
+				const { dependencies, devDependencies, local, imports } = lang
 					.resolveDependencies({
 						filePath: blockDir,
 						isSubDir: false,
@@ -149,6 +150,7 @@ const buildBlocksDirectory = (
 					subdirectory: false,
 					files: [file],
 					localDependencies: local,
+					_imports_: imports,
 					dependencies,
 					devDependencies,
 				};
@@ -175,6 +177,7 @@ const buildBlocksDirectory = (
 				const localDepsSet = new Set<string>();
 				const depsSet = new Set<string>();
 				const devDepsSet = new Set<string>();
+				const imports: Record<string, string> = {};
 
 				// if it is a directory
 				for (const f of blockFiles) {
@@ -220,7 +223,12 @@ const buildBlocksDirectory = (
 						continue;
 					}
 
-					const { local, dependencies, devDependencies } = lang
+					const {
+						local,
+						dependencies,
+						devDependencies,
+						imports: imps,
+					} = lang
 						.resolveDependencies({
 							filePath: path.join(blockDir, f),
 							isSubDir: true,
@@ -249,6 +257,10 @@ const buildBlocksDirectory = (
 					for (const dep of devDependencies) {
 						devDepsSet.add(dep);
 					}
+
+					for (const [k, v] of Object.entries(imps)) {
+						imports[k] = v;
+					}
 				}
 
 				const block: Block = {
@@ -261,6 +273,7 @@ const buildBlocksDirectory = (
 					localDependencies: Array.from(localDepsSet.keys()),
 					dependencies: Array.from(depsSet.keys()),
 					devDependencies: Array.from(devDepsSet.keys()),
+					_imports_: imports,
 				};
 
 				category.blocks.push(block);

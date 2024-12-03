@@ -1,5 +1,15 @@
 import fs from 'node:fs';
-import { cancel, confirm, isCancel, outro, password, select, spinner, text } from '@clack/prompts';
+import {
+	cancel,
+	confirm,
+	isCancel,
+	multiselect,
+	outro,
+	password,
+	select,
+	spinner,
+	text,
+} from '@clack/prompts';
 import color from 'chalk';
 import { Command, Option, program } from 'commander';
 import { detect, resolveCommand } from 'package-manager-detector';
@@ -11,6 +21,7 @@ import {
 	CONFIG_NAME,
 	type Config,
 	type Formatter,
+	type Paths,
 	formatterSchema,
 	getConfig,
 } from '../utils/config';
@@ -101,22 +112,22 @@ const _initProject = async (options: Options) => {
 
 	const loading = spinner();
 
-	if (!options.path) {
-		const result = await text({
-			message: 'Where should we add the blocks?',
-			validate(value) {
-				if (value.trim() === '') return 'Please provide a value';
-			},
-			initialValue: initialConfig.isOk() ? initialConfig.unwrap().path : 'src/blocks',
-		});
+	let paths: Paths;
 
-		if (isCancel(result)) {
-			cancel('Canceled!');
-			process.exit(0);
-		}
+	const defaultPathResult = await text({
+		message: 'Please enter a default path to install the blocks',
+		validate(value) {
+			if (value.trim() === '') return 'Please provide a value';
+		},
+		initialValue: initialConfig.isOk() ? initialConfig.unwrap().paths['*'] : './src/blocks',
+	});
 
-		options.path = result;
+	if (isCancel(defaultPathResult)) {
+		cancel('Canceled!');
+		process.exit(0);
 	}
+
+	paths = { '*': defaultPathResult };
 
 	if (!options.repos) {
 		options.repos = initialConfig.isOk() ? initialConfig.unwrap().repos : [];
@@ -189,6 +200,47 @@ const _initProject = async (options: Options) => {
 				}
 			}
 
+			loading.start(`Fetching categories from ${color.cyan(result)}`);
+
+			const manifestResult = await provider.fetchManifest(result);
+
+			loading.stop(`Fetched categories from ${color.cyan(result)}`);
+
+			if (manifestResult.isErr()) {
+				program.error(color.red(manifestResult.unwrapErr()));
+			}
+
+			const categories = manifestResult.unwrap();
+
+			const configurePaths = await multiselect({
+				message: 'Which category paths would you like to configure?',
+				options: categories.map((cat) => ({ label: cat.name, value: cat.name })),
+			});
+
+			if (isCancel(configurePaths)) {
+				cancel('Canceled!');
+				process.exit(0);
+			}
+
+			if (configurePaths.length > 0) {
+				for (const category of configurePaths) {
+					const categoryPath = await text({
+						message: `Where should ${category} be added in your project?`,
+						validate(value) {
+							if (value.trim() === '') return 'Please provide a value';
+						},
+						placeholder: `./src/${category}`,
+					});
+
+					if (isCancel(categoryPath)) {
+						cancel('Canceled!');
+						process.exit(0);
+					}
+
+					paths[category] = categoryPath;
+				}
+			}
+
 			options.repos.push(result);
 		}
 	}
@@ -228,13 +280,13 @@ const _initProject = async (options: Options) => {
 	const config: Config = {
 		$schema: `https://unpkg.com/jsrepo@${context.package.version}/schema.json`,
 		repos: options.repos,
-		path: options.path,
 		includeTests:
 			initialConfig.isOk() && options.tests === undefined
 				? initialConfig.unwrap().includeTests
 				: (options.tests ?? false),
 		watermark: options.watermark,
 		formatter: options.formatter,
+		paths,
 	};
 
 	loading.start(`Writing config to \`${CONFIG_NAME}\``);
@@ -243,8 +295,6 @@ const _initProject = async (options: Options) => {
 		path.join(options.cwd, CONFIG_NAME),
 		`${JSON.stringify(config, null, '\t')}\n`
 	);
-
-	fs.mkdirSync(path.join(options.cwd, config.path), { recursive: true });
 
 	loading.stop(`Wrote config to \`${CONFIG_NAME}\`.`);
 };

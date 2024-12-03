@@ -49,6 +49,7 @@
 		"commander": "^12.1.0",
 		"conf": "^13.0.1",
 		"diff": "^7.0.0",
+		"escape-string-regexp": "^5.0.0",
 		"estree-walker": "^3.0.3",
 		"execa": "^9.5.1",
 		"get-tsconfig": "^4.8.1",

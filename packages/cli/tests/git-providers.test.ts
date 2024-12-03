@@ -405,7 +405,7 @@ describe('gitlab', () => {
 
 describe('bitbucket', () => {
 	it('Fetches the manifest from a public repo', async () => {
-		const repoURL = 'bitbucket/ieedan/std/src/main';
+		const repoURL = 'bitbucket/ieedan/std';
 
 		const info = await gitProviders.bitbucket.info(repoURL);
 
