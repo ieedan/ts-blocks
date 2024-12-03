@@ -40,12 +40,17 @@
     ]
 }`}
 />
-<SubHeading>path</SubHeading>
-<p>Where blocks will be installed into your project.</p>
+<SubHeading>paths</SubHeading>
+<p>Where to add specific categories in your project.</p>
 <Code
 	lang="json"
 	code={`{
-    "path": "./src/blocks"
+    "paths": {
+		// "*" is required as a fallback location if a category isn't mapped
+		"*": "./src/blocks", 
+		"components": "$lib/components",
+		"hooks": "$lib/hooks"
+	}
 }`}
 />
 <SubHeading>includeTests</SubHeading>
