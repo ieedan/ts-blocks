@@ -1,5 +1,12 @@
 # jsrepo
 
+## 1.16.3
+
+### Patch Changes
+
+- 69d84aa: Imports like `$lib/assets/icons` that end up resolving to the category root will not resolve to `$lib/assets/icons/index` as is the expected behavior with JS.
+- 69d84aa: `*.svg` support.
+
 ## 1.16.2
 
 ### Patch Changes
