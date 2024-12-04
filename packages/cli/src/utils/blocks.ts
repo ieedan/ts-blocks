@@ -5,7 +5,7 @@ import path from 'pathe';
 import { Err, Ok, type Result } from './blocks/types/result';
 import { mapToArray } from './blocks/utils/map-to-array';
 import type { Block } from './build';
-import { type Config, resolvePaths } from './config';
+import { type ProjectConfig, resolvePaths } from './config';
 import * as gitProviders from './git-providers';
 
 export type RemoteBlock = Block & { sourceRepo: gitProviders.Info };
@@ -80,7 +80,7 @@ const resolveTree = async (
 			if (subDeps.isErr()) return Err(subDeps.unwrapErr());
 
 			for (const dep of subDeps.unwrap()) {
-				blocks.set(dep.name, dep);
+				blocks.set(`${dep.block.category}/${dep.block.name}`, dep);
 			}
 		}
 	}
@@ -102,7 +102,7 @@ type InstalledBlock = {
  */
 const getInstalled = (
 	blocks: Map<string, Block>,
-	config: Config,
+	config: ProjectConfig,
 	cwd: string
 ): InstalledBlock[] => {
 	const installedBlocks: InstalledBlock[] = [];

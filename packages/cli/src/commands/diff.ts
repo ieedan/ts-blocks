@@ -9,7 +9,7 @@ import { context } from '..';
 import * as ascii from '../utils/ascii';
 import { getInstalled } from '../utils/blocks';
 import { type Block, isTestFile } from '../utils/build';
-import { getConfig, resolvePaths } from '../utils/config';
+import { getProjectConfig, resolvePaths } from '../utils/config';
 import { formatDiff } from '../utils/diff';
 import { getWatermark } from '../utils/get-watermark';
 import * as gitProviders from '../utils/git-providers';
@@ -53,7 +53,7 @@ type RemoteBlock = Block & { sourceRepo: gitProviders.Info };
 const _diff = async (options: Options) => {
 	const loading = spinner();
 
-	const config = getConfig(options.cwd).match(
+	const config = getProjectConfig(options.cwd).match(
 		(val) => val,
 		(err) => program.error(color.red(err))
 	);

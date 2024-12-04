@@ -16,14 +16,13 @@
 <Snippet command="execute" args={['jsrepo', 'init', '--project']} />
 <SubHeading>$schema</SubHeading>
 <p>
-	<CodeSpan>$schema</CodeSpan> is tracked with the cli so you can use a specific version using <CodeSpan
-		>unpkg</CodeSpan
-	>:
+	<CodeSpan>$schema</CodeSpan> is tracked with the cli so you can use a specific version using
+	<CodeSpan>unpkg</CodeSpan>:
 </p>
 <Code
 	lang="json"
 	code={`{
-    "$schema": "https://unpkg.com/jsrepo@${data.version}/schema.json"
+    "$schema": "https://unpkg.com/jsrepo@${data.version}/schemas/project-config.json"
 }`}
 />
 <SubHeading>repos</SubHeading>

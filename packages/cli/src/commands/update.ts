@@ -11,7 +11,7 @@ import { context } from '..';
 import * as ascii from '../utils/ascii';
 import { type RemoteBlock, getInstalled, resolveTree } from '../utils/blocks';
 import { isTestFile } from '../utils/build';
-import { getConfig, resolvePaths } from '../utils/config';
+import { getProjectConfig, resolvePaths } from '../utils/config';
 import { installDependencies } from '../utils/dependencies';
 import { formatDiff } from '../utils/diff';
 import { transformRemoteContent } from '../utils/files';
@@ -70,7 +70,7 @@ const _update = async (blockNames: string[], options: Options) => {
 
 	const loading = spinner();
 
-	const config = getConfig(options.cwd).match(
+	const config = getProjectConfig(options.cwd).match(
 		(val) => val,
 		(err) => program.error(color.red(err))
 	);

@@ -11,5 +11,5 @@ To test this example run:
 ```bash
 pnpm install
 
-pnpm build
+pnpm build:registry
 ```

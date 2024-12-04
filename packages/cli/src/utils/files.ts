@@ -3,7 +3,7 @@ import color from 'chalk';
 import escapeStringRegexp from 'escape-string-regexp';
 import type * as prettier from 'prettier';
 import { Err, Ok, type Result } from './blocks/types/result';
-import type { Config } from './config';
+import type { ProjectConfig } from './config';
 import { resolveLocalDependencyTemplate } from './dependencies';
 import { languages } from './language-support';
 
@@ -14,7 +14,7 @@ type TransformRemoteContentOptions = {
 		/** The dest path of the file used to determine the language */
 		destPath: string;
 	};
-	config: Config;
+	config: ProjectConfig;
 	watermark: string;
 	imports: Record<string, string>;
 	prettierOptions: prettier.Options | null;

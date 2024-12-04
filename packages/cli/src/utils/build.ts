@@ -4,6 +4,7 @@ import { program } from 'commander';
 import path from 'pathe';
 import * as v from 'valibot';
 import * as ascii from './ascii';
+import type { RegistryConfig } from './config';
 import { languages } from './language-support';
 
 export const blockSchema = v.object({
@@ -13,6 +14,7 @@ export const blockSchema = v.object({
 	dependencies: v.array(v.string()),
 	devDependencies: v.array(v.string()),
 	tests: v.boolean(),
+	list: v.optional(v.boolean(), true),
 	/** Where to find the block relative to root */
 	directory: v.string(),
 	subdirectory: v.boolean(),
@@ -25,9 +27,9 @@ export const categorySchema = v.object({
 	blocks: v.array(blockSchema),
 });
 
-export type Category = v.InferInput<typeof categorySchema>;
+export type Category = v.InferOutput<typeof categorySchema>;
 
-export type Block = v.InferInput<typeof blockSchema>;
+export type Block = v.InferOutput<typeof blockSchema>;
 
 const TEST_SUFFIXES = ['.test.ts', '_test.ts', '.test.js', '_test.js'] as const;
 
@@ -36,11 +38,7 @@ const isTestFile = (file: string): boolean =>
 
 type Options = {
 	cwd: string;
-	excludeDeps: string[];
-	includeBlocks: string[];
-	includeCategories: string[];
-	errorOnWarn: boolean;
-	dirs: string[];
+	config: RegistryConfig;
 };
 
 /** Using the provided path to the blocks folder builds the blocks into categories and also resolves dependencies
@@ -50,7 +48,18 @@ type Options = {
  */
 const buildBlocksDirectory = (
 	blocksPath: string,
-	{ cwd, excludeDeps, includeBlocks, includeCategories, errorOnWarn, dirs }: Options
+	{
+		cwd,
+		config: {
+			excludeDeps,
+			includeBlocks,
+			includeCategories,
+			errorOnWarn,
+			dirs,
+			doNotListBlocks,
+			doNotListCategories,
+		},
+	}: Options
 ): Category[] => {
 	let paths: string[];
 
@@ -68,6 +77,8 @@ const buildBlocksDirectory = (
 		if (fs.statSync(categoryDir).isFile()) continue;
 
 		const categoryName = path.basename(categoryPath);
+
+		const shouldListCategory = doNotListCategories.findIndex((a) => a === categoryName) === -1;
 
 		// if includeCategories enabled and block is not part of includeCategories skip adding it
 		if (
@@ -90,6 +101,8 @@ const buildBlocksDirectory = (
 				if (isTestFile(file)) continue;
 
 				const name = path.parse(path.basename(file)).name;
+
+				const shouldListBlock = doNotListBlocks.findIndex((a) => a === name) === -1;
 
 				// if includeBlocks enabled and block is not part of includeBlocks skip adding it
 				if (
@@ -148,6 +161,7 @@ const buildBlocksDirectory = (
 					category: categoryName,
 					tests: testsPath !== undefined,
 					subdirectory: false,
+					list: shouldListCategory ? shouldListBlock : false,
 					files: [file],
 					localDependencies: local,
 					_imports_: imports,
@@ -162,6 +176,8 @@ const buildBlocksDirectory = (
 				category.blocks.push(block);
 			} else {
 				const blockName = file;
+
+				const shouldListBlock = doNotListBlocks.findIndex((a) => a === blockName) === -1;
 
 				// if includeBlocks enabled and block is not part of includeBlocks skip adding it
 				if (
@@ -269,6 +285,7 @@ const buildBlocksDirectory = (
 					category: categoryName,
 					tests: hasTests,
 					subdirectory: true,
+					list: shouldListCategory ? shouldListBlock : false,
 					files: [...blockFiles],
 					localDependencies: Array.from(localDepsSet.keys()),
 					dependencies: Array.from(depsSet.keys()),
