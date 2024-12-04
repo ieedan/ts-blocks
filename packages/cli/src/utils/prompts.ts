@@ -48,18 +48,23 @@ export type ConcurrentOptions = {
 	stopMessage: string;
 	tasks: ConcurrentTask[];
 	verbose?: (msg: string) => void;
-}
+};
 
-const runTasksConcurrently = async ({ tasks, startMessage, stopMessage, verbose  }: ConcurrentOptions) => {
+const runTasksConcurrently = async ({
+	tasks,
+	startMessage,
+	stopMessage,
+	verbose,
+}: ConcurrentOptions) => {
 	const loading = spinner();
 
 	const message = (msg: string) => {
 		if (verbose) {
-			verbose(msg)
+			verbose(msg);
 		} else {
-			loading.message(msg)
+			loading.message(msg);
 		}
-	}
+	};
 
 	if (verbose) {
 		verbose(startMessage);
@@ -74,7 +79,7 @@ const runTasksConcurrently = async ({ tasks, startMessage, stopMessage, verbose 
 	} else {
 		loading.stop(stopMessage);
 	}
-}
+};
 
 const nextSteps = (steps: string[]): string => {
 	let max = 20;
