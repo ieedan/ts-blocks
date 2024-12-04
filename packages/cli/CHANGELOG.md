@@ -1,5 +1,11 @@
 # jsrepo
 
+## 1.16.6
+
+### Patch Changes
+
+- 7e00daf: Fix `--do-not-list` flags.
+
 ## 1.16.5
 
 ### Patch Changes
