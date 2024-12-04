@@ -26,7 +26,7 @@
 	code={`┌   jsrepo  v${data.version}
 │
 ◇  Where should we add the blocks?
-│  src/blocks
+│  ./src/blocks
 │
 ◇  Add a repo?
 │  Yes
@@ -55,7 +55,10 @@
 	"repos": ["github/ieedan/std"],
 	"path": "src/blocks",
 	"includeTests": false,
-	"watermark": true
+	"watermark": true,
+	"paths": {
+		"*": "./src/blocks"
+	}
 }`}
 />
 <p>
