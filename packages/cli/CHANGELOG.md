@@ -1,5 +1,11 @@
 # jsrepo
 
+## 1.16.5
+
+### Patch Changes
+
+- 7218997: When running `add` blocks are now fetched concurrently.
+
 ## 1.16.4
 
 ### Patch Changes
