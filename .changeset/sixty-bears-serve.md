@@ -1,0 +1,5 @@
+---
+"jsrepo": patch
+---
+
+`*.svg` support.
