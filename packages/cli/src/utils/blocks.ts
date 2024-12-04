@@ -19,7 +19,7 @@ export type InstallingBlock = {
 const resolveTree = async (
 	blockSpecifiers: string[],
 	blocksMap: Map<string, RemoteBlock>,
-	repoPaths: string[]
+	repoPaths: gitProviders.ResolvedRepo[]
 ): Promise<Result<InstallingBlock[], string>> => {
 	const blocks = new Map<string, InstallingBlock>();
 
@@ -39,10 +39,7 @@ const resolveTree = async (
 			}
 
 			// check every repo for the block and return the first block found
-			for (const repo of repoPaths) {
-				// we unwrap because we already checked this
-				const providerInfo = (await gitProviders.getProviderInfo(repo)).unwrap();
-
+			for (const { info: providerInfo } of repoPaths) {
 				const tempBlock = blocksMap.get(
 					`${providerInfo.name}/${providerInfo.owner}/${providerInfo.repoName}/${blockSpecifier}`
 				);

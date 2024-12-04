@@ -75,10 +75,20 @@ const _diff = async (options: Options) => {
 		}
 	}
 
+	const resolvedRepos: gitProviders.ResolvedRepo[] = (
+		await gitProviders.resolvePaths(...repoPaths)
+	).match(
+		(val) => val,
+		({ repo, message }) => {
+			loading.stop(`Failed to get info for ${color.cyan(repo)}`);
+			program.error(color.red(message));
+		}
+	);
+
 	loading.start(`Fetching blocks from ${color.cyan(repoPaths.join(', '))}`);
 
 	const blocksMap: Map<string, RemoteBlock> = (
-		await gitProviders.fetchBlocks(...repoPaths)
+		await gitProviders.fetchBlocks(...resolvedRepos)
 	).match(
 		(val) => val,
 		({ repo, message }) => {
