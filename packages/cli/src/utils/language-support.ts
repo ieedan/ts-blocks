@@ -239,6 +239,14 @@ const yaml: Lang = {
 	},
 };
 
+const svg: Lang = {
+	matches: (fileName) => fileName.endsWith('.svg'),
+	resolveDependencies: () =>
+		Ok({ dependencies: [], local: [], devDependencies: [], imports: {} }),
+	comment: (content) => `<!--\n${lines.join(lines.get(content), { prefix: () => '\t' })}\n-->`,
+	format: async (code) => code,
+};
+
 const json: Lang = {
 	matches: (fileName) => fileName.endsWith('.json'),
 	resolveDependencies: () =>
@@ -410,7 +418,12 @@ const resolveLocalImport = (
 };
 
 const parsePath = (localPath: string): ResolveLocalImportResult => {
-	const [category, block, ...rest] = localPath.split('/');
+	let [category, block, ...rest] = localPath.split('/');
+
+	// if undefined we assume we are pointing to the index file
+	if (block === undefined) {
+		block = 'index';
+	}
 
 	let trimmedBlock = block;
 
@@ -621,6 +634,6 @@ const resolveRemoteDeps = (
 	};
 };
 
-const languages: Lang[] = [typescript, svelte, vue, yaml, json];
+const languages: Lang[] = [typescript, svelte, vue, yaml, json, svg];
 
-export { typescript, svelte, vue, yaml, json, languages };
+export { typescript, svelte, vue, yaml, json, svg, languages };

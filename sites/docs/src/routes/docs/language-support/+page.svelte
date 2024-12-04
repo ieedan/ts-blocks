@@ -51,6 +51,11 @@
 			logo: json,
 			name: '*.json',
 			status: '⚠️'
+		},
+		{
+			logo: svg,
+			name: '*.svg',
+			status: '⚠️'
 		}
 	];
 </script>
@@ -87,6 +92,10 @@
 
 {#snippet json({ size }: { size: number })}
 	<Braces height={size} class="size-[18px] text-[#f7df1e]" />
+{/snippet}
+
+{#snippet svg({ size }: { size: number })}
+	<Icons.Svg height={size} class="size-auto" />
 {/snippet}
 
 <DocHeader
