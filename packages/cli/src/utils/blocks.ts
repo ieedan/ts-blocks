@@ -80,7 +80,7 @@ const resolveTree = async (
 			if (subDeps.isErr()) return Err(subDeps.unwrapErr());
 
 			for (const dep of subDeps.unwrap()) {
-				blocks.set(dep.name, dep);
+				blocks.set(`${dep.block.category}/${dep.block.name}`, dep);
 			}
 		}
 	}
