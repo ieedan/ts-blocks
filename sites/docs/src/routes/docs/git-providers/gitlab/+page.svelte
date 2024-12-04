@@ -34,7 +34,10 @@ https://gitlab.com/ieedan/std/-/tree/next # branch reference
 	"repos": ["https://gitlab.com/ieedan/std/tree/v1.5.0"],
 	"path": "src/blocks",
 	"includeTests": false,
-	"watermark": true
+	"watermark": true,
+	"paths": {
+		"*": "./src/blocks"
+	}
 }`}
 />
 <p>
@@ -61,6 +64,9 @@ https://gitlab.com/ieedan/std/-/tree/next # branch reference
 	"repos": ["gitlab/ieedan/std"],
 	"path": "src/blocks",
 	"includeTests": false,
-	"watermark": true
+	"watermark": true,
+	"paths": {
+		"*": "./src/blocks"
+	}
 }`}
 />

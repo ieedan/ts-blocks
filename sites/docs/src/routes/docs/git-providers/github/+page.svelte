@@ -34,7 +34,10 @@ https://github.com/ieedan/std/tree/next # branch reference
 	"repos": ["https://github.com/ieedan/std/tree/v1.5.0"],
 	"path": "src/blocks",
 	"includeTests": false,
-	"watermark": true
+	"watermark": true,
+	"paths": {
+		"*": "./src/blocks"
+	}
 }`}
 />
 <p>
@@ -61,7 +64,10 @@ https://github.com/ieedan/std/tree/next # branch reference
 	"repos": ["github/ieedan/std"],
 	"path": "src/blocks",
 	"includeTests": false,
-	"watermark": true
+	"watermark": true,
+	"paths": {
+		"*": "./src/blocks"
+	}
 }`}
 />
 <SubHeading>Rate Limiting</SubHeading>

@@ -34,7 +34,10 @@ https://bitbucket.org/ieedan/std/src/next # branch reference
 	"repos": ["https://bitbucket.org/ieedan/std/src/v1.5.0"],
 	"path": "src/blocks",
 	"includeTests": false,
-	"watermark": true
+	"watermark": true,
+	"paths": {
+		"*": "./src/blocks"
+	}
 }`}
 />
 <p>
@@ -61,6 +64,9 @@ https://bitbucket.org/ieedan/std/src/next # branch reference
 	"repos": ["bitbucket/ieedan/std/src/main"],
 	"path": "src/blocks",
 	"includeTests": false,
-	"watermark": true
+	"watermark": true,
+	"paths": {
+		"*": "./src/blocks"
+	}
 }`}
 />
