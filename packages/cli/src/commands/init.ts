@@ -227,6 +227,7 @@ const _initProject = async (options: Options) => {
 			const configurePaths = await multiselect({
 				message: 'Which category paths would you like to configure?',
 				options: categories.map((cat) => ({ label: cat.name, value: cat.name })),
+				required: false,
 			});
 
 			if (isCancel(configurePaths)) {
