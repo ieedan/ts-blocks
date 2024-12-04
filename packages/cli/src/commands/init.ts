@@ -236,12 +236,16 @@ const _initProject = async (options: Options) => {
 
 			if (configurePaths.length > 0) {
 				for (const category of configurePaths) {
+					const configuredValue = paths[category];
+
 					const categoryPath = await text({
 						message: `Where should ${category} be added in your project?`,
 						validate(value) {
 							if (value.trim() === '') return 'Please provide a value';
 						},
-						placeholder: `./src/${category}`,
+						placeholder: configuredValue ? configuredValue : `./src/${category}`,
+						defaultValue: configuredValue,
+						initialValue: configuredValue,
 					});
 
 					if (isCancel(categoryPath)) {
