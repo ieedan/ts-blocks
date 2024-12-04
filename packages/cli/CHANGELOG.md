@@ -1,5 +1,12 @@
 # jsrepo
 
+## 1.16.4
+
+### Patch Changes
+
+- e4363f2: Fixes issue where configuring paths was required when adding a repo on `init`.
+- 83ac4e6: Improve performance when resolving an excessive amount of blocks at once.
+
 ## 1.16.3
 
 ### Patch Changes
