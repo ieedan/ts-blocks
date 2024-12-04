@@ -17,7 +17,14 @@ import { loadFormatterConfig } from '../utils/format';
 import { getWatermark } from '../utils/get-watermark';
 import * as gitProviders from '../utils/git-providers';
 import { returnShouldInstall } from '../utils/package';
-import { type Task, intro, nextSteps, runTasks } from '../utils/prompts';
+import {
+	type ConcurrentTask,
+	type Task,
+	intro,
+	nextSteps,
+	runTasks,
+	runTasksConcurrently,
+} from '../utils/prompts';
 
 const schema = v.object({
 	repo: v.optional(v.string()),
@@ -255,7 +262,7 @@ const _add = async (blockNames: string[], options: Options) => {
 
 	const pm = (await detect({ cwd: options.cwd }))?.agent ?? 'npm';
 
-	const tasks: Task[] = [];
+	const tasks: ConcurrentTask[] = [];
 
 	let devDeps: Set<string> = new Set<string>();
 	let deps: Set<string> = new Set<string>();
@@ -318,6 +325,8 @@ const _add = async (blockNames: string[], options: Options) => {
 
 	const resolvedPaths = resolvedPathsResult.unwrap();
 
+	const addedBlocks: string[] = [];
+
 	for (const { block } of installingBlocks) {
 		const fullSpecifier = `${block.sourceRepo.url}/${block.category}/${block.name}`;
 		const shortSpecifier = `${block.category}/${block.name}`;
@@ -345,16 +354,21 @@ const _add = async (blockNames: string[], options: Options) => {
 				initialValue: false,
 			});
 
-			if (isCancel(result) || !result) {
+			if (isCancel(result)) {
 				cancel('Canceled!');
 				process.exit(0);
 			}
+
+			// just skip this block if they don't want to overwrite it
+			if (!result) continue;
 		}
 
+		addedBlocks.push(shortSpecifier);
+
 		tasks.push({
-			loadingMessage: `Adding ${fullSpecifier}`,
-			completedMessage: `Added ${fullSpecifier}`,
-			run: async () => {
+			run: async ({ message }) => {
+				message(`Adding ${color.cyan(fullSpecifier)}`);
+
 				verbose(`Creating directory ${color.bold(directory)}`);
 
 				// in case the directory didn't already exist
@@ -454,7 +468,12 @@ const _add = async (blockNames: string[], options: Options) => {
 		});
 	}
 
-	await runTasks(tasks, { verbose: options.verbose ? verbose : undefined });
+	await runTasksConcurrently({
+		startMessage: 'Adding blocks',
+		stopMessage: `Added ${color.cyan(addedBlocks.join(', '))}`,
+		tasks,
+		verbose: options.verbose ? verbose : undefined,
+	});
 
 	// check if dependencies are already installed
 	const requiredDependencies = returnShouldInstall(deps, devDeps, { cwd: options.cwd });

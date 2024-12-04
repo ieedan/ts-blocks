@@ -39,6 +39,48 @@ const runTasks = async (tasks: Task[], { verbose = undefined }: TaskOptions) => 
 	}
 };
 
+export type ConcurrentTask = {
+	run: ({ message }: { message: (str: string) => void }) => Promise<void>;
+};
+
+export type ConcurrentOptions = {
+	startMessage: string;
+	stopMessage: string;
+	tasks: ConcurrentTask[];
+	verbose?: (msg: string) => void;
+};
+
+const runTasksConcurrently = async ({
+	tasks,
+	startMessage,
+	stopMessage,
+	verbose,
+}: ConcurrentOptions) => {
+	const loading = spinner();
+
+	const message = (msg: string) => {
+		if (verbose) {
+			verbose(msg);
+		} else {
+			loading.message(msg);
+		}
+	};
+
+	if (verbose) {
+		verbose(startMessage);
+	} else {
+		loading.start(startMessage);
+	}
+
+	await Promise.all([...tasks.map((t) => t.run({ message }))]);
+
+	if (verbose) {
+		verbose(stopMessage);
+	} else {
+		loading.stop(stopMessage);
+	}
+};
+
 const nextSteps = (steps: string[]): string => {
 	let max = 20;
 	steps.map((val) => {
@@ -73,4 +115,4 @@ const nextSteps = (steps: string[]): string => {
 const _intro = (version: string) =>
 	intro(`${color.bgHex('#f7df1e').black(' jsrepo ')}${color.gray(` v${version} `)}`);
 
-export { runTasks, nextSteps, _intro as intro };
+export { runTasks, nextSteps, _intro as intro, runTasksConcurrently };
