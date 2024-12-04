@@ -29,12 +29,13 @@ https://gitlab.com/ieedan/std/-/tree/next # branch reference
 	showLines={false}
 	lang="json"
 	code={`{
-	"$schema": "https://unpkg.com/jsrepo@${data.version}/schema.json",
+	"$schema": "https://unpkg.com/jsrepo@${data.version}/schemas/project-config.json",
     // use a specific version tag
 	"repos": ["https://gitlab.com/ieedan/std/tree/v1.5.0"],
 	"path": "src/blocks",
 	"includeTests": false,
 	"watermark": true,
+	"formatter": "prettier",
 	"paths": {
 		"*": "./src/blocks"
 	}
@@ -59,12 +60,13 @@ https://gitlab.com/ieedan/std/-/tree/next # branch reference
 <Code
 	lang="json"
 	code={`{
-	"$schema": "https://unpkg.com/jsrepo@${data.version}/schema.json",
+	"$schema": "https://unpkg.com/jsrepo@${data.version}/schemas/project-config.json",
     // use gitlab instead of https://gitlab.com
 	"repos": ["gitlab/ieedan/std"],
 	"path": "src/blocks",
 	"includeTests": false,
 	"watermark": true,
+	"formatter": "prettier",
 	"paths": {
 		"*": "./src/blocks"
 	}

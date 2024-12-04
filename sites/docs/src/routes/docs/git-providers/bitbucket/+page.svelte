@@ -29,12 +29,13 @@ https://bitbucket.org/ieedan/std/src/next # branch reference
 	showLines={false}
 	lang="json"
 	code={`{
-	"$schema": "https://unpkg.com/jsrepo@${data.version}/schema.json",
+	"$schema": "https://unpkg.com/jsrepo@${data.version}/schemas/project-config.json",
     // use a specific version tag
 	"repos": ["https://bitbucket.org/ieedan/std/src/v1.5.0"],
 	"path": "src/blocks",
 	"includeTests": false,
 	"watermark": true,
+	"formatter": "prettier",
 	"paths": {
 		"*": "./src/blocks"
 	}
@@ -59,12 +60,13 @@ https://bitbucket.org/ieedan/std/src/next # branch reference
 <Code
 	lang="json"
 	code={`{
-	"$schema": "https://unpkg.com/jsrepo@${data.version}/schema.json",
+	"$schema": "https://unpkg.com/jsrepo@${data.version}/schemas/project-config.json",
     // use bitbucket instead of https://bitbucket.org
 	"repos": ["bitbucket/ieedan/std/src/main"],
 	"path": "src/blocks",
 	"includeTests": false,
 	"watermark": true,
+	"formatter": "prettier",
 	"paths": {
 		"*": "./src/blocks"
 	}

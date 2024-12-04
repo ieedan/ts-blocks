@@ -51,11 +51,12 @@
 <Code
 	lang="json"
 	code={`{
-	"$schema": "https://unpkg.com/jsrepo@${data.version}/schema.json",
+	"$schema": "https://unpkg.com/jsrepo@${data.version}/schemas/project-config.json",
 	"repos": ["github/ieedan/std"],
 	"path": "src/blocks",
 	"includeTests": false,
 	"watermark": true,
+	"formatter": "prettier",
 	"paths": {
 		"*": "./src/blocks"
 	}
