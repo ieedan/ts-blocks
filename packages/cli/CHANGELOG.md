@@ -1,5 +1,11 @@
 # jsrepo
 
+## 1.16.1
+
+### Patch Changes
+
+- 836645b: Fixes issue where custom paths were overwritten when running `init` for a second time.
+
 ## 1.16.0
 
 ### Minor Changes
