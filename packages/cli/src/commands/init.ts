@@ -428,7 +428,7 @@ const _initRegistry = async (options: Options) => {
 		installAsDevDependency = response;
 	}
 
-	let jsonConfig = options.yes;
+	let jsonConfig = !noConfig;
 
 	if (!options.yes && noConfig) {
 		const response = await confirm({
