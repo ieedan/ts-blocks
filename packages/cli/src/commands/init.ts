@@ -488,8 +488,8 @@ const _initRegistry = async (options: Options) => {
 
 	if (jsonConfig) {
 		tasks.push({
-			loadingMessage: `Creating \`${color.cyan(REGISTRY_CONFIG_NAME)}\``,
-			completedMessage: `Created \`${color.cyan(REGISTRY_CONFIG_NAME)}\``,
+			loadingMessage: `Writing config to \`${color.cyan(REGISTRY_CONFIG_NAME)}\``,
+			completedMessage: `Wrote config to \`${color.cyan(REGISTRY_CONFIG_NAME)}\``,
 			run: async () => {
 				const configPath = path.join(options.cwd, REGISTRY_CONFIG_NAME);
 
