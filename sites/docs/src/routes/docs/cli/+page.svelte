@@ -18,14 +18,14 @@
 Initializes your project with a configuration file.
 
 Options:
-  --path <path>            Path to install the blocks / Path to build the blocks from.
+  --path <path>            Path to install the blocks from.
   --repos [repos...]       Repository to install the blocks from.
   --no-watermark           Will not add a watermark to each file upon adding it to your project.
   --tests                  Will include tests with the blocks.
   --formatter <formatter>  What formatter to use when adding or updating blocks. (choices: "prettier", "biome")
   -P, --project            Takes you through the steps to initialize a project.
   -R, --registry           Takes you through the steps to initialize a registry.
-  --script <name>          The name of the build script. (For Registry setup) (default: "build")
+  --script <name>          The name of the build script. (For Registry setup) (default: "build:registry")
   -y, --yes                Skip confirmation prompt. (default: false)
   --cwd <path>             The current working directory. (default: ".")
   -h, --help               display help for command`}
@@ -93,15 +93,17 @@ Options:
 Builds the provided --dirs in the project root into a \`jsrepo-manifest.json\` file.
 
 Options:
-  --dirs [dirs...]                         The directories containing the blocks. (default: ["./blocks"])
-  --include-blocks [blockNames...]         Include only the blocks with these names. (default: [])
-  --include-categories [categoryNames...]  Include only the categories with these names. (default: [])
-  --exclude-deps [deps...]                 Dependencies that should not be added. (default: [])
-  --no-output                              Do not output a \`jsrepo-manifest.json\` file.
-  --error-on-warn                          If there is a warning throw an error and do not allow build to complete. (default: false)
-  --verbose                                Include debug logs. (default: false)
-  --cwd <path>                             The current working directory. (default: ".")
-  -h, --help                               display help for command`}
+  --dirs [dirs...]                             The directories containing the blocks.
+  --include-blocks [blockNames...]             Include only the blocks with these names.
+  --include-categories [categoryNames...]      Include only the categories with these names.
+  --do-not-list-blocks [blockNames...]         The names of blocks that shouldn't be listed when the user runs add.
+  --do-not-list-categories [categoryNames...]  The names of categories that shouldn't be listed when the user runs add.
+  --exclude-deps [deps...]                     Dependencies that should not be added.
+  --no-output                                  Do not output a \`jsrepo-manifest.json\` file.
+  --error-on-warn                              If there is a warning throw an error and do not allow build to complete. (default: false)
+  --verbose                                    Include debug logs. (default: false)
+  --cwd <path>                                 The current working directory. (default: ".")
+  -h, --help                                   display help for command`}
 />
 <SubHeading>test</SubHeading>
 <p>
