@@ -1,5 +1,16 @@
 # jsrepo
 
+## 1.16.0
+
+### Minor Changes
+
+- 147c18d: Add `do-not-list-blocks` and `do-not-list-categories` options to `build` to allow for hiding specific blocks from users in the `add` command.
+- 147c18d: Add `jsrepo-build-config.json` file allowing an easier time configuring build options.
+
+### Patch Changes
+
+- 0169655: Fix issue where `resolveTree` could end up in an infinite loop under the right conditions.
+
 ## 1.15.1
 
 ### Patch Changes
