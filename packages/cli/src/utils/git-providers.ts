@@ -467,17 +467,11 @@ const getProviderInfo = async (repo: string): Promise<Result<Info, string>> => {
 };
 
 const fetchBlocks = async (
-	...repos: string[]
+	...repos: ResolvedRepo[]
 ): Promise<Result<Map<string, RemoteBlock>, { message: string; repo: string }>> => {
 	const blocksMap = new Map<string, RemoteBlock>();
-	for (const repo of repos) {
-		const getProviderResult = await getProviderInfo(repo);
-
-		if (getProviderResult.isErr()) return Err({ message: getProviderResult.unwrapErr(), repo });
-
-		const providerInfo = getProviderResult.unwrap();
-
-		const getManifestResult = await providerInfo.provider.fetchManifest(providerInfo);
+	for (const { path: repo, info } of repos) {
+		const getManifestResult = await info.provider.fetchManifest(info);
 
 		if (getManifestResult.isErr()) return Err({ message: getManifestResult.unwrapErr(), repo });
 
@@ -486,10 +480,10 @@ const fetchBlocks = async (
 		for (const category of categories) {
 			for (const block of category.blocks) {
 				blocksMap.set(
-					`${providerInfo.name}/${providerInfo.owner}/${providerInfo.repoName}/${category.name}/${block.name}`,
+					`${info.name}/${info.owner}/${info.repoName}/${category.name}/${block.name}`,
 					{
 						...block,
-						sourceRepo: providerInfo,
+						sourceRepo: info,
 					}
 				);
 			}
@@ -499,4 +493,27 @@ const fetchBlocks = async (
 	return Ok(blocksMap);
 };
 
-export { github, gitlab, bitbucket, getProviderInfo, fetchBlocks, providers };
+export type ResolvedRepo = {
+	path: string;
+	info: Info;
+};
+
+const resolvePaths = async (
+	...repos: string[]
+): Promise<Result<ResolvedRepo[], { message: string; repo: string }>> => {
+	const resolvedPaths: ResolvedRepo[] = [];
+
+	for (const repo of repos) {
+		const getProviderResult = await getProviderInfo(repo);
+
+		if (getProviderResult.isErr()) return Err({ message: getProviderResult.unwrapErr(), repo });
+
+		const providerInfo = getProviderResult.unwrap();
+
+		resolvedPaths.push({ path: repo, info: providerInfo });
+	}
+
+	return Ok(resolvedPaths);
+};
+
+export { github, gitlab, bitbucket, getProviderInfo, fetchBlocks, providers, resolvePaths };

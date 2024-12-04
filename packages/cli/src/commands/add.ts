@@ -163,12 +163,26 @@ const _add = async (blockNames: string[], options: Options) => {
 		);
 	}
 
+	verbose(`Resolving ${color.cyan(repoPaths.join(', '))}`);
+
+	const resolvedRepos: gitProviders.ResolvedRepo[] = (
+		await gitProviders.resolvePaths(...repoPaths)
+	).match(
+		(val) => val,
+		({ repo, message }) => {
+			loading.stop(`Failed to get info for ${color.cyan(repo)}`);
+			program.error(color.red(message));
+		}
+	);
+
+	verbose(`Resolved ${color.cyan(repoPaths.join(', '))}`);
+
 	verbose(`Fetching blocks from ${color.cyan(repoPaths.join(', '))}`);
 
 	if (!options.verbose) loading.start(`Fetching blocks from ${color.cyan(repoPaths.join(', '))}`);
 
 	const blocksMap: Map<string, RemoteBlock> = (
-		await gitProviders.fetchBlocks(...repoPaths)
+		await gitProviders.fetchBlocks(...resolvedRepos)
 	).match(
 		(val) => val,
 		({ repo, message }) => {
@@ -232,7 +246,9 @@ const _add = async (blockNames: string[], options: Options) => {
 
 	if (options.verbose) console.log('Blocks map: ', blocksMap);
 
-	const installingBlocks = (await resolveTree(installingBlockNames, blocksMap, repoPaths)).match(
+	const installingBlocks = (
+		await resolveTree(installingBlockNames, blocksMap, resolvedRepos)
+	).match(
 		(val) => val,
 		(err) => program.error(err)
 	);
