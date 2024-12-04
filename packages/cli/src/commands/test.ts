@@ -12,7 +12,7 @@ import { context } from '..';
 import * as ascii from '../utils/ascii';
 import { getInstalled } from '../utils/blocks';
 import { type Block, isTestFile } from '../utils/build';
-import { getConfig, resolvePaths } from '../utils/config';
+import { getProjectConfig, resolvePaths } from '../utils/config';
 import { OUTPUT_FILE } from '../utils/context';
 import * as gitProviders from '../utils/git-providers';
 import { intro } from '../utils/prompts';
@@ -56,7 +56,7 @@ const _test = async (blockNames: string[], options: Options) => {
 
 	verbose(`Attempting to test ${JSON.stringify(blockNames)}`);
 
-	const config = getConfig(options.cwd).match(
+	const config = getProjectConfig(options.cwd).match(
 		(val) => val,
 		(err) => program.error(color.red(err))
 	);

@@ -7,14 +7,17 @@ import * as v from 'valibot';
 import { context } from '..';
 import * as ascii from '../utils/ascii';
 import { type Category, buildBlocksDirectory } from '../utils/build';
+import { type RegistryConfig, getRegistryConfig } from '../utils/config';
 import { OUTPUT_FILE } from '../utils/context';
 import { intro } from '../utils/prompts';
 
 const schema = v.object({
-	dirs: v.array(v.string()),
-	includeBlocks: v.array(v.string()),
-	includeCategories: v.array(v.string()),
-	excludeDeps: v.array(v.string()),
+	dirs: v.optional(v.array(v.string())),
+	includeBlocks: v.optional(v.array(v.string())),
+	includeCategories: v.optional(v.array(v.string())),
+	excludeDeps: v.optional(v.array(v.string())),
+	doNotListBlocks: v.optional(v.array(v.string())),
+	doNotListCategories: v.optional(v.array(v.string())),
 	output: v.boolean(),
 	errorOnWarn: v.boolean(),
 	verbose: v.boolean(),
@@ -25,14 +28,21 @@ type Options = v.InferInput<typeof schema>;
 
 const build = new Command('build')
 	.description(`Builds the provided --dirs in the project root into a \`${OUTPUT_FILE}\` file.`)
-	.option('--dirs [dirs...]', 'The directories containing the blocks.', ['./blocks'])
-	.option('--include-blocks [blockNames...]', 'Include only the blocks with these names.', [])
+	.option('--dirs [dirs...]', 'The directories containing the blocks.')
+	.option('--include-blocks [blockNames...]', 'Include only the blocks with these names.')
 	.option(
 		'--include-categories [categoryNames...]',
-		'Include only the categories with these names.',
-		[]
+		'Include only the categories with these names.'
 	)
-	.option('--exclude-deps [deps...]', 'Dependencies that should not be added.', [])
+	.option(
+		'--do-not-list-blocks',
+		"The names of blocks that shouldn't be listed when the user runs add."
+	)
+	.option(
+		'--do-not-list-categories',
+		"The names of categories that shouldn't be listed when the user runs add."
+	)
+	.option('--exclude-deps [deps...]', 'Dependencies that should not be added.')
 	.option('--no-output', `Do not output a \`${OUTPUT_FILE}\` file.`)
 	.option(
 		'--error-on-warn',
@@ -56,22 +66,58 @@ const _build = async (options: Options) => {
 
 	const categories: Category[] = [];
 
+	const config: RegistryConfig = getRegistryConfig(options.cwd).match(
+		(val) => {
+			if (val === null) {
+				return {
+					$schema: '',
+					dirs: options.dirs ?? [],
+					doNotListBlocks: options.doNotListBlocks ?? [],
+					doNotListCategories: options.doNotListCategories ?? [],
+					errorOnWarn: options.errorOnWarn,
+					excludeDeps: options.excludeDeps ?? [],
+					includeBlocks: options.includeBlocks ?? [],
+					includeCategories: options.includeCategories ?? [],
+					output: options.output,
+				} satisfies RegistryConfig;
+			}
+
+			const mergedVal = val;
+
+			// overwrites config with flag values
+
+			if (options.dirs) mergedVal.dirs = options.dirs;
+			if (options.doNotListBlocks) mergedVal.doNotListBlocks = options.doNotListBlocks;
+			if (options.doNotListCategories)
+				mergedVal.doNotListCategories = options.doNotListCategories;
+			if (options.includeBlocks) mergedVal.includeBlocks = options.includeBlocks;
+			if (options.includeCategories) mergedVal.includeCategories = options.includeCategories;
+			if (options.excludeDeps) mergedVal.excludeDeps = options.excludeDeps;
+
+			mergedVal.errorOnWarn = options.errorOnWarn;
+			mergedVal.output = options.output;
+
+			return mergedVal;
+		},
+		(err) => program.error(color.red(err))
+	);
+
 	const outFile = path.join(options.cwd, OUTPUT_FILE);
 
-	for (const dir of options.dirs) {
+	for (const dir of config.dirs) {
 		const dirPath = path.join(options.cwd, dir);
 
 		loading.start(`Building ${color.cyan(dirPath)}`);
 
-		if (options.output && fs.existsSync(outFile)) fs.rmSync(outFile);
+		if (config.output && fs.existsSync(outFile)) fs.rmSync(outFile);
 
-		const builtCategories = buildBlocksDirectory(dirPath, { ...options });
+		const builtCategories = buildBlocksDirectory(dirPath, { cwd: options.cwd, config });
 
 		for (const category of builtCategories) {
 			if (categories.find((cat) => cat.name === category.name) !== undefined) {
 				const error = 'a category with the same name already exists!';
 
-				if (options.errorOnWarn) {
+				if (config.errorOnWarn) {
 					program.error(
 						color.red(
 							`\`${color.bold(`${dir}/${category.name}`)}\` could not be added because ${error}`
@@ -108,7 +154,7 @@ const _build = async (options: Options) => {
 				const invalidDependencyError = () => {
 					const error = `depends on ${color.bold(dep)} which doesn't exist!`;
 
-					if (options.errorOnWarn) {
+					if (config.errorOnWarn) {
 						warnings.push(
 							color.red(`${color.bold(`${category.name}/${block.name}`)} ${error}`)
 						);
@@ -133,7 +179,7 @@ const _build = async (options: Options) => {
 				if (!dep.includes('@')) {
 					const error = `You haven't installed ${color.bold(dep)} as a dependency so your users could get any version of it when they install your block!`;
 
-					if (options.errorOnWarn) {
+					if (config.errorOnWarn) {
 						warnings.push(color.red(error));
 					} else {
 						warnings.push(`${ascii.VERTICAL_LINE}  ${ascii.WARN} ${error}`);
@@ -150,12 +196,12 @@ const _build = async (options: Options) => {
 			console.log(warning);
 		}
 
-		if (options.errorOnWarn) {
+		if (config.errorOnWarn) {
 			program.error('Had warnings while checking manifest.');
 		}
 	}
 
-	if (options.output) {
+	if (config.output) {
 		loading.start(`Writing output to \`${color.cyan(outFile)}\``);
 
 		fs.writeFileSync(outFile, JSON.stringify(categories, null, '\t'));

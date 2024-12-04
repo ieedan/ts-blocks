@@ -1,0 +1,59 @@
+{
+	"$schema": "http://json-schema.org/draft-07/schema#",
+	"type": "object",
+	"properties": {
+		"dirs": {
+			"description": "Directories that contain the categories you want to build into the manifest.",
+			"type": "array",
+			"items": {
+				"type": "string"
+			}
+		},
+		"includeBlocks": {
+			"description": "The names of the blocks that should be included in the manifest.",
+			"type": "array",
+			"items": {
+				"type": "string"
+			}
+		},
+		"includeCategories": {
+			"description": "The names of the categories that should be included in the manifest.",
+			"type": "array",
+			"items": {
+				"type": "string"
+			}
+		},
+		"doNotListBlocks": {
+			"description": "The names of blocks that shouldn't be listed when the user runs add.",
+			"type": "array",
+			"items": {
+				"type": "string"
+			}
+		},
+		"doNotListCategories": {
+			"description": "The names of categories that shouldn't be listed when the user runs add.",
+			"type": "array",
+			"items": {
+				"type": "string"
+			}
+		},
+		"excludeDeps": {
+			"description": "Remote dependencies that should not be added to the manifest.",
+			"type": "array",
+			"items": {
+				"type": "string"
+			}
+		},
+		"output": {
+			"description": "Should the build output a manifest file.",
+			"type": "boolean",
+			"default": true
+		},
+		"errorOnWarn": {
+			"description": "Should the CLI error on warnings.",
+			"type": "boolean",
+			"default": false
+		}
+	},
+	"required": ["dirs", "output", "errorOnWarn"]
+}

@@ -18,19 +18,21 @@ import * as v from 'valibot';
 import { context } from '..';
 import * as ascii from '../utils/ascii';
 import {
-	CONFIG_NAME,
-	type Config,
 	type Formatter,
+	PROJECT_CONFIG_NAME,
 	type Paths,
+	type ProjectConfig,
+	REGISTRY_CONFIG_NAME,
 	formatterSchema,
-	getConfig,
+	getProjectConfig,
+	getRegistryConfig,
 } from '../utils/config';
 import { installDependencies } from '../utils/dependencies';
 import { loadFormatterConfig } from '../utils/format';
 import { providers } from '../utils/git-providers';
 import { json } from '../utils/language-support';
 import * as persisted from '../utils/persisted';
-import { intro, nextSteps } from '../utils/prompts';
+import { type Task, intro, nextSteps, runTasks } from '../utils/prompts';
 
 const schema = v.object({
 	path: v.optional(v.string()),
@@ -49,7 +51,7 @@ type Options = v.InferInput<typeof schema>;
 
 const init = new Command('init')
 	.description('Initializes your project with a configuration file.')
-	.option('--path <path>', 'Path to install the blocks / Path to build the blocks from.')
+	.option('--path <path>', 'Path to install the blocks from.')
 	.option('--repos [repos...]', 'Repository to install the blocks from.')
 	.option(
 		'--no-watermark',
@@ -64,7 +66,11 @@ const init = new Command('init')
 	)
 	.option('-P, --project', 'Takes you through the steps to initialize a project.')
 	.option('-R, --registry', 'Takes you through the steps to initialize a registry.')
-	.option('--script <name>', 'The name of the build script. (For Registry setup)', 'build')
+	.option(
+		'--script <name>',
+		'The name of the build script. (For Registry setup)',
+		'build:registry'
+	)
 	.option('-y, --yes', 'Skip confirmation prompt.', false)
 	.option('--cwd <path>', 'The current working directory.', process.cwd())
 	.action(async (opts) => {
@@ -110,7 +116,7 @@ const init = new Command('init')
 const _initProject = async (options: Options) => {
 	const storage = persisted.get();
 
-	const initialConfig = getConfig(options.cwd);
+	const initialConfig = getProjectConfig(options.cwd);
 
 	const loading = spinner();
 
@@ -279,8 +285,8 @@ const _initProject = async (options: Options) => {
 		}
 	}
 
-	const config: Config = {
-		$schema: `https://unpkg.com/jsrepo@${context.package.version}/schema.json`,
+	const config: ProjectConfig = {
+		$schema: `https://unpkg.com/jsrepo@${context.package.version}/schemas/project-config.json`,
 		repos: options.repos,
 		includeTests:
 			initialConfig.isOk() && options.tests === undefined
@@ -291,14 +297,14 @@ const _initProject = async (options: Options) => {
 		paths,
 	};
 
-	loading.start(`Writing config to \`${CONFIG_NAME}\``);
+	loading.start(`Writing config to \`${PROJECT_CONFIG_NAME}\``);
 
 	const { prettierOptions, biomeOptions } = await loadFormatterConfig({
 		formatter: config.formatter,
 		cwd: options.cwd,
 	});
 
-	const configPath = path.join(options.cwd, CONFIG_NAME);
+	const configPath = path.join(options.cwd, PROJECT_CONFIG_NAME);
 
 	const configContent = await json.format(JSON.stringify(config, null, '\t'), {
 		biomeOptions,
@@ -309,7 +315,7 @@ const _initProject = async (options: Options) => {
 
 	fs.writeFileSync(configPath, configContent);
 
-	loading.stop(`Wrote config to \`${CONFIG_NAME}\`.`);
+	loading.stop(`Wrote config to \`${PROJECT_CONFIG_NAME}\`.`);
 };
 
 const _initRegistry = async (options: Options) => {
@@ -321,12 +327,45 @@ const _initRegistry = async (options: Options) => {
 		program.error(color.red(`Couldn't find your ${color.bold('package.json')}!`));
 	}
 
-	if (!options.path) {
+	let config = getRegistryConfig(options.cwd).match(
+		(val) => val,
+		(err) => program.error(color.red(err))
+	);
+
+	const noConfig = config === null;
+
+	if (!config) {
+		config = {
+			$schema: `https://unpkg.com/jsrepo@${context.package.version}/schemas/project-config.json`,
+			dirs: [],
+			doNotListBlocks: [],
+			doNotListCategories: [],
+			excludeDeps: [],
+			includeBlocks: [],
+			includeCategories: [],
+			errorOnWarn: false,
+			output: true,
+		};
+	}
+
+	while (true) {
+		if (config.dirs.length > 0) {
+			const confirmResult = await confirm({
+				message: 'Add another blocks directory?',
+				initialValue: false,
+			});
+
+			if (isCancel(confirmResult)) {
+				cancel('Canceled!');
+				process.exit(0);
+			}
+
+			if (!confirmResult) break;
+		}
+
 		const response = await text({
 			message: 'Where are your blocks located?',
-			defaultValue: './blocks',
-			initialValue: './blocks',
-			placeholder: './blocks',
+			placeholder: './src',
 		});
 
 		if (isCancel(response)) {
@@ -334,15 +373,13 @@ const _initRegistry = async (options: Options) => {
 			process.exit(0);
 		}
 
-		options.path = response;
+		config.dirs.push(response);
 	}
 
 	const pkg = JSON.parse(fs.readFileSync(packagePath).toString());
 
-	const scriptAlreadyExists =
-		pkg.scripts !== undefined && pkg.scripts[options.script] !== undefined;
-
-	if (!options.yes && scriptAlreadyExists) {
+	// continue asking until the user either chooses to overwrite or inputs a script that doesn't exist yet
+	while (!options.yes && pkg.scripts && pkg.scripts[options.script]) {
 		const response = await confirm({
 			message: `The \`${color.cyan(options.script)}\` already exists overwrite?`,
 			initialValue: false,
@@ -356,9 +393,7 @@ const _initRegistry = async (options: Options) => {
 		if (!response) {
 			const response = await text({
 				message: 'What would you like to call the script?',
-				defaultValue: 'build:registry',
 				placeholder: 'build:registry',
-				initialValue: 'build:registry',
 				validate: (val) => {
 					if (val.trim().length === 0) return 'Please provide a value!';
 				},
@@ -370,6 +405,8 @@ const _initRegistry = async (options: Options) => {
 			}
 
 			options.script = response;
+		} else {
+			break;
 		}
 	}
 
@@ -391,12 +428,28 @@ const _initRegistry = async (options: Options) => {
 		installAsDevDependency = response;
 	}
 
+	let jsonConfig = options.yes;
+
+	if (!options.yes && noConfig) {
+		const response = await confirm({
+			message: `Create a \`${color.cyan(REGISTRY_CONFIG_NAME)}\` file?`,
+			initialValue: true,
+		});
+
+		if (isCancel(response)) {
+			cancel('Canceled!');
+			process.exit(0);
+		}
+
+		jsonConfig = response;
+	}
+
 	const pm = (await detect({ cwd: 'cwd' }))?.agent ?? 'npm';
 
 	let buildScript = '';
 
 	if (installAsDevDependency) {
-		buildScript += 'jsrepo build ';
+		buildScript += 'jsrepo build';
 	} else {
 		const command = resolveCommand(pm, 'execute', ['jsrepo', 'build']);
 
@@ -405,25 +458,53 @@ const _initRegistry = async (options: Options) => {
 		buildScript += `${command.command} ${command.args.join(' ')} `;
 	}
 
-	if (options.path !== './build') {
-		buildScript += `--dirs ${options.path}`;
+	// if we aren't using a config file configure the command with the correct flags
+	if (!jsonConfig) {
+		buildScript += ` --dirs ${config.dirs.join(' ')} `;
 	}
 
+	// ensure we are adding to an object that exists
 	if (pkg.scripts === undefined) {
 		pkg.scripts = {};
 	}
 
 	pkg.scripts[options.script] = buildScript;
 
-	loading.start(`Adding \`${color.cyan(options.script)}\` to scripts in package.json`);
+	const tasks: Task[] = [];
 
-	try {
-		fs.writeFileSync(packagePath, JSON.stringify(pkg, null, '\t'));
-	} catch (err) {
-		program.error(color.red(`Error writing to \`${color.bold(packagePath)}\`. Error: ${err}`));
+	tasks.push({
+		loadingMessage: `Adding \`${color.cyan(options.script)}\` to scripts in package.json`,
+		completedMessage: `Added \`${color.cyan(options.script)}\` to scripts in package.json`,
+		run: async () => {
+			try {
+				fs.writeFileSync(packagePath, JSON.stringify(pkg, null, '\t'));
+			} catch (err) {
+				program.error(
+					color.red(`Error writing to \`${color.bold(packagePath)}\`. Error: ${err}`)
+				);
+			}
+		},
+	});
+
+	if (jsonConfig) {
+		tasks.push({
+			loadingMessage: `Creating \`${color.cyan(REGISTRY_CONFIG_NAME)}\``,
+			completedMessage: `Created \`${color.cyan(REGISTRY_CONFIG_NAME)}\``,
+			run: async () => {
+				const configPath = path.join(options.cwd, REGISTRY_CONFIG_NAME);
+
+				try {
+					fs.writeFileSync(path.join(configPath), JSON.stringify(config, null, '\t'));
+				} catch (err) {
+					program.error(
+						color.red(`Error writing to \`${color.bold(configPath)}\`. Error: ${err}`)
+					);
+				}
+			},
+		});
 	}
 
-	loading.stop(`Added \`${color.cyan(options.script)}\` to scripts in package.json`);
+	await runTasks(tasks, {});
 
 	let installed = alreadyInstalled;
 
@@ -475,7 +556,7 @@ const _initRegistry = async (options: Options) => {
 		);
 	}
 
-	steps.push(`Add blocks to \`${color.cyan(options.path)}\`.`);
+	steps.push(`Add categories to \`${color.cyan(config.dirs.join(', '))}\`.`);
 
 	const runScript = resolveCommand(pm, 'run', [options.script]);
 

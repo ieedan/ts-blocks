@@ -10,7 +10,7 @@ import { context } from '..';
 import * as ascii from '../utils/ascii';
 import { getInstalled, resolveTree } from '../utils/blocks';
 import { type Block, isTestFile } from '../utils/build';
-import { type Config, getConfig, resolvePaths } from '../utils/config';
+import { type ProjectConfig, getProjectConfig, resolvePaths } from '../utils/config';
 import { installDependencies } from '../utils/dependencies';
 import { transformRemoteContent } from '../utils/files';
 import { loadFormatterConfig } from '../utils/format';
@@ -62,12 +62,12 @@ const _add = async (blockNames: string[], options: Options) => {
 
 	const loading = spinner();
 
-	const configResult = getConfig(options.cwd);
+	const configResult = getProjectConfig(options.cwd);
 
 	/** The user has opted for no config */
 	const noConfig = configResult.isErr();
 
-	let config: Config;
+	let config: ProjectConfig;
 
 	if (configResult.isErr()) {
 		const response = await confirm({
@@ -191,30 +191,32 @@ const _add = async (blockNames: string[], options: Options) => {
 	if (installingBlockNames.length === 0) {
 		const promptResult = await multiselect({
 			message: 'Select which blocks to add.',
-			options: Array.from(blocksMap.entries()).map(([key, value]) => {
-				const shortName = `${value.category}/${value.name}`;
+			options: Array.from(blocksMap.entries())
+				.filter(([_, value]) => value.list)
+				.map(([key, value]) => {
+					const shortName = `${value.category}/${value.name}`;
 
-				const blockExists =
-					installedBlocks.findIndex((block) => block === shortName) !== -1;
+					const blockExists =
+						installedBlocks.findIndex((block) => block === shortName) !== -1;
 
-				let label: string;
+					let label: string;
 
-				// show the full repo if there are multiple repos
-				if (repoPaths.length > 1) {
-					label = `${color.cyan(
-						`${value.sourceRepo.name}/${value.sourceRepo.owner}/${value.sourceRepo.repoName}/${value.category}`
-					)}/${value.name}`;
-				} else {
-					label = `${color.cyan(value.category)}/${value.name}`;
-				}
+					// show the full repo if there are multiple repos
+					if (repoPaths.length > 1) {
+						label = `${color.cyan(
+							`${value.sourceRepo.name}/${value.sourceRepo.owner}/${value.sourceRepo.repoName}/${value.category}`
+						)}/${value.name}`;
+					} else {
+						label = `${color.cyan(value.category)}/${value.name}`;
+					}
 
-				return {
-					label: blockExists ? color.gray(label) : label,
-					value: key,
-					// show hint for `Installed` if block is already installed
-					hint: blockExists ? 'Installed' : undefined,
-				};
-			}),
+					return {
+						label: blockExists ? color.gray(label) : label,
+						value: key,
+						// show hint for `Installed` if block is already installed
+						hint: blockExists ? 'Installed' : undefined,
+					};
+				}),
 			required: true,
 		});
 

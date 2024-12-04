@@ -3,7 +3,7 @@ import { execa } from 'execa';
 import { type Agent, type ResolvedCommand, resolveCommand } from 'package-manager-detector';
 import path from 'pathe';
 import { Err, Ok, type Result } from './blocks/types/result';
-import type { Config } from './config';
+import type { ProjectConfig } from './config';
 
 export type Options = {
 	pm: Agent;
@@ -52,7 +52,7 @@ const templatePattern = /\{\{([^\/]+)\/([^\}]+)\}\}/g;
 
 export type ResolveOptions = {
 	template: string;
-	config: Config;
+	config: ProjectConfig;
 	destPath: string;
 	cwd: string;
 };
