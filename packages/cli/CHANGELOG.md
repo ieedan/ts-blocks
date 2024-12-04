@@ -1,5 +1,11 @@
 # jsrepo
 
+## 1.16.2
+
+### Patch Changes
+
+- 3728010: When adding a new repo with `init` and configuring paths, paths that already had a value will default to that value.
+
 ## 1.16.1
 
 ### Patch Changes
