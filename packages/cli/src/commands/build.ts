@@ -35,11 +35,11 @@ const build = new Command('build')
 		'Include only the categories with these names.'
 	)
 	.option(
-		'--do-not-list-blocks',
+		'--do-not-list-blocks [blockNames...]',
 		"The names of blocks that shouldn't be listed when the user runs add."
 	)
 	.option(
-		'--do-not-list-categories',
+		'--do-not-list-categories [categoryNames...]',
 		"The names of categories that shouldn't be listed when the user runs add."
 	)
 	.option('--exclude-deps [deps...]', 'Dependencies that should not be added.')
