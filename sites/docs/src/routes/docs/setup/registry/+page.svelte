@@ -67,33 +67,33 @@
 <Code
 	showLines={false}
 	showCopy={false}
-	code={`┌   jsrepo  v1.4.2 
+	code={`┌   jsrepo  v1.15.1 
 │
 ◇  Where are your blocks located?
-│  ./blocks
+│  ./src
 │
-◇  Add jsrepo as a dev dependency?
+◇  Add another blocks directory?
+│  No
+│
+◇  Create a \`jsrepo-build-config.json\` file?
 │  Yes
 │
-◇  Added \`build\` to scripts in package.json
+◇  Added \`build:registry\` to scripts in package.json
 │
-◇  Install dependencies?
-│  Yes
+◇  Created \`jsrepo-build-config.json\`
 │
-◇  Installed jsrepo.
-│
-├  Next Steps ───────────────────────────────────────┐
-│                                                    │
-│  1. Add blocks to \`./blocks\`.                      │
-│  2. Run \`npm run build\` to build the registry.     │
-│                                                    │
-├────────────────────────────────────────────────────┘
+├  Next Steps ────────────────────────────────────────────────┐
+│                                                             │
+│  1. Add categories to \`./src\`.                              │
+│  2. Run \`pnpm run build:registry\` to build the registry.    │
+│                                                             │
+├─────────────────────────────────────────────────────────────┘
 │
 └  All done!`}
 />
-<p>This sets up a build script for you based on your answers to the prompts.</p>
-<p>However you can also just run it manually like so:</p>
-<Snippet command="execute" args={['jsrepo', 'build', '--dirs', '<folder>']} />
+<p>This sets your registry for you based on your answers to the prompts.</p>
+<p>Once your done you can execute the build script:</p>
+<Snippet command="run" args={['build:registry']} />
 <p>
 	After running <CodeSpan>build</CodeSpan> the output <CodeSpan>jsrepo-manifest.json</CodeSpan> should
 	look something like this.
