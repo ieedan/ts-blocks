@@ -1,5 +1,5 @@
 {
-	"$schema": "https://unpkg.com/jsrepo@1.15.0/schema.json",
+	"$schema": "https://unpkg.com/jsrepo@1.16.0/schemas/project-config.json",
 	"repos": ["github/ieedan/std"],
 	"includeTests": false,
 	"watermark": true,

@@ -135,7 +135,11 @@ const _initProject = async (options: Options) => {
 		process.exit(0);
 	}
 
-	paths = { '*': defaultPathResult };
+	if (initialConfig.isOk()) {
+		paths = { ...initialConfig.unwrap().paths, '*': defaultPathResult };
+	} else {
+		paths = { '*': defaultPathResult }
+	}
 
 	if (!options.repos) {
 		options.repos = initialConfig.isOk() ? initialConfig.unwrap().repos : [];
