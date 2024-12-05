@@ -3,9 +3,9 @@ import color from 'chalk';
 import { program } from 'commander';
 import path from 'pathe';
 import * as v from 'valibot';
-import * as ascii from './ascii';
-import type { RegistryConfig } from './config';
-import { languages } from './language-support';
+import * as ascii from '../ascii';
+import type { RegistryConfig } from '../config';
+import { languages } from '../language-support';
 
 export const blockSchema = v.object({
 	name: v.string(),

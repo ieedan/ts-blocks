@@ -10,6 +10,7 @@ import { type Category, buildBlocksDirectory } from '../utils/build';
 import { type RegistryConfig, getRegistryConfig } from '../utils/config';
 import { OUTPUT_FILE } from '../utils/context';
 import { intro } from '../utils/prompts';
+import { rules, runRules } from '../utils/build/check';
 
 const schema = v.object({
 	dirs: v.optional(v.array(v.string())),
@@ -139,66 +140,29 @@ const _build = async (options: Options) => {
 
 	loading.start('Checking manifest');
 
-	const warnings: string[] = [];
-
-	for (const category of categories) {
-		for (const block of category.blocks) {
-			// lookup local deps
-			for (const dep of block.localDependencies) {
-				const [depCategoryName, depBlockName] = dep.split('/');
-
-				const depCategory = categories.find(
-					(cat) => cat.name.trim() === depCategoryName.trim()
-				);
-
-				const invalidDependencyError = () => {
-					const error = `depends on ${color.bold(dep)} which doesn't exist!`;
-
-					if (config.errorOnWarn) {
-						warnings.push(
-							color.red(`${color.bold(`${category.name}/${block.name}`)} ${error}`)
-						);
-					} else {
-						warnings.push(
-							`${ascii.VERTICAL_LINE}  ${ascii.WARN} ${color.bold(`${category.name}/${block.name}`)} ${error}`
-						);
-					}
-				};
-
-				if (!depCategory) {
-					invalidDependencyError();
-					continue;
-				}
-
-				if (depCategory.blocks.find((b) => b.name === depBlockName) === undefined) {
-					invalidDependencyError();
-				}
-			}
-
-			for (const dep of [...block.dependencies, ...block.devDependencies]) {
-				if (!dep.includes('@')) {
-					const error = `You haven't installed ${color.bold(dep)} as a dependency so your users could get any version of it when they install your block!`;
-
-					if (config.errorOnWarn) {
-						warnings.push(color.red(error));
-					} else {
-						warnings.push(`${ascii.VERTICAL_LINE}  ${ascii.WARN} ${error}`);
-					}
-				}
-			}
-		}
-	}
+	const { warnings, errors } = runRules(categories);
 
 	loading.stop('Completed checking manifest.');
 
-	if (warnings.length > 0) {
-		for (const warning of warnings) {
-			console.log(warning);
+	// add gap for errors
+	if (warnings.length > 0 || errors.length > 0) {
+		console.log(ascii.VERTICAL_LINE);
+	}
+
+	for (const warning of warnings) {
+		console.log(warning);
+	}
+
+	if (errors.length > 0) {
+		for (const error of errors) {
+			console.log(error);
 		}
 
-		if (config.errorOnWarn) {
-			program.error('Had warnings while checking manifest.');
-		}
+		program.error(
+			color.red(
+				`Completed checking manifest with ${color.bold(`${errors.length} error(s)`)} and ${color.bold(`${warnings.length} warning(s)`)}`
+			)
+		);
 	}
 
 	if (config.output) {

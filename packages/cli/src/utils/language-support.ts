@@ -588,7 +588,7 @@ const resolveRemoteDeps = (
 
 			if (parsed.isErr()) {
 				console.warn(
-					`${ascii.WARN} Skipped adding import \`${color.cyan(dep)}\`. Reason: Couldn't parse package name`
+					`${ascii.VERTICAL_LINE}  ${ascii.WARN} Skipped adding import \`${color.cyan(dep)}\`. Reason: Couldn't parse package name`
 				);
 				continue;
 			}
@@ -597,7 +597,7 @@ const resolveRemoteDeps = (
 
 			if (!validatePackageName(depInfo.name).validForNewPackages) {
 				console.warn(
-					`${ascii.WARN} Skipped adding import \`${color.cyan(dep)}\`. Reason: Not a valid package name`
+					`${ascii.VERTICAL_LINE}  ${ascii.WARN} Skipped adding import \`${color.cyan(dep)}\`. Reason: Not a valid package name`
 				);
 				continue;
 			}
