@@ -60,7 +60,7 @@
 					"enum": ["error", "warn", "off"],
 					"default": "warn"
 				},
-				"require-dependency-exists": {
+				"require-local-dependency-exists": {
 					"description": "Require all local dependencies to exist.",
 					"type": "string",
 					"enum": ["error", "warn", "off"],
@@ -87,7 +87,7 @@
 			"default": {
 				"no-category-index-file-dependency": "warn",
 				"no-unpinned-dependency": "warn",
-				"require-dependency-exists": "error",
+				"require-local-dependency-exists": "error",
 				"max-local-dependencies": ["warn", 10]
 			}
 		}

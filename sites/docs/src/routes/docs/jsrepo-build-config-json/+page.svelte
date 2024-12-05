@@ -121,7 +121,7 @@
     "rules": {
 		"no-category-index-file-dependency": "warn",
 		"no-unpinned-dependency": "warn",
-		"require-dependency-exists": "error",
+		"require-local-dependency-exists": "error",
 		"max-local-dependencies": ["warn", 10]
 	}
 }`}
@@ -135,7 +135,7 @@
 	<p>Require all dependencies to have a pinned version.</p>
 </div>
 <div class="flex flex-col gap-2">
-	<CodeSpan class="w-fit">require-dependency-exists</CodeSpan>
+	<CodeSpan class="w-fit">require-local-dependency-exists</CodeSpan>
 	<p>Require all local dependencies to exist.</p>
 </div>
 <div class="flex flex-col gap-2">

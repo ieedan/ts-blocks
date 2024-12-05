@@ -32,7 +32,7 @@ const rules = {
 			return errors.length > 0 ? errors : undefined;
 		},
 	} satisfies Rule,
-	'require-dependency-exists': {
+	'require-local-dependency-exists': {
 		description: 'Require all local dependencies to exist.',
 		check: (block, { categories }) => {
 			const errors: string[] = [];
@@ -112,7 +112,7 @@ const rules = {
 const ruleKeySchema = v.union([
 	v.literal('no-category-index-file-dependency'),
 	v.literal('no-unpinned-dependency'),
-	v.literal('require-dependency-exists'),
+	v.literal('require-local-dependency-exists'),
 	v.literal('max-local-dependencies'),
 ]);
 
@@ -134,7 +134,7 @@ export type RuleConfig = v.InferInput<typeof ruleConfigSchema>;
 const DEFAULT_CONFIG: RuleConfig = {
 	'no-category-index-file-dependency': 'warn',
 	'no-unpinned-dependency': 'warn',
-	'require-dependency-exists': 'error',
+	'require-local-dependency-exists': 'error',
 	'max-local-dependencies': ['warn', 10],
 } as const;
 
