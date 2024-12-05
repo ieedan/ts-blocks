@@ -345,7 +345,7 @@ const _initRegistry = async (options: Options) => {
 
 	if (!config) {
 		config = {
-			$schema: `https://unpkg.com/jsrepo@${context.package.version}/schemas/project-config.json`,
+			$schema: '',
 			dirs: [],
 			doNotListBlocks: [],
 			doNotListCategories: [],
@@ -354,6 +354,8 @@ const _initRegistry = async (options: Options) => {
 			includeCategories: [],
 		};
 	}
+
+	config.$schema = `https://unpkg.com/jsrepo@${context.package.version}/schemas/registry-config.json`;
 
 	while (true) {
 		if (config.dirs.length > 0) {
