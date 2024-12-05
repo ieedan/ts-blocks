@@ -19,7 +19,8 @@ export type InstallingBlock = {
 const resolveTree = async (
 	blockSpecifiers: string[],
 	blocksMap: Map<string, RemoteBlock>,
-	repoPaths: gitProviders.ResolvedRepo[]
+	repoPaths: gitProviders.ResolvedRepo[],
+	installed: Map<string, InstallingBlock> = new Map()
 ): Promise<Result<InstallingBlock[], string>> => {
 	const blocks = new Map<string, InstallingBlock>();
 
@@ -69,9 +70,10 @@ const resolveTree = async (
 
 		if (block.localDependencies && block.localDependencies.length > 0) {
 			const subDeps = await resolveTree(
-				block.localDependencies.filter((dep) => !blocks.has(dep)),
+				block.localDependencies.filter((dep) => !blocks.has(dep) && !installed.has(dep)),
 				blocksMap,
-				repoPaths
+				repoPaths,
+				blocks
 			);
 
 			if (subDeps.isErr()) return Err(subDeps.unwrapErr());

@@ -105,6 +105,8 @@ const _update = async (blockNames: string[], options: Options) => {
 
 	verbose(`Resolving ${color.cyan(repoPaths.join(', '))}`);
 
+	if (!options.verbose) loading.start(`Fetching blocks from ${color.cyan(repoPaths.join(', '))}`);
+
 	const resolvedRepos: gitProviders.ResolvedRepo[] = (
 		await gitProviders.resolvePaths(...repoPaths)
 	).match(
@@ -118,8 +120,6 @@ const _update = async (blockNames: string[], options: Options) => {
 	verbose(`Resolved ${color.cyan(repoPaths.join(', '))}`);
 
 	verbose(`Fetching blocks from ${color.cyan(repoPaths.join(', '))}`);
-
-	if (!options.verbose) loading.start(`Fetching blocks from ${color.cyan(repoPaths.join(', '))}`);
 
 	const blocksMap: Map<string, RemoteBlock> = (
 		await gitProviders.fetchBlocks(...resolvedRepos)
