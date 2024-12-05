@@ -1,5 +1,11 @@
 # jsrepo
 
+## 1.17.1
+
+### Patch Changes
+
+- e031016: Ensure user provides a `dirs` value in registry init.
+
 ## 1.17.0
 
 ### Minor Changes
