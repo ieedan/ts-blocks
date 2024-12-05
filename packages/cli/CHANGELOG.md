@@ -1,5 +1,17 @@
 # jsrepo
 
+## 1.17.4
+
+### Patch Changes
+
+- 5dc8946: Prevent crashing because of a circular dependency.
+
+## 1.17.3
+
+### Patch Changes
+
+- 1e26a7a: Add `no-circular-dependency` rule to catch circular dependencies early on.
+
 ## 1.17.2
 
 ### Patch Changes

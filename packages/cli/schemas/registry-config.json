@@ -82,13 +82,20 @@
 						}
 					],
 					"default": ["warn", 10]
+				},
+				"no-circular-dependency": {
+					"description": "Disallow circular dependencies.",
+					"type": "string",
+					"enum": ["error", "warn", "off"],
+					"default": "error"
 				}
 			},
 			"default": {
 				"no-category-index-file-dependency": "warn",
 				"no-unpinned-dependency": "warn",
 				"require-local-dependency-exists": "error",
-				"max-local-dependencies": ["warn", 10]
+				"max-local-dependencies": ["warn", 10],
+				"no-circular-dependency": "error"
 			}
 		}
 	},

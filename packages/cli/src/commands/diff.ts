@@ -75,6 +75,8 @@ const _diff = async (options: Options) => {
 		}
 	}
 
+	loading.start(`Fetching blocks from ${color.cyan(repoPaths.join(', '))}`);
+
 	const resolvedRepos: gitProviders.ResolvedRepo[] = (
 		await gitProviders.resolvePaths(...repoPaths)
 	).match(
@@ -84,8 +86,6 @@ const _diff = async (options: Options) => {
 			program.error(color.red(message));
 		}
 	);
-
-	loading.start(`Fetching blocks from ${color.cyan(repoPaths.join(', '))}`);
 
 	const blocksMap: Map<string, RemoteBlock> = (
 		await gitProviders.fetchBlocks(...resolvedRepos)
