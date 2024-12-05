@@ -122,7 +122,8 @@
 		"no-category-index-file-dependency": "warn",
 		"no-unpinned-dependency": "warn",
 		"require-local-dependency-exists": "error",
-		"max-local-dependencies": ["warn", 10]
+		"max-local-dependencies": ["warn", 10],
+		"no-circular-dependency": "error"
 	}
 }`}
 />
@@ -141,4 +142,8 @@
 <div class="flex flex-col gap-2">
 	<CodeSpan class="w-fit">max-local-dependencies</CodeSpan>
 	<p>Enforces a limit on the amount of local dependencies a block can have.</p>
+</div>
+<div class="flex flex-col gap-2">
+	<CodeSpan class="w-fit">no-circular-dependency</CodeSpan>
+	<p>Disallow circular dependencies.</p>
 </div>
