@@ -107,6 +107,50 @@ const rules = {
 			return errors.length > 0 ? errors : undefined;
 		},
 	} satisfies Rule,
+	'no-circular-dependency': {
+		description: 'Disallow circular dependencies.',
+		check: (block, { categories }) => {
+			const errors: string[] = [];
+
+			const searchForDep = (
+				search: string,
+				block: Block,
+				chain: string[]
+			): string[] | undefined => {
+				const newChain = [...chain, `${block.category}/${block.name}`];
+
+				for (const dep of block.localDependencies) {
+					if (dep === search) return newChain;
+
+					const [categoryName, blockName] = dep.split('/');
+
+					const depBlock = categories
+						.find((cat) => cat.name === categoryName)
+						?.blocks.find((b) => b.name === blockName);
+
+					if (!depBlock) continue;
+
+					const found = searchForDep(search, depBlock, newChain);
+
+					if (found) return [...found, search];
+				}
+
+				return undefined;
+			};
+
+			const specifier = `${block.category}/${block.name}`;
+
+			const chain = searchForDep(specifier, block, []);
+
+			if (chain) {
+				errors.push(
+					`There is a circular dependency in ${color.bold(specifier)}: ${color.bold(chain.join(' -> '))}`
+				);
+			}
+
+			return errors.length > 0 ? errors : undefined;
+		},
+	} satisfies Rule,
 } as const;
 
 const ruleKeySchema = v.union([
@@ -114,6 +158,7 @@ const ruleKeySchema = v.union([
 	v.literal('no-unpinned-dependency'),
 	v.literal('require-local-dependency-exists'),
 	v.literal('max-local-dependencies'),
+	v.literal('no-circular-dependency'),
 ]);
 
 export type RuleKey = v.InferInput<typeof ruleKeySchema>;
@@ -136,6 +181,7 @@ const DEFAULT_CONFIG: RuleConfig = {
 	'no-unpinned-dependency': 'warn',
 	'require-local-dependency-exists': 'error',
 	'max-local-dependencies': ['warn', 10],
+	'no-circular-dependency': 'error',
 } as const;
 
 const runRules = (
