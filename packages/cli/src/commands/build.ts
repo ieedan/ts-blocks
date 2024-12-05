@@ -7,7 +7,7 @@ import * as v from 'valibot';
 import { context } from '..';
 import * as ascii from '../utils/ascii';
 import { type Category, buildBlocksDirectory } from '../utils/build';
-import { runRules } from '../utils/build/check';
+import { DEFAULT_CONFIG, runRules } from '../utils/build/check';
 import { type RegistryConfig, getRegistryConfig } from '../utils/config';
 import { OUTPUT_FILE } from '../utils/context';
 import { intro } from '../utils/prompts';
@@ -86,6 +86,8 @@ const _build = async (options: Options) => {
 			if (options.includeBlocks) mergedVal.includeBlocks = options.includeBlocks;
 			if (options.includeCategories) mergedVal.includeCategories = options.includeCategories;
 			if (options.excludeDeps) mergedVal.excludeDeps = options.excludeDeps;
+
+			mergedVal.rules = { ...DEFAULT_CONFIG, ...mergedVal.rules };
 
 			return mergedVal;
 		},
