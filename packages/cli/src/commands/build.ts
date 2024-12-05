@@ -7,6 +7,7 @@ import * as v from 'valibot';
 import { context } from '..';
 import * as ascii from '../utils/ascii';
 import { type Category, buildBlocksDirectory } from '../utils/build';
+import { DEFAULT_CONFIG, runRules } from '../utils/build/check';
 import { type RegistryConfig, getRegistryConfig } from '../utils/config';
 import { OUTPUT_FILE } from '../utils/context';
 import { intro } from '../utils/prompts';
@@ -19,7 +20,6 @@ const schema = v.object({
 	doNotListBlocks: v.optional(v.array(v.string())),
 	doNotListCategories: v.optional(v.array(v.string())),
 	output: v.boolean(),
-	errorOnWarn: v.boolean(),
 	verbose: v.boolean(),
 	cwd: v.string(),
 });
@@ -44,11 +44,6 @@ const build = new Command('build')
 	)
 	.option('--exclude-deps [deps...]', 'Dependencies that should not be added.')
 	.option('--no-output', `Do not output a \`${OUTPUT_FILE}\` file.`)
-	.option(
-		'--error-on-warn',
-		'If there is a warning throw an error and do not allow build to complete.',
-		false
-	)
 	.option('--verbose', 'Include debug logs.', false)
 	.option('--cwd <path>', 'The current working directory.', process.cwd())
 	.action(async (opts) => {
@@ -74,11 +69,9 @@ const _build = async (options: Options) => {
 					dirs: options.dirs ?? [],
 					doNotListBlocks: options.doNotListBlocks ?? [],
 					doNotListCategories: options.doNotListCategories ?? [],
-					errorOnWarn: options.errorOnWarn,
 					excludeDeps: options.excludeDeps ?? [],
 					includeBlocks: options.includeBlocks ?? [],
 					includeCategories: options.includeCategories ?? [],
-					output: options.output,
 				} satisfies RegistryConfig;
 			}
 
@@ -94,8 +87,7 @@ const _build = async (options: Options) => {
 			if (options.includeCategories) mergedVal.includeCategories = options.includeCategories;
 			if (options.excludeDeps) mergedVal.excludeDeps = options.excludeDeps;
 
-			mergedVal.errorOnWarn = options.errorOnWarn;
-			mergedVal.output = options.output;
+			mergedVal.rules = { ...DEFAULT_CONFIG, ...mergedVal.rules };
 
 			return mergedVal;
 		},
@@ -109,7 +101,7 @@ const _build = async (options: Options) => {
 
 		loading.start(`Building ${color.cyan(dirPath)}`);
 
-		if (config.output && fs.existsSync(outFile)) fs.rmSync(outFile);
+		if (options.output && fs.existsSync(outFile)) fs.rmSync(outFile);
 
 		const builtCategories = buildBlocksDirectory(dirPath, { cwd: options.cwd, config });
 
@@ -117,17 +109,9 @@ const _build = async (options: Options) => {
 			if (categories.find((cat) => cat.name === category.name) !== undefined) {
 				const error = 'a category with the same name already exists!';
 
-				if (config.errorOnWarn) {
-					program.error(
-						color.red(
-							`\`${color.bold(`${dir}/${category.name}`)}\` could not be added because ${error}`
-						)
-					);
-				} else {
-					console.warn(
-						`${ascii.VERTICAL_LINE}  ${ascii.WARN} Skipped adding \`${color.cyan(`${dir}/${category.name}`)}\` because ${error}`
-					);
-				}
+				console.warn(
+					`${ascii.VERTICAL_LINE}  ${ascii.WARN} Skipped adding \`${color.cyan(`${dir}/${category.name}`)}\` because ${error}`
+				);
 				continue;
 			}
 
@@ -139,69 +123,32 @@ const _build = async (options: Options) => {
 
 	loading.start('Checking manifest');
 
-	const warnings: string[] = [];
-
-	for (const category of categories) {
-		for (const block of category.blocks) {
-			// lookup local deps
-			for (const dep of block.localDependencies) {
-				const [depCategoryName, depBlockName] = dep.split('/');
-
-				const depCategory = categories.find(
-					(cat) => cat.name.trim() === depCategoryName.trim()
-				);
-
-				const invalidDependencyError = () => {
-					const error = `depends on ${color.bold(dep)} which doesn't exist!`;
-
-					if (config.errorOnWarn) {
-						warnings.push(
-							color.red(`${color.bold(`${category.name}/${block.name}`)} ${error}`)
-						);
-					} else {
-						warnings.push(
-							`${ascii.VERTICAL_LINE}  ${ascii.WARN} ${color.bold(`${category.name}/${block.name}`)} ${error}`
-						);
-					}
-				};
-
-				if (!depCategory) {
-					invalidDependencyError();
-					continue;
-				}
-
-				if (depCategory.blocks.find((b) => b.name === depBlockName) === undefined) {
-					invalidDependencyError();
-				}
-			}
-
-			for (const dep of [...block.dependencies, ...block.devDependencies]) {
-				if (!dep.includes('@')) {
-					const error = `You haven't installed ${color.bold(dep)} as a dependency so your users could get any version of it when they install your block!`;
-
-					if (config.errorOnWarn) {
-						warnings.push(color.red(error));
-					} else {
-						warnings.push(`${ascii.VERTICAL_LINE}  ${ascii.WARN} ${error}`);
-					}
-				}
-			}
-		}
-	}
+	const { warnings, errors } = runRules(categories, config.rules);
 
 	loading.stop('Completed checking manifest.');
 
-	if (warnings.length > 0) {
-		for (const warning of warnings) {
-			console.log(warning);
-		}
-
-		if (config.errorOnWarn) {
-			program.error('Had warnings while checking manifest.');
-		}
+	// add gap for errors
+	if (warnings.length > 0 || errors.length > 0) {
+		console.log(ascii.VERTICAL_LINE);
 	}
 
-	if (config.output) {
+	for (const warning of warnings) {
+		console.log(warning);
+	}
+
+	if (errors.length > 0) {
+		for (const error of errors) {
+			console.log(error);
+		}
+
+		program.error(
+			color.red(
+				`Completed checking manifest with ${color.bold(`${errors.length} error(s)`)} and ${color.bold(`${warnings.length} warning(s)`)}`
+			)
+		);
+	}
+
+	if (options.output) {
 		loading.start(`Writing output to \`${color.cyan(outFile)}\``);
 
 		fs.writeFileSync(outFile, JSON.stringify(categories, null, '\t'));

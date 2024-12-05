@@ -44,16 +44,53 @@
 				"type": "string"
 			}
 		},
-		"output": {
-			"description": "Should the build output a manifest file.",
-			"type": "boolean",
-			"default": true
-		},
-		"errorOnWarn": {
-			"description": "Should the CLI error on warnings.",
-			"type": "boolean",
-			"default": false
+		"rules": {
+			"description": "Configure rules when checking manifest after build.",
+			"type": "object",
+			"properties": {
+				"no-category-index-file-dependency": {
+					"description": "Disallow depending on the index file of a category.",
+					"type": "string",
+					"enum": ["error", "warn", "off"],
+					"default": "warn"
+				},
+				"no-unpinned-dependency": {
+					"description": "Require all dependencies to have a pinned version.",
+					"type": "string",
+					"enum": ["error", "warn", "off"],
+					"default": "warn"
+				},
+				"require-local-dependency-exists": {
+					"description": "Require all local dependencies to exist.",
+					"type": "string",
+					"enum": ["error", "warn", "off"],
+					"default": "error"
+				},
+				"max-local-dependencies": {
+					"description": "Enforces a limit on the amount of local dependencies a block can have.",
+					"type": "array",
+					"items": [
+						{
+							"type": "string",
+							"enum": ["error", "warn", "off"],
+							"default": "warn"
+						},
+						{
+							"description": "Max local dependencies",
+							"type": "number",
+							"default": 10
+						}
+					],
+					"default": ["warn", 10]
+				}
+			},
+			"default": {
+				"no-category-index-file-dependency": "warn",
+				"no-unpinned-dependency": "warn",
+				"require-local-dependency-exists": "error",
+				"max-local-dependencies": ["warn", 10]
+			}
 		}
 	},
-	"required": ["dirs", "output", "errorOnWarn"]
+	"required": ["dirs"]
 }

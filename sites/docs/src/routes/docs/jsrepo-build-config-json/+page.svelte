@@ -109,24 +109,36 @@
     ]
 }`}
 />
-<SubHeading>errorOnWarn</SubHeading>
+<SubHeading>rules</SubHeading>
 <p>
-	<CodeSpan>errorOnWarn</CodeSpan> will cause the build command to exit early and not create a manifest
-	file if a warning is detected.
+	<CodeSpan>rules</CodeSpan> allows you to configure the rules when checking the manifest file after
+	build.
 </p>
+<p>Below are the default settings for each rule.</p>
 <Code
 	lang="json"
 	code={`{
-    "errorOnWarn": false
+    "rules": {
+		"no-category-index-file-dependency": "warn",
+		"no-unpinned-dependency": "warn",
+		"require-local-dependency-exists": "error",
+		"max-local-dependencies": ["warn", 10]
+	}
 }`}
 />
-<SubHeading>output</SubHeading>
-<p>
-	<CodeSpan>output</CodeSpan> setting output to false will prevent an output file from being created.
-</p>
-<Code
-	lang="json"
-	code={`{
-    "output": true
-}`}
-/>
+<div class="flex flex-col gap-2">
+	<CodeSpan class="w-fit">no-category-index-file-dependency</CodeSpan>
+	<p>Disallow depending on the index file of a category.</p>
+</div>
+<div class="flex flex-col gap-2">
+	<CodeSpan class="w-fit">no-unpinned-dependency</CodeSpan>
+	<p>Require all dependencies to have a pinned version.</p>
+</div>
+<div class="flex flex-col gap-2">
+	<CodeSpan class="w-fit">require-local-dependency-exists</CodeSpan>
+	<p>Require all local dependencies to exist.</p>
+</div>
+<div class="flex flex-col gap-2">
+	<CodeSpan class="w-fit">max-local-dependencies</CodeSpan>
+	<p>Enforces a limit on the amount of local dependencies a block can have.</p>
+</div>

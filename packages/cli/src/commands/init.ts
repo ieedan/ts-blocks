@@ -352,8 +352,6 @@ const _initRegistry = async (options: Options) => {
 			excludeDeps: [],
 			includeBlocks: [],
 			includeCategories: [],
-			errorOnWarn: false,
-			output: true,
 		};
 	}
 

@@ -3,9 +3,9 @@ import color from 'chalk';
 import { program } from 'commander';
 import path from 'pathe';
 import * as v from 'valibot';
-import * as ascii from './ascii';
-import type { RegistryConfig } from './config';
-import { languages } from './language-support';
+import * as ascii from '../ascii';
+import type { RegistryConfig } from '../config';
+import { languages } from '../language-support';
 
 export const blockSchema = v.object({
 	name: v.string(),
@@ -54,7 +54,6 @@ const buildBlocksDirectory = (
 			excludeDeps,
 			includeBlocks,
 			includeCategories,
-			errorOnWarn,
 			dirs,
 			doNotListBlocks,
 			doNotListCategories,
@@ -116,21 +115,11 @@ const buildBlocksDirectory = (
 				if (!lang) {
 					const error = 'files are not currently supported!';
 
-					if (errorOnWarn) {
-						program.error(
-							color.red(
-								`Couldn't add \`${color.bold(blockDir)}\` \`*${color.bold(
-									path.parse(file).ext
-								)}\` ${error}`
-							)
-						);
-					} else {
-						console.warn(
-							`${ascii.VERTICAL_LINE}  ${ascii.WARN} Skipped \`${color.bold(blockDir)}\` \`*${color.bold(
-								path.parse(file).ext
-							)}\` ${error}`
-						);
-					}
+					console.warn(
+						`${ascii.VERTICAL_LINE}  ${ascii.WARN} Skipped \`${color.bold(blockDir)}\` \`*${color.bold(
+							path.parse(file).ext
+						)}\` ${error}`
+					);
 
 					continue;
 				}
@@ -202,17 +191,9 @@ const buildBlocksDirectory = (
 					if (fs.statSync(path.join(blockDir, f)).isDirectory()) {
 						const error = 'subdirectories are not currently supported!';
 
-						if (errorOnWarn) {
-							program.error(
-								color.red(
-									`Couldn't add \`${color.bold(path.join(blockDir, f))}\` ${error}`
-								)
-							);
-						} else {
-							console.warn(
-								`${ascii.VERTICAL_LINE}  ${ascii.WARN} Skipped \`${color.bold(path.join(blockDir, f))}\` ${error}`
-							);
-						}
+						console.warn(
+							`${ascii.VERTICAL_LINE}  ${ascii.WARN} Skipped \`${color.bold(path.join(blockDir, f))}\` ${error}`
+						);
 						continue;
 					}
 
@@ -221,21 +202,11 @@ const buildBlocksDirectory = (
 					if (!lang) {
 						const error = 'files are not currently supported!';
 
-						if (errorOnWarn) {
-							program.error(
-								color.red(
-									`Couldn't add \`${color.bold(path.join(blockDir, f))}\` \`*${color.bold(
-										path.parse(f).ext
-									)}\` ${error}`
-								)
-							);
-						} else {
-							console.warn(
-								`${ascii.VERTICAL_LINE}  ${ascii.WARN} Skipped \`${path.join(blockDir, f)}\` \`*${color.bold(
-									path.parse(f).ext
-								)}\` ${error}`
-							);
-						}
+						console.warn(
+							`${ascii.VERTICAL_LINE}  ${ascii.WARN} Skipped \`${path.join(blockDir, f)}\` \`*${color.bold(
+								path.parse(f).ext
+							)}\` ${error}`
+						);
 						continue;
 					}
 
