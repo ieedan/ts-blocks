@@ -1,5 +1,11 @@
 # jsrepo
 
+## 1.17.2
+
+### Patch Changes
+
+- ac88b35: Fix incorrect schema being applied during registry `init`.
+
 ## 1.17.1
 
 ### Patch Changes
