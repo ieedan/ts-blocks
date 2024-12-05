@@ -1,5 +1,11 @@
 # jsrepo
 
+## 1.17.5
+
+### Patch Changes
+
+- 92a8599: Add formatter prompt to zero-config adds.
+
 ## 1.17.4
 
 ### Patch Changes
