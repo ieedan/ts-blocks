@@ -1,5 +1,14 @@
 import fs from 'node:fs';
-import { cancel, confirm, isCancel, multiselect, outro, spinner, text } from '@clack/prompts';
+import {
+	cancel,
+	confirm,
+	isCancel,
+	multiselect,
+	outro,
+	select,
+	spinner,
+	text,
+} from '@clack/prompts';
 import color from 'chalk';
 import { Command, program } from 'commander';
 import { resolveCommand } from 'package-manager-detector/commands';
@@ -10,21 +19,14 @@ import { context } from '..';
 import * as ascii from '../utils/ascii';
 import { getInstalled, resolveTree } from '../utils/blocks';
 import { type Block, isTestFile } from '../utils/build';
-import { type ProjectConfig, getProjectConfig, resolvePaths } from '../utils/config';
+import { Formatter, type ProjectConfig, getProjectConfig, resolvePaths } from '../utils/config';
 import { installDependencies } from '../utils/dependencies';
 import { transformRemoteContent } from '../utils/files';
 import { loadFormatterConfig } from '../utils/format';
 import { getWatermark } from '../utils/get-watermark';
 import * as gitProviders from '../utils/git-providers';
 import { returnShouldInstall } from '../utils/package';
-import {
-	type ConcurrentTask,
-	type Task,
-	intro,
-	nextSteps,
-	runTasks,
-	runTasksConcurrently,
-} from '../utils/prompts';
+import { type ConcurrentTask, intro, nextSteps, runTasksConcurrently } from '../utils/prompts';
 
 const schema = v.object({
 	repo: v.optional(v.string()),
@@ -309,6 +311,34 @@ const _add = async (blockNames: string[], options: Options) => {
 			}
 
 			config.watermark = addWatermark;
+		}
+
+		let defaultFormatter = 'none';
+
+		if (fs.existsSync(path.join(options.cwd, '.prettierrc'))) {
+			defaultFormatter = 'prettier';
+		}
+
+		if (fs.existsSync(path.join(options.cwd, 'biome.json'))) {
+			defaultFormatter = 'biome';
+		}
+
+		const response = await select({
+			message: 'What formatter would you like to use?',
+			options: ['Prettier', 'Biome', 'None'].map((val) => ({
+				value: val.toLowerCase(),
+				label: val,
+			})),
+			initialValue: defaultFormatter,
+		});
+
+		if (isCancel(response)) {
+			cancel('Canceled!');
+			process.exit(0);
+		}
+
+		if (response !== 'none') {
+			config.formatter = response as Formatter;
 		}
 	}
 
