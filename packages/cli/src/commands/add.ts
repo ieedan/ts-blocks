@@ -19,7 +19,12 @@ import { context } from '..';
 import * as ascii from '../utils/ascii';
 import { getInstalled, resolveTree } from '../utils/blocks';
 import { type Block, isTestFile } from '../utils/build';
-import { Formatter, type ProjectConfig, getProjectConfig, resolvePaths } from '../utils/config';
+import {
+	type Formatter,
+	type ProjectConfig,
+	getProjectConfig,
+	resolvePaths,
+} from '../utils/config';
 import { installDependencies } from '../utils/dependencies';
 import { transformRemoteContent } from '../utils/files';
 import { loadFormatterConfig } from '../utils/format';
