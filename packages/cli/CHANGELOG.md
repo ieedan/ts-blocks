@@ -1,5 +1,12 @@
 # jsrepo
 
+## 1.17.0
+
+### Minor Changes
+
+- 12e7b8b: Remove `output` and `errorOnWarn` keys from `jsrepo-build-config.json` as they are both useless now.
+- 12e7b8b: Add `rules` key to `jsrepo-build-config.json` to allow you to configure rules when checking the manifest after build.
+
 ## 1.16.6
 
 ### Patch Changes
