@@ -1,9 +1,11 @@
-import type { Block, Category } from '.';
 import color from 'chalk';
+import * as v from 'valibot';
+import type { Block, Category } from '.';
 import * as ascii from '../ascii';
-import { program } from 'commander';
 
-export type RuleLevel = 'off' | 'warn' | 'error';
+const ruleLevelSchema = v.union([v.literal('off'), v.literal('warn'), v.literal('error')]);
+
+export type RuleLevel = v.InferInput<typeof ruleLevelSchema>;
 
 export type CheckOptions = {
 	categories: Category[];
@@ -107,12 +109,27 @@ const rules = {
 	} satisfies Rule,
 } as const;
 
-export type RuleKey = keyof typeof rules;
+const ruleKeySchema = v.union([
+	v.literal('no-category-index-file-dependency'),
+	v.literal('no-unpinned-dependency'),
+	v.literal('require-dependency-exists'),
+	v.literal('max-local-dependencies'),
+]);
 
-export type RuleConfig = Record<
-	keyof typeof rules,
-	RuleLevel | [RuleLevel, ...(number | string)[]]
->;
+export type RuleKey = v.InferInput<typeof ruleKeySchema>;
+
+const ruleConfigSchema = v.record(
+	ruleKeySchema,
+	v.union([
+		ruleLevelSchema,
+		v.tupleWithRest(
+			[ruleLevelSchema, v.union([v.string(), v.number()])],
+			v.union([v.string(), v.number()])
+		),
+	])
+);
+
+export type RuleConfig = v.InferInput<typeof ruleConfigSchema>;
 
 const DEFAULT_CONFIG: RuleConfig = {
 	'no-category-index-file-dependency': 'warn',
@@ -131,7 +148,7 @@ const runRules = (
 	for (const category of categories) {
 		for (const block of category.blocks) {
 			for (const [name, rule] of Object.entries(rules)) {
-				const conf = config[name as RuleKey];
+				const conf = config[name as RuleKey]!;
 
 				let level: RuleLevel;
 				const options: (string | number)[] = [];
@@ -170,4 +187,4 @@ const runRules = (
 	return { warnings, errors };
 };
 
-export { rules, runRules, DEFAULT_CONFIG };
+export { rules, runRules, DEFAULT_CONFIG, ruleLevelSchema, ruleConfigSchema, ruleKeySchema };

@@ -7,10 +7,10 @@ import * as v from 'valibot';
 import { context } from '..';
 import * as ascii from '../utils/ascii';
 import { type Category, buildBlocksDirectory } from '../utils/build';
+import { runRules } from '../utils/build/check';
 import { type RegistryConfig, getRegistryConfig } from '../utils/config';
 import { OUTPUT_FILE } from '../utils/context';
 import { intro } from '../utils/prompts';
-import { rules, runRules } from '../utils/build/check';
 
 const schema = v.object({
 	dirs: v.optional(v.array(v.string())),
@@ -20,7 +20,6 @@ const schema = v.object({
 	doNotListBlocks: v.optional(v.array(v.string())),
 	doNotListCategories: v.optional(v.array(v.string())),
 	output: v.boolean(),
-	errorOnWarn: v.boolean(),
 	verbose: v.boolean(),
 	cwd: v.string(),
 });
@@ -45,11 +44,6 @@ const build = new Command('build')
 	)
 	.option('--exclude-deps [deps...]', 'Dependencies that should not be added.')
 	.option('--no-output', `Do not output a \`${OUTPUT_FILE}\` file.`)
-	.option(
-		'--error-on-warn',
-		'If there is a warning throw an error and do not allow build to complete.',
-		false
-	)
 	.option('--verbose', 'Include debug logs.', false)
 	.option('--cwd <path>', 'The current working directory.', process.cwd())
 	.action(async (opts) => {
@@ -75,11 +69,9 @@ const _build = async (options: Options) => {
 					dirs: options.dirs ?? [],
 					doNotListBlocks: options.doNotListBlocks ?? [],
 					doNotListCategories: options.doNotListCategories ?? [],
-					errorOnWarn: options.errorOnWarn,
 					excludeDeps: options.excludeDeps ?? [],
 					includeBlocks: options.includeBlocks ?? [],
 					includeCategories: options.includeCategories ?? [],
-					output: options.output,
 				} satisfies RegistryConfig;
 			}
 
@@ -95,9 +87,6 @@ const _build = async (options: Options) => {
 			if (options.includeCategories) mergedVal.includeCategories = options.includeCategories;
 			if (options.excludeDeps) mergedVal.excludeDeps = options.excludeDeps;
 
-			mergedVal.errorOnWarn = options.errorOnWarn;
-			mergedVal.output = options.output;
-
 			return mergedVal;
 		},
 		(err) => program.error(color.red(err))
@@ -110,7 +99,7 @@ const _build = async (options: Options) => {
 
 		loading.start(`Building ${color.cyan(dirPath)}`);
 
-		if (config.output && fs.existsSync(outFile)) fs.rmSync(outFile);
+		if (options.output && fs.existsSync(outFile)) fs.rmSync(outFile);
 
 		const builtCategories = buildBlocksDirectory(dirPath, { cwd: options.cwd, config });
 
@@ -118,17 +107,9 @@ const _build = async (options: Options) => {
 			if (categories.find((cat) => cat.name === category.name) !== undefined) {
 				const error = 'a category with the same name already exists!';
 
-				if (config.errorOnWarn) {
-					program.error(
-						color.red(
-							`\`${color.bold(`${dir}/${category.name}`)}\` could not be added because ${error}`
-						)
-					);
-				} else {
-					console.warn(
-						`${ascii.VERTICAL_LINE}  ${ascii.WARN} Skipped adding \`${color.cyan(`${dir}/${category.name}`)}\` because ${error}`
-					);
-				}
+				console.warn(
+					`${ascii.VERTICAL_LINE}  ${ascii.WARN} Skipped adding \`${color.cyan(`${dir}/${category.name}`)}\` because ${error}`
+				);
 				continue;
 			}
 
@@ -140,7 +121,7 @@ const _build = async (options: Options) => {
 
 	loading.start('Checking manifest');
 
-	const { warnings, errors } = runRules(categories);
+	const { warnings, errors } = runRules(categories, config.rules);
 
 	loading.stop('Completed checking manifest.');
 
@@ -165,7 +146,7 @@ const _build = async (options: Options) => {
 		);
 	}
 
-	if (config.output) {
+	if (options.output) {
 		loading.start(`Writing output to \`${color.cyan(outFile)}\``);
 
 		fs.writeFileSync(outFile, JSON.stringify(categories, null, '\t'));

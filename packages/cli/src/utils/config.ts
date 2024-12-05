@@ -3,6 +3,7 @@ import { createPathsMatcher, getTsconfig } from 'get-tsconfig';
 import path from 'pathe';
 import * as v from 'valibot';
 import { Err, Ok, type Result } from './blocks/types/result';
+import { ruleConfigSchema } from './build/check';
 
 const PROJECT_CONFIG_NAME = 'jsrepo.json';
 const REGISTRY_CONFIG_NAME = 'jsrepo-build-config.json';
@@ -56,8 +57,7 @@ const registryConfigSchema = v.object({
 	doNotListBlocks: v.optional(v.array(v.string()), []),
 	doNotListCategories: v.optional(v.array(v.string()), []),
 	excludeDeps: v.optional(v.array(v.string()), []),
-	output: v.boolean(),
-	errorOnWarn: v.boolean(),
+	rules: v.optional(ruleConfigSchema),
 });
 
 const getRegistryConfig = (cwd: string): Result<RegistryConfig | null, string> => {
