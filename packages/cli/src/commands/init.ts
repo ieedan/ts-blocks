@@ -373,6 +373,11 @@ const _initRegistry = async (options: Options) => {
 		const response = await text({
 			message: 'Where are your blocks located?',
 			placeholder: './src',
+			defaultValue: './src',
+			initialValue: './src',
+			validate: (val) => {
+				if (val.trim().length === 0) return 'Please provide a value!';
+			},
 		});
 
 		if (isCancel(response)) {
