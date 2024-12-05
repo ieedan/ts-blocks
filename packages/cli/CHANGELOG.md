@@ -1,5 +1,11 @@
 # jsrepo
 
+## 1.17.4
+
+### Patch Changes
+
+- 5dc8946: Prevent crashing because of a circular dependency.
+
 ## 1.17.3
 
 ### Patch Changes
