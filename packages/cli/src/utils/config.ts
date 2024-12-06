@@ -57,6 +57,7 @@ const registryConfigSchema = v.object({
 	doNotListBlocks: v.optional(v.array(v.string()), []),
 	doNotListCategories: v.optional(v.array(v.string()), []),
 	excludeDeps: v.optional(v.array(v.string()), []),
+	preview: v.optional(v.boolean()),
 	rules: v.optional(ruleConfigSchema),
 });
 
