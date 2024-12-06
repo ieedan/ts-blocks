@@ -112,35 +112,9 @@ const rules = {
 		check: (block, { categories }) => {
 			const errors: string[] = [];
 
-			const searchForDep = (
-				search: string,
-				block: Block,
-				chain: string[]
-			): string[] | undefined => {
-				const newChain = [...chain, `${block.category}/${block.name}`];
-
-				for (const dep of block.localDependencies) {
-					if (dep === search) return newChain;
-
-					const [categoryName, blockName] = dep.split('/');
-
-					const depBlock = categories
-						.find((cat) => cat.name === categoryName)
-						?.blocks.find((b) => b.name === blockName);
-
-					if (!depBlock) continue;
-
-					const found = searchForDep(search, depBlock, newChain);
-
-					if (found) return [...found, search];
-				}
-
-				return undefined;
-			};
-
 			const specifier = `${block.category}/${block.name}`;
 
-			const chain = searchForDep(specifier, block, []);
+			const chain = searchForDep(specifier, block, categories);
 
 			if (chain) {
 				errors.push(
@@ -151,6 +125,24 @@ const rules = {
 			return errors.length > 0 ? errors : undefined;
 		},
 	} satisfies Rule,
+	'no-unused-block': {
+		description: 'Disallow unused blocks. (Not listed and not a dependency of another block)',
+		check: (block, { categories }) => {
+			if (block.list) return;
+
+			const specifier = `${block.category}/${block.name}`;
+
+			const listedBlocks = categories.flatMap((cat) => cat.blocks).filter((b) => b.list);
+
+			for (const block of listedBlocks) {
+				const chain = searchForDep(specifier, block, categories);
+
+				if (chain) return;
+			}
+
+			return [`${color.bold(specifier)} is unused and will be ${color.bold.red('removed')}`];
+		},
+	} satisfies Rule,
 } as const;
 
 const ruleKeySchema = v.union([
@@ -159,6 +151,7 @@ const ruleKeySchema = v.union([
 	v.literal('require-local-dependency-exists'),
 	v.literal('max-local-dependencies'),
 	v.literal('no-circular-dependency'),
+	v.literal('no-unused-block'),
 ]);
 
 export type RuleKey = v.InferInput<typeof ruleKeySchema>;
@@ -182,6 +175,7 @@ const DEFAULT_CONFIG: RuleConfig = {
 	'require-local-dependency-exists': 'error',
 	'max-local-dependencies': ['warn', 10],
 	'no-circular-dependency': 'error',
+	'no-unused-block': 'warn',
 } as const;
 
 const runRules = (
@@ -233,4 +227,56 @@ const runRules = (
 	return { warnings, errors };
 };
 
-export { rules, runRules, DEFAULT_CONFIG, ruleLevelSchema, ruleConfigSchema, ruleKeySchema };
+/** Searches for the local dependency tree for the provided specifier returns the path it took to find the dependency */
+const searchForDep = (
+	search: string,
+	block: Block,
+	categories: Category[],
+	chain: string[] = []
+): string[] | undefined => {
+	const newChain = [...chain, `${block.category}/${block.name}`];
+
+	for (const dep of block.localDependencies) {
+		if (dep === search) return newChain;
+
+		const [categoryName, blockName] = dep.split('/');
+
+		const depBlock = categories
+			.find((cat) => cat.name === categoryName)
+			?.blocks.find((b) => b.name === blockName);
+
+		if (!depBlock) continue;
+
+		const found = searchForDep(search, depBlock, categories, newChain);
+
+		if (found) return [...found, search];
+	}
+
+	return undefined;
+};
+
+/** Checks if the provided block is depended on anywhere */
+const isDependedOn = (specifier: string, categories: Category[]): boolean => {
+	for (const category of categories) {
+		for (const block of category.blocks) {
+			if (!block.list) continue;
+
+			const chain = searchForDep(specifier, block, categories);
+
+			if (chain) return true;
+		}
+	}
+
+	return false;
+};
+
+export {
+	rules,
+	runRules,
+	DEFAULT_CONFIG,
+	ruleLevelSchema,
+	ruleConfigSchema,
+	ruleKeySchema,
+	searchForDep,
+	isDependedOn,
+};

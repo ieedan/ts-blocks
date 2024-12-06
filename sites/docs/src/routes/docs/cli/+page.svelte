@@ -99,8 +99,8 @@ Options:
   --do-not-list-blocks [blockNames...]         The names of blocks that shouldn't be listed when the user runs add.
   --do-not-list-categories [categoryNames...]  The names of categories that shouldn't be listed when the user runs add.
   --exclude-deps [deps...]                     Dependencies that should not be added.
+  --preview                                    Display a preview of the blocks list.
   --no-output                                  Do not output a \`jsrepo-manifest.json\` file.
-  --error-on-warn                              If there is a warning throw an error and do not allow build to complete. (default: false)
   --verbose                                    Include debug logs. (default: false)
   --cwd <path>                                 The current working directory. (default: ".")
   -h, --help                                   display help for command`}

@@ -44,6 +44,11 @@
 				"type": "string"
 			}
 		},
+		"preview": {
+			"description": "Display a preview of the blocks list.",
+			"type": "boolean",
+			"default": false
+		},
 		"rules": {
 			"description": "Configure rules when checking manifest after build.",
 			"type": "object",
@@ -88,6 +93,12 @@
 					"type": "string",
 					"enum": ["error", "warn", "off"],
 					"default": "error"
+				},
+				"no-unused-block": {
+					"description": "Disallow unused blocks. (Not listed and not a dependency of another block)",
+					"type": "string",
+					"enum": ["error", "warn", "off"],
+					"default": "warn"
 				}
 			},
 			"default": {
@@ -95,7 +106,8 @@
 				"no-unpinned-dependency": "warn",
 				"require-local-dependency-exists": "error",
 				"max-local-dependencies": ["warn", 10],
-				"no-circular-dependency": "error"
+				"no-circular-dependency": "error",
+				"no-unused-block": "warn"
 			}
 		}
 	},

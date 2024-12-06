@@ -109,6 +109,16 @@
     ]
 }`}
 />
+<SubHeading>preview</SubHeading>
+<p>
+	<CodeSpan>preview</CodeSpan> displays a preview of the blocks list.
+</p>
+<Code
+	lang="json"
+	code={`{
+    "preview": false
+}`}
+/>
 <SubHeading>rules</SubHeading>
 <p>
 	<CodeSpan>rules</CodeSpan> allows you to configure the rules when checking the manifest file after
@@ -123,7 +133,8 @@
 		"no-unpinned-dependency": "warn",
 		"require-local-dependency-exists": "error",
 		"max-local-dependencies": ["warn", 10],
-		"no-circular-dependency": "error"
+		"no-circular-dependency": "error",
+		"no-unused-block": "warn",
 	}
 }`}
 />
@@ -146,4 +157,8 @@
 <div class="flex flex-col gap-2">
 	<CodeSpan class="w-fit">no-circular-dependency</CodeSpan>
 	<p>Disallow circular dependencies.</p>
+</div>
+<div class="flex flex-col gap-2">
+	<CodeSpan class="w-fit">no-unused-block</CodeSpan>
+	<p>Disallow unused blocks. (Not listed and not a dependency of another block)</p>
 </div>

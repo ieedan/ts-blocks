@@ -6,6 +6,7 @@ import * as v from 'valibot';
 import * as ascii from '../ascii';
 import type { RegistryConfig } from '../config';
 import { languages } from '../language-support';
+import { isDependedOn, searchForDep } from './check';
 
 export const blockSchema = v.object({
 	name: v.string(),
@@ -274,7 +275,32 @@ const buildBlocksDirectory = (
 	return categories;
 };
 
+const pruneUnused = (categories: Category[]): [Category[], number] => {
+	const pruned: Category[] = [];
+	const prunedCount = 0;
+
+	for (const category of categories) {
+		const catBlocks: Block[] = [];
+
+		for (const block of category.blocks) {
+			const specifier = `${block.category}/${block.name}`;
+
+			if (!block.list) {
+				const dependedOn = isDependedOn(specifier, categories);
+
+				if (!dependedOn) continue;
+			}
+
+			catBlocks.push(block);
+		}
+
+		if (catBlocks.length > 0) pruned.push({ name: category.name, blocks: catBlocks });
+	}
+
+	return [pruned, prunedCount];
+};
+
 const readCategories = (outputFilePath: string): Category[] =>
 	v.parse(v.array(categorySchema), JSON.parse(fs.readFileSync(outputFilePath).toString()));
 
-export { buildBlocksDirectory, readCategories, isTestFile };
+export { buildBlocksDirectory, readCategories, isTestFile, pruneUnused };
