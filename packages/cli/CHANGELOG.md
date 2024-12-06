@@ -1,5 +1,16 @@
 # jsrepo
 
+## 1.18.0
+
+### Minor Changes
+
+- cb31617: Add `preview` `build` option so that you can see what users will see when running the `add` command.
+
+### Patch Changes
+
+- cb31617: Prune unused blocks (Not listed and not a dependency of another block).
+- cb31617: Add `no-unused-block` rule to warn users of blocks that will be pruned.
+
 ## 1.17.6
 
 ### Patch Changes
