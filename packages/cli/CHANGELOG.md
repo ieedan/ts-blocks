@@ -1,5 +1,11 @@
 # jsrepo
 
+## 1.17.6
+
+### Patch Changes
+
+- ec8b55b: Add an `overwrite-all` prompt to the `add` command.
+
 ## 1.17.5
 
 ### Patch Changes
