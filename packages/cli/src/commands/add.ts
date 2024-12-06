@@ -3,6 +3,7 @@ import {
 	cancel,
 	confirm,
 	isCancel,
+	log,
 	multiselect,
 	outro,
 	select,
@@ -31,7 +32,13 @@ import { loadFormatterConfig } from '../utils/format';
 import { getWatermark } from '../utils/get-watermark';
 import * as gitProviders from '../utils/git-providers';
 import { returnShouldInstall } from '../utils/package';
-import { type ConcurrentTask, intro, nextSteps, runTasksConcurrently } from '../utils/prompts';
+import {
+	type ConcurrentTask,
+	intro,
+	nextSteps,
+	runTasksConcurrently,
+	truncatedList,
+} from '../utils/prompts';
 
 const schema = v.object({
 	repo: v.optional(v.string()),
@@ -362,6 +369,8 @@ const _add = async (blockNames: string[], options: Options) => {
 
 	const addedBlocks: string[] = [];
 
+	let overwriteAll: boolean | undefined;
+
 	for (const { block } of installingBlocks) {
 		const fullSpecifier = `${block.sourceRepo.url}/${block.category}/${block.name}`;
 		const shortSpecifier = `${block.category}/${block.name}`;
@@ -379,23 +388,47 @@ const _add = async (blockNames: string[], options: Options) => {
 			directory = path.join(options.cwd, resolvedPaths['*'], block.category);
 		}
 
-		const blockExists =
-			(!block.subdirectory && fs.existsSync(path.join(directory, block.files[0]))) ||
-			(block.subdirectory && fs.existsSync(path.join(directory, block.name)));
+		const blockExists = installedBlocks.find((b) => shortSpecifier === b);
 
-		if (blockExists && !options.yes) {
-			const result = await confirm({
-				message: `${color.cyan(shortSpecifier)} already exists in your project would you like to overwrite it?`,
-				initialValue: false,
-			});
+		if (blockExists && !options.yes && !overwriteAll) {
+			if (overwriteAll === undefined) {
+				const overwriteBlocks = installingBlocks
+					.map((installing) => `${installing.block.category}/${installing.block.name}`)
+					.filter((spec) => installedBlocks.find((b) => b === spec));
 
-			if (isCancel(result)) {
-				cancel('Canceled!');
-				process.exit(0);
+				log.warn(
+					`The following components ${color.bold.yellow('already exist')}: ${color.cyan(truncatedList(overwriteBlocks))}`
+				);
+
+				const overwrite = await confirm({
+					message: `Would you like to ${color.bold.red('overwrite')} all existing components?`,
+					active: 'Yes, overwrite everything',
+					inactive: 'No, let me decide individually',
+					initialValue: false,
+				});
+
+				if (isCancel(overwrite)) {
+					cancel('Canceled!');
+					process.exit(0);
+				}
+
+				overwriteAll = overwrite;
 			}
 
-			// just skip this block if they don't want to overwrite it
-			if (!result) continue;
+			if (!overwriteAll) {
+				const result = await confirm({
+					message: `${color.cyan(shortSpecifier)} already exists in your project would you like to overwrite it?`,
+					initialValue: false,
+				});
+
+				if (isCancel(result)) {
+					cancel('Canceled!');
+					process.exit(0);
+				}
+
+				// just skip this block if they don't want to overwrite it
+				if (!result) continue;
+			}
 		}
 
 		addedBlocks.push(shortSpecifier);

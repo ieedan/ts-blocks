@@ -112,7 +112,15 @@ const nextSteps = (steps: string[]): string => {
 	return result;
 };
 
+const truncatedList = (items: string[], maxLength = 3) => {
+	const truncated = items.slice(0, maxLength);
+
+	const remaining = items.length - truncated.length;
+
+	return `${truncated.join(', ')}${remaining > 0 ? ` and ${remaining} other(s)` : ''}`;
+};
+
 const _intro = (version: string) =>
 	intro(`${color.bgHex('#f7df1e').black(' jsrepo ')}${color.gray(` v${version} `)}`);
 
-export { runTasks, nextSteps, _intro as intro, runTasksConcurrently };
+export { runTasks, nextSteps, _intro as intro, runTasksConcurrently, truncatedList };
