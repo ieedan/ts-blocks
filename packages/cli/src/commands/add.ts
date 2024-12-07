@@ -282,22 +282,26 @@ const _add = async (blockNames: string[], options: Options) => {
 	let deps: Set<string> = new Set<string>();
 
 	if (noConfig) {
-		const blocksPath = await text({
-			message: 'Where would you like to add the blocks?',
-			initialValue: config.paths['*'],
-			defaultValue: config.paths['*'],
-			placeholder: config.paths['*'],
-			validate(value) {
-				if (value.trim() === '') return 'Please provide a value';
-			},
-		});
+		const categories = installingBlocks.map((b) => b.block.category);
 
-		if (isCancel(blocksPath)) {
-			cancel('Canceled!');
-			process.exit(0);
+		for (const cat of categories) {
+			const blocksPath = await text({
+				message: `Where would you like to add ${color.cyan(cat)}?`,
+				placeholder: `./src/${cat}`,
+				initialValue: `./src/${cat}`,
+				defaultValue: `./src/${cat}`,
+				validate(value) {
+					if (value.trim() === '') return 'Please provide a value';
+				},
+			});
+
+			if (isCancel(blocksPath)) {
+				cancel('Canceled!');
+				process.exit(0);
+			}
+
+			config.paths[cat] = blocksPath;
 		}
-
-		config.paths['*'] = blocksPath;
 
 		if (!options.yes) {
 			const includeTests = await confirm({
