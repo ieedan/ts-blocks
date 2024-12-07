@@ -1,5 +1,11 @@
 # jsrepo
 
+## 1.18.1
+
+### Patch Changes
+
+- 32e9db4: Add the ability to specify a path for each category when adding without a config.
+
 ## 1.18.0
 
 ### Minor Changes
