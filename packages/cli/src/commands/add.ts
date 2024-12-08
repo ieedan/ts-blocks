@@ -24,6 +24,7 @@ import {
 	type Formatter,
 	type ProjectConfig,
 	getProjectConfig,
+	projectConfigSchema,
 	resolvePaths,
 } from '../utils/config';
 import { installDependencies } from '../utils/dependencies';
@@ -32,6 +33,7 @@ import { loadFormatterConfig } from '../utils/format';
 import { getWatermark } from '../utils/get-watermark';
 import * as gitProviders from '../utils/git-providers';
 import { returnShouldInstall } from '../utils/package';
+import * as persisted from '../utils/persisted';
 import {
 	type ConcurrentTask,
 	intro,
@@ -281,15 +283,23 @@ const _add = async (blockNames: string[], options: Options) => {
 	let devDeps: Set<string> = new Set<string>();
 	let deps: Set<string> = new Set<string>();
 
+	const store = persisted.get();
+
 	if (noConfig) {
+		const zeroConfigKey = `${options.cwd}-zero-config`;
+
+		const zeroConfigParsed = v.safeParse(projectConfigSchema, store.get(zeroConfigKey));
+
+		const zeroConfig = zeroConfigParsed.success ? zeroConfigParsed.output : config;
+
 		const categories = installingBlocks.map((b) => b.block.category);
 
 		for (const cat of categories) {
 			const blocksPath = await text({
 				message: `Where would you like to add ${color.cyan(cat)}?`,
-				placeholder: `./src/${cat}`,
-				initialValue: `./src/${cat}`,
-				defaultValue: `./src/${cat}`,
+				placeholder: zeroConfig ? zeroConfig.paths[cat] : `./src/${cat}`,
+				initialValue: zeroConfig ? zeroConfig.paths[cat] : `./src/${cat}`,
+				defaultValue: zeroConfig ? zeroConfig.paths[cat] : `./src/${cat}`,
 				validate(value) {
 					if (value.trim() === '') return 'Please provide a value';
 				},
@@ -306,7 +316,7 @@ const _add = async (blockNames: string[], options: Options) => {
 		if (!options.yes) {
 			const includeTests = await confirm({
 				message: 'Include tests?',
-				initialValue: config.includeTests,
+				initialValue: zeroConfig.includeTests,
 			});
 
 			if (isCancel(includeTests)) {
@@ -318,7 +328,7 @@ const _add = async (blockNames: string[], options: Options) => {
 
 			const addWatermark = await confirm({
 				message: 'Add watermark?',
-				initialValue: config.watermark,
+				initialValue: zeroConfig.watermark,
 			});
 
 			if (isCancel(addWatermark)) {
@@ -345,7 +355,12 @@ const _add = async (blockNames: string[], options: Options) => {
 				value: val.toLowerCase(),
 				label: val,
 			})),
-			initialValue: defaultFormatter,
+			initialValue:
+				defaultFormatter === 'none'
+					? zeroConfig.formatter
+						? zeroConfig.formatter
+						: 'none'
+					: defaultFormatter,
 		});
 
 		if (isCancel(response)) {
@@ -356,6 +371,8 @@ const _add = async (blockNames: string[], options: Options) => {
 		if (response !== 'none') {
 			config.formatter = response as Formatter;
 		}
+
+		store.set(zeroConfigKey, config);
 	}
 
 	const { prettierOptions, biomeOptions } = await loadFormatterConfig({
