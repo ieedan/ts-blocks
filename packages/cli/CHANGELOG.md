@@ -1,5 +1,11 @@
 # jsrepo
 
+## 1.18.2
+
+### Patch Changes
+
+- 5c7fdd6: Remember `zero-config` settings for each directory and suggest the previously selected config as the default value for each prompt next time jsrepo is run.
+
 ## 1.18.1
 
 ### Patch Changes
