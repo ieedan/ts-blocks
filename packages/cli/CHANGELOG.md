@@ -1,5 +1,15 @@
 # jsrepo
 
+## 1.19.0
+
+### Minor Changes
+
+- 8481dc8: Add `excludeBlocks` and `excludeCategories` keys to `build` config.
+
+### Patch Changes
+
+- ad5bfea: Add `no-framework-dependency` rule so that registry authors are warned if they forget to exclude framework dependencies.
+
 ## 1.18.2
 
 ### Patch Changes
