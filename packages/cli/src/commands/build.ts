@@ -127,7 +127,7 @@ const _build = async (options: Options) => {
 
 	loading.start('Checking manifest');
 
-	const { warnings, errors } = runRules(categories, config.rules);
+	const { warnings, errors } = runRules(categories, config, config.rules);
 
 	loading.stop('Completed checking manifest.');
 

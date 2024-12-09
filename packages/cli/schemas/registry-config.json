@@ -99,6 +99,12 @@
 					"type": "string",
 					"enum": ["error", "warn", "off"],
 					"default": "warn"
+				},
+				"no-framework-dependency": {
+					"description": "Disallow frameworks (Svelte, Vue, React, etc.) as dependencies.",
+					"type": "string",
+					"enum": ["error", "warn", "off"],
+					"default": "warn"
 				}
 			},
 			"default": {
@@ -107,7 +113,8 @@
 				"require-local-dependency-exists": "error",
 				"max-local-dependencies": ["warn", 10],
 				"no-circular-dependency": "error",
-				"no-unused-block": "warn"
+				"no-unused-block": "warn",
+				"no-framework-dependency": "warn"
 			}
 		}
 	},
