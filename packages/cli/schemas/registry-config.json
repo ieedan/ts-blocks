@@ -23,6 +23,20 @@
 				"type": "string"
 			}
 		},
+		"excludeBlocks": {
+			"description": "The names of the blocks that should not be included in the manifest.",
+			"type": "array",
+			"items": {
+				"type": "string"
+			}
+		},
+		"excludeCategories": {
+			"description": "The names of the categories that should not be included in the manifest.",
+			"type": "array",
+			"items": {
+				"type": "string"
+			}
+		},
 		"doNotListBlocks": {
 			"description": "The names of blocks that shouldn't be listed when the user runs add.",
 			"type": "array",
@@ -99,6 +113,12 @@
 					"type": "string",
 					"enum": ["error", "warn", "off"],
 					"default": "warn"
+				},
+				"no-framework-dependency": {
+					"description": "Disallow frameworks (Svelte, Vue, React, etc.) as dependencies.",
+					"type": "string",
+					"enum": ["error", "warn", "off"],
+					"default": "warn"
 				}
 			},
 			"default": {
@@ -107,7 +127,8 @@
 				"require-local-dependency-exists": "error",
 				"max-local-dependencies": ["warn", 10],
 				"no-circular-dependency": "error",
-				"no-unused-block": "warn"
+				"no-unused-block": "warn",
+				"no-framework-dependency": "warn"
 			}
 		}
 	},

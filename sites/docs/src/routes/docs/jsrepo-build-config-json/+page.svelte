@@ -109,6 +109,32 @@
     ]
 }`}
 />
+<SubHeading>excludeBlocks</SubHeading>
+<p>
+	<CodeSpan>excludeBlocks</CodeSpan> allows you to prevent the specified blocks from being included in
+	the manifest.
+</p>
+<Code
+	lang="json"
+	code={`{
+    "excludeBlocks": [
+        "domain"
+    ]
+}`}
+/>
+<SubHeading>excludeCategories</SubHeading>
+<p>
+	<CodeSpan>excludeCategories</CodeSpan> allows you to prevent the specified categories from being included
+	in the manifest.
+</p>
+<Code
+	lang="json"
+	code={`{
+    "excludeCategories": [
+        "INTERNAL"
+    ]
+}`}
+/>
 <SubHeading>preview</SubHeading>
 <p>
 	<CodeSpan>preview</CodeSpan> displays a preview of the blocks list.
@@ -135,6 +161,7 @@
 		"max-local-dependencies": ["warn", 10],
 		"no-circular-dependency": "error",
 		"no-unused-block": "warn",
+		"no-framework-dependency": "warn",
 	}
 }`}
 />
@@ -161,4 +188,8 @@
 <div class="flex flex-col gap-2">
 	<CodeSpan class="w-fit">no-unused-block</CodeSpan>
 	<p>Disallow unused blocks. (Not listed and not a dependency of another block)</p>
+</div>
+<div class="flex flex-col gap-2">
+	<CodeSpan class="w-fit">no-framework-dependency</CodeSpan>
+	<p>Disallow frameworks (Svelte, Vue, React) as dependencies.</p>
 </div>

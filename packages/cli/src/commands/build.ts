@@ -16,6 +16,8 @@ const schema = v.object({
 	dirs: v.optional(v.array(v.string())),
 	includeBlocks: v.optional(v.array(v.string())),
 	includeCategories: v.optional(v.array(v.string())),
+	excludeBlocks: v.optional(v.array(v.string())),
+	excludeCategories: v.optional(v.array(v.string())),
 	excludeDeps: v.optional(v.array(v.string())),
 	doNotListBlocks: v.optional(v.array(v.string())),
 	doNotListCategories: v.optional(v.array(v.string())),
@@ -34,6 +36,11 @@ const build = new Command('build')
 	.option(
 		'--include-categories [categoryNames...]',
 		'Include only the categories with these names.'
+	)
+	.option('--exclude-blocks [blockNames...]', 'Do not include the blocks with these names.')
+	.option(
+		'--exclude-categories [categoryNames...]',
+		'Do not include the categories with these names.'
 	)
 	.option(
 		'--do-not-list-blocks [blockNames...]',
@@ -74,6 +81,8 @@ const _build = async (options: Options) => {
 					excludeDeps: options.excludeDeps ?? [],
 					includeBlocks: options.includeBlocks ?? [],
 					includeCategories: options.includeCategories ?? [],
+					excludeBlocks: options.excludeBlocks ?? [],
+					excludeCategories: options.excludeCategories ?? [],
 					preview: options.preview,
 				} satisfies RegistryConfig;
 			}
@@ -88,6 +97,8 @@ const _build = async (options: Options) => {
 				mergedVal.doNotListCategories = options.doNotListCategories;
 			if (options.includeBlocks) mergedVal.includeBlocks = options.includeBlocks;
 			if (options.includeCategories) mergedVal.includeCategories = options.includeCategories;
+			if (options.excludeBlocks) mergedVal.excludeBlocks = options.excludeBlocks;
+			if (options.excludeCategories) mergedVal.excludeCategories = options.excludeCategories;
 			if (options.excludeDeps) mergedVal.excludeDeps = options.excludeDeps;
 			if (options.preview !== undefined) mergedVal.preview = options.preview;
 
@@ -127,7 +138,7 @@ const _build = async (options: Options) => {
 
 	loading.start('Checking manifest');
 
-	const { warnings, errors } = runRules(categories, config.rules);
+	const { warnings, errors } = runRules(categories, config, config.rules);
 
 	loading.stop('Completed checking manifest.');
 

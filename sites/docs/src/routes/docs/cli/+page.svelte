@@ -96,6 +96,8 @@ Options:
   --dirs [dirs...]                             The directories containing the blocks.
   --include-blocks [blockNames...]             Include only the blocks with these names.
   --include-categories [categoryNames...]      Include only the categories with these names.
+  --exclude-blocks [blockNames...]             Do not include the blocks with these names.
+  --exclude-categories [categoryNames...]      Do not include the categories with these names.
   --do-not-list-blocks [blockNames...]         The names of blocks that shouldn't be listed when the user runs add.
   --do-not-list-categories [categoryNames...]  The names of categories that shouldn't be listed when the user runs add.
   --exclude-deps [deps...]                     Dependencies that should not be added.

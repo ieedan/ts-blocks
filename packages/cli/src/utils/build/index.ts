@@ -55,6 +55,8 @@ const buildBlocksDirectory = (
 			excludeDeps,
 			includeBlocks,
 			includeCategories,
+			excludeBlocks,
+			excludeCategories,
 			dirs,
 			doNotListBlocks,
 			doNotListCategories,
@@ -78,14 +80,21 @@ const buildBlocksDirectory = (
 
 		const categoryName = path.basename(categoryPath);
 
-		const shouldListCategory = doNotListCategories.findIndex((a) => a === categoryName) === -1;
-
-		// if includeCategories enabled and block is not part of includeCategories skip adding it
+		// if excludeCategories enabled and category is part of excludeCategories
 		if (
-			includeCategories.length > 0 &&
-			includeCategories.find((val) => val.trim() === categoryName.trim()) === undefined
+			excludeCategories.length > 0 &&
+			excludeCategories.find((val) => val.trim() === categoryName.trim())
 		)
 			continue;
+
+		// if includeCategories enabled and category is not part of includeCategories skip adding it
+		if (
+			includeCategories.length > 0 &&
+			!includeCategories.find((val) => val.trim() === categoryName.trim())
+		)
+			continue;
+
+		const shouldListCategory = doNotListCategories.findIndex((a) => a === categoryName) === -1;
 
 		const category: Category = {
 			name: categoryName,
@@ -104,10 +113,17 @@ const buildBlocksDirectory = (
 
 				const shouldListBlock = doNotListBlocks.findIndex((a) => a === name) === -1;
 
+				// if excludeBlocks enabled and block is part of excludeBlocks skip adding it
+				if (
+					excludeBlocks.length > 0 &&
+					excludeBlocks.find((val) => val.trim() === name.trim())
+				)
+					continue;
+
 				// if includeBlocks enabled and block is not part of includeBlocks skip adding it
 				if (
 					includeBlocks.length > 0 &&
-					includeBlocks.find((val) => val.trim() === name.trim()) === undefined
+					!includeBlocks.find((val) => val.trim() === name.trim())
 				)
 					continue;
 
@@ -169,10 +185,17 @@ const buildBlocksDirectory = (
 
 				const shouldListBlock = doNotListBlocks.findIndex((a) => a === blockName) === -1;
 
+				// if excludeBlocks enabled and block is part of excludeBlocks skip adding it
+				if (
+					excludeBlocks.length > 0 &&
+					excludeBlocks.find((val) => val.trim() === blockName.trim())
+				)
+					continue;
+
 				// if includeBlocks enabled and block is not part of includeBlocks skip adding it
 				if (
 					includeBlocks.length > 0 &&
-					includeBlocks.find((val) => val.trim() === blockName.trim()) === undefined
+					!includeBlocks.find((val) => val.trim() === blockName.trim())
 				)
 					continue;
 

@@ -2,6 +2,7 @@ import color from 'chalk';
 import * as v from 'valibot';
 import type { Block, Category } from '.';
 import * as ascii from '../ascii';
+import type { RegistryConfig } from '../config';
 
 const ruleLevelSchema = v.union([v.literal('off'), v.literal('warn'), v.literal('error')]);
 
@@ -10,6 +11,7 @@ export type RuleLevel = v.InferInput<typeof ruleLevelSchema>;
 export type CheckOptions = {
 	categories: Category[];
 	options: (string | number)[];
+	config: RegistryConfig;
 };
 
 export type Rule = {
@@ -143,6 +145,49 @@ const rules = {
 			return [`${color.bold(specifier)} is unused and will be ${color.bold.red('removed')}`];
 		},
 	} satisfies Rule,
+	'no-framework-dependency': {
+		description: 'Disallow frameworks (Svelte, Vue, React) as dependencies.',
+		check: (block) => {
+			const errors: string[] = [];
+
+			// Update this list as needed
+			// Use the name of the package not the framework
+			const FRAMEWORKS = new Set([
+				// svelte
+				'svelte',
+
+				// vue
+				'vue',
+				'nuxt',
+
+				// react
+				'react',
+				'react-dom',
+				'next',
+				'@remix-run/react',
+
+				// misc
+				'@builder.io/qwik',
+				'astro',
+				'solid-js',
+				'@angular/core',
+			]);
+
+			const frameworkDeps = [...block.devDependencies, ...block.dependencies].filter((d) =>
+				FRAMEWORKS.has(d)
+			);
+
+			if (frameworkDeps.length > 0) {
+				for (const frameworkDep of frameworkDeps) {
+					errors.push(
+						`${color.bold(`${block.category}/${block.name}`)} depends on ${color.bold(frameworkDep)} causing it to be installed when added`
+					);
+				}
+			}
+
+			return errors.length > 0 ? errors : undefined;
+		},
+	} satisfies Rule,
 } as const;
 
 const ruleKeySchema = v.union([
@@ -152,6 +197,7 @@ const ruleKeySchema = v.union([
 	v.literal('max-local-dependencies'),
 	v.literal('no-circular-dependency'),
 	v.literal('no-unused-block'),
+	v.literal('no-framework-dependency'),
 ]);
 
 export type RuleKey = v.InferInput<typeof ruleKeySchema>;
@@ -176,11 +222,13 @@ const DEFAULT_CONFIG: RuleConfig = {
 	'max-local-dependencies': ['warn', 10],
 	'no-circular-dependency': 'error',
 	'no-unused-block': 'warn',
+	'no-framework-dependency': 'warn',
 } as const;
 
 const runRules = (
 	categories: Category[],
-	config: RuleConfig = DEFAULT_CONFIG
+	config: RegistryConfig,
+	ruleConfig: RuleConfig = DEFAULT_CONFIG
 ): { warnings: string[]; errors: string[] } => {
 	const warnings: string[] = [];
 	const errors: string[] = [];
@@ -188,7 +236,7 @@ const runRules = (
 	for (const category of categories) {
 		for (const block of category.blocks) {
 			for (const [name, rule] of Object.entries(rules)) {
-				const conf = config[name as RuleKey]!;
+				const conf = ruleConfig[name as RuleKey]!;
 
 				let level: RuleLevel;
 				const options: (string | number)[] = [];
@@ -201,7 +249,7 @@ const runRules = (
 
 				if (level === 'off') continue;
 
-				const ruleErrors = rule.check(block, { categories, options });
+				const ruleErrors = rule.check(block, { categories, options, config });
 
 				if (!ruleErrors) continue;
 
