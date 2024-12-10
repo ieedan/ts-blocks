@@ -1,5 +1,12 @@
 # jsrepo
 
+## 1.19.1
+
+### Patch Changes
+
+- d547f92: Do not list unlisted blocks on `update` command.
+- d547f92: Fix `no-framework-dependency` rule so that it detects dependencies with a pinned version.
+
 ## 1.19.0
 
 ### Minor Changes
