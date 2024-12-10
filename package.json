@@ -6,7 +6,7 @@
   "scripts": {
     "ci:publish": "changeset publish",
     "format": "pnpm -F jsrepo format && pnpm -F docs format",
-    "lint": "pnpm -F jsrepo check && pnpm -F docs lint",
+    "lint": "pnpm -F jsrepo check && pnpm -F docs lint && pnpm -F docs check",
     "test": "pnpm -F jsrepo test",
     "build:cli": "pnpm -F jsrepo build",
     "ci:release": "pnpm build:cli && changeset publish",

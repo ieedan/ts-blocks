@@ -27,7 +27,6 @@ https://gitlab.com/ieedan/std/-/tree/next # branch reference
 	Tags can be a great solution to ensuring remote tests and blocks stay on a consistent version.
 </p>
 <Code
-	hideLines
 	lang="json"
 	code={`{
 	"$schema": "https://unpkg.com/jsrepo@${data.version}/schemas/project-config.json",
