@@ -1,12 +1,13 @@
 {
-	"$schema": "https://unpkg.com/jsrepo@1.16.0/schemas/project-config.json",
-	"repos": ["github/ieedan/std"],
+	"$schema": "https://unpkg.com/jsrepo@1.18.0/schemas/project-config.json",
+	"repos": ["github/ieedan/std", "github/ieedan/shadcn-svelte-extras"],
 	"includeTests": false,
 	"watermark": true,
 	"formatter": "prettier",
 	"paths": {
 		"*": "./src/lib/ts",
 		"components": "$lib/components/ui",
-		"ui": "$lib/components/ui"
+		"ui": "$lib/components/ui",
+		"utils": "$lib/utils"
 	}
 }

@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { Code, CodeSpan, DocHeader, Jsrepo, Link, SubHeading } from '$lib/components/site/docs';
+	import { CodeSpan, DocHeader, Jsrepo, Link, SubHeading } from '$lib/components/site/docs';
+	import { Code } from '$lib/components/ui/code';
 	import { Snippet } from '$lib/components/ui/snippet';
 
 	let { data } = $props();
@@ -18,8 +19,8 @@
 	structure.
 </p>
 <Code
-	showLines={false}
-	showCopy={false}
+	hideLines
+	hideCopy
 	code={`root
 ├── package.json
 ├── ...
@@ -45,8 +46,8 @@
 </p>
 <p>When you are done your file structure might look something like this:</p>
 <Code
-	showLines={false}
-	showCopy={false}
+	hideLines
+	hideCopy
 	code={`root
 ├── package.json
 ├── ...
@@ -65,8 +66,8 @@
 <p>The easiest way to do this is to use the CLI:</p>
 <Snippet command="execute" args={['jsrepo', 'init', '--registry']} />
 <Code
-	showLines={false}
-	showCopy={false}
+	hideLines
+	hideCopy
 	code={`┌   jsrepo  v1.15.1 
 │
 ◇  Where are your blocks located?
@@ -176,8 +177,8 @@ const add = (a: number, b: number): number => {
 <p>If you now add <CodeSpan>utils/math</CodeSpan> you will get the following output:</p>
 <Snippet command="execute" args={['jsrepo', 'add', 'utils/math']} />
 <Code
-	showCopy={false}
-	showLines={false}
+	hideLines
+	hideCopy
 	code={`┌   jsrepo  v${data.version} 
 │
 ◇  Retrieved blocks from github/<owner>/<name>
@@ -230,8 +231,8 @@ const add = (a: number, b: number): number => {
 			<Link target="_blank" href="https://github.com/ieedan/std">github/ieedan/std</Link>
 		</li>
 		<li class="list-disc">
-			<Link target="_blank" href="https://github.com/ieedan/shadcn-phone-input-svelte">
-				github/ieedan/shadcn-phone-input-svelte
+			<Link target="_blank" href="https://github.com/ieedan/shadcn-svelte-extras">
+				github/ieedan/shadcn-svelte-extras
 			</Link>
 		</li>
 		<li class="list-disc">

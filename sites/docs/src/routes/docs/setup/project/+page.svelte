@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { Code, CodeSpan, DocHeader, Jsrepo } from '$lib/components/site/docs';
+	import { CodeSpan, DocHeader, Jsrepo } from '$lib/components/site/docs';
+	import { Code } from '$lib/components/ui/code';
 	import { Snippet } from '$lib/components/ui/snippet';
 
 	let { data } = $props();
@@ -21,8 +22,8 @@
 </p>
 <Snippet command="execute" args={['jsrepo', 'init', '--project']} />
 <Code
-	showLines={false}
-	showCopy={false}
+	hideLines
+	hideCopy
 	code={`┌   jsrepo  v${data.version}
 │
 ◇  Where should we add the blocks?

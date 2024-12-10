@@ -6,6 +6,7 @@
 	import { Header } from '$lib/components/site/header';
 	import { pmContext } from '$lib/ts/context';
 	import { Footer } from '$lib/components/site/footer';
+	import { ShikiProvider } from '$lib/components/ui/code';
 
 	pmContext.init('npm');
 
@@ -13,6 +14,8 @@
 </script>
 
 <ModeWatcher />
-<Header {...data} />
-{@render children()}
-<Footer {...data} />
+<ShikiProvider>
+	<Header {...data} />
+	{@render children()}
+	<Footer {...data} />
+</ShikiProvider>

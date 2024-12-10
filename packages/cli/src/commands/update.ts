@@ -155,12 +155,14 @@ const _update = async (blockNames: string[], options: Options) => {
 	if (updatingBlockNames.length === 0) {
 		const promptResult = await multiselect({
 			message: 'Which blocks would you like to update?',
-			options: installedBlocks.map((block) => {
-				return {
-					label: `${color.cyan(block.block.category)}/${block.block.name}`,
-					value: block.specifier,
-				};
-			}),
+			options: installedBlocks
+				.filter((b) => b.block.list)
+				.map((block) => {
+					return {
+						label: `${color.cyan(block.block.category)}/${block.block.name}`,
+						value: block.specifier,
+					};
+				}),
 			required: true,
 		});
 

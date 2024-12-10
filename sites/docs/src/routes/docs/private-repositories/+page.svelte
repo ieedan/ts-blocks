@@ -1,13 +1,13 @@
 <script lang="ts">
 	import {
 		Blockquote,
-		Code,
 		DocHeader,
 		Jsrepo,
 		Link,
 		SubHeading,
 		CodeSpan
 	} from '$lib/components/site/docs';
+	import { Code } from '$lib/components/ui/code';
 	import { Snippet } from '$lib/components/ui/snippet';
 	import * as Accordion from '$lib/components/ui/accordion';
 
@@ -27,8 +27,8 @@
 	<Link target="_blank" href="https://www.npmjs.com/package/conf">conf</Link>.
 </Blockquote>
 <Code
-	showLines={false}
-	showCopy={false}
+	hideLines
+	hideCopy
 	code={`┌   jsrepo  v${data.version} 
 │
 ◇  Which provider is this token for?
