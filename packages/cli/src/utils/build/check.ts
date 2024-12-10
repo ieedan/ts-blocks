@@ -3,6 +3,7 @@ import * as v from 'valibot';
 import type { Block, Category } from '.';
 import * as ascii from '../ascii';
 import type { RegistryConfig } from '../config';
+import { parsePackageName } from '../parse-package-name';
 
 const ruleLevelSchema = v.union([v.literal('off'), v.literal('warn'), v.literal('error')]);
 
@@ -173,9 +174,9 @@ const rules = {
 				'@angular/core',
 			]);
 
-			const frameworkDeps = [...block.devDependencies, ...block.dependencies].filter((d) =>
-				FRAMEWORKS.has(d)
-			);
+			const frameworkDeps = [...block.devDependencies, ...block.dependencies]
+				.map((d) => parsePackageName(d).unwrap().name)
+				.filter((d) => FRAMEWORKS.has(d));
 
 			if (frameworkDeps.length > 0) {
 				for (const frameworkDep of frameworkDeps) {

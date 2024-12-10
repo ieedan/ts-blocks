@@ -1,3 +1,9 @@
+/*
+	jsrepo 1.18.0
+	Installed from github/ieedan/shadcn-svelte-extras
+	12-10-2024
+*/
+
 import Root, {
 	type ButtonProps,
 	type ButtonSize,

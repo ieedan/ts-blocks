@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { DocHeader, Jsrepo, Link, SubHeading, Code } from '$lib/components/site/docs';
+	import { DocHeader, Jsrepo, Link, SubHeading } from '$lib/components/site/docs';
+	import { Code } from '$lib/components/ui/code';
 	import CodeSpan from '$lib/components/site/docs/code-span.svelte';
 	import { Snippet } from '$lib/components/ui/snippet';
 
@@ -14,7 +15,7 @@
 </p>
 <p>Because of this all of the following paths work:</p>
 <Code
-	showLines={false}
+	hideLines
 	lang="bash"
 	code={`https://github.com/ieedan/std # default branch shorthand
 https://github.com/ieedan/std/tree/v1.5.0 # tag reference
@@ -26,7 +27,7 @@ https://github.com/ieedan/std/tree/next # branch reference
 	Tags can be a great solution to ensuring remote tests and blocks stay on a consistent version.
 </p>
 <Code
-	showLines={false}
+	hideLines
 	lang="json"
 	code={`{
 	"$schema": "https://unpkg.com/jsrepo@${data.version}/schemas/project-config.json",

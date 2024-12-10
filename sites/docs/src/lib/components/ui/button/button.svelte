@@ -1,10 +1,16 @@
+<!--
+	jsrepo 1.18.0
+	Installed from github/ieedan/shadcn-svelte-extras
+	12-10-2024
+-->
+
 <script lang="ts" module>
 	import type { WithElementRef } from 'bits-ui';
 	import type { HTMLAnchorAttributes, HTMLButtonAttributes } from 'svelte/elements';
 	import { type VariantProps, tv } from 'tailwind-variants';
 
 	export const buttonVariants = tv({
-		base: 'ring-offset-background focus-visible:ring-ring inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0',
+		base: 'relative overflow-hidden ring-offset-background focus-visible:ring-ring inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0',
 		variants: {
 			variant: {
 				default: 'bg-primary text-primary-foreground hover:bg-primary/90',
@@ -34,11 +40,13 @@
 		WithElementRef<HTMLAnchorAttributes> & {
 			variant?: ButtonVariant;
 			size?: ButtonSize;
+			loading?: boolean;
 		};
 </script>
 
 <script lang="ts">
-	import { cn } from '$lib/utils.js';
+	import { cn } from '$lib/utils/utils.js';
+	import { LoaderCircle } from 'lucide-svelte';
 
 	let {
 		class: className,
@@ -47,6 +55,8 @@
 		ref = $bindable(null),
 		href = undefined,
 		type = 'button',
+		loading = false,
+		disabled = false,
 		children,
 		...restProps
 	}: ButtonProps = $props();
@@ -60,9 +70,18 @@
 	<button
 		bind:this={ref}
 		class={cn(buttonVariants({ variant, size, className }))}
+		disabled={disabled || loading}
 		{type}
 		{...restProps}
 	>
+		{#if loading}
+			<div class="absolute flex size-full place-items-center justify-center bg-inherit">
+				<div class="flex animate-spin place-items-center justify-center">
+					<LoaderCircle class="size-4" />
+				</div>
+			</div>
+			<span class="sr-only">Loading</span>
+		{/if}
 		{@render children?.()}
 	</button>
 {/if}

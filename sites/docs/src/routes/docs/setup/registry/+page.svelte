@@ -230,8 +230,8 @@ const add = (a: number, b: number): number => {
 			<Link target="_blank" href="https://github.com/ieedan/std">github/ieedan/std</Link>
 		</li>
 		<li class="list-disc">
-			<Link target="_blank" href="https://github.com/ieedan/shadcn-phone-input-svelte">
-				github/ieedan/shadcn-phone-input-svelte
+			<Link target="_blank" href="https://github.com/ieedan/shadcn-svelte-extras">
+				github/ieedan/shadcn-svelte-extras
 			</Link>
 		</li>
 		<li class="list-disc">

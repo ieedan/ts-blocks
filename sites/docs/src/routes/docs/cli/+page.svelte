@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { Code, CodeSpan, DocHeader, Jsrepo, SubHeading } from '$lib/components/site/docs';
+	import { CodeSpan, DocHeader, Jsrepo, SubHeading } from '$lib/components/site/docs';
+	import { Code } from '$lib/components/ui/code';
 	import { Snippet } from '$lib/components/ui/snippet';
 </script>
 
@@ -11,8 +12,8 @@
 </p>
 <Snippet command="execute" args={['jsrepo', 'init']} />
 <Code
-	showLines={false}
-	showCopy={false}
+	hideLines
+	hideCopy
 	code={`Usage: jsrepo init [options]
 
 Initializes your project with a configuration file.
@@ -38,8 +39,8 @@ Options:
 <p>or</p>
 <Snippet command="execute" args={['jsrepo', 'add', 'github/<owner>/<name>/<category>/<name>']} />
 <Code
-	showLines={false}
-	showCopy={false}
+	hideLines
+	hideCopy
 	code={`Usage: jsrepo add [options] [blocks...]
 
 Arguments:
@@ -61,8 +62,8 @@ Options:
 </p>
 <Snippet command="execute" args={['jsrepo', 'update', '<category>/<name>']} />
 <Code
-	showLines={false}
-	showCopy={false}
+	hideLines
+	hideCopy
 	code={`Usage: jsrepo update [options] [blocks...]
 
 Arguments:
@@ -86,8 +87,8 @@ Options:
 </p>
 <Snippet command="execute" args={['jsrepo', 'build']} />
 <Code
-	showLines={false}
-	showCopy={false}
+	hideLines
+	hideCopy
 	code={`Usage: jsrepo build [options]
 
 Builds the provided --dirs in the project root into a \`jsrepo-manifest.json\` file.
@@ -114,8 +115,8 @@ Options:
 <p>This ensures any changes to your code haven't caused any of the original tests to fail.</p>
 <Snippet command="execute" args={['jsrepo', 'test']} />
 <Code
-	showLines={false}
-	showCopy={false}
+	hideLines
+	hideCopy
 	code={`Usage: jsrepo test [options] [blocks...]
 
 Tests local blocks against most recent remote tests.
@@ -138,8 +139,8 @@ Options:
 </p>
 <Snippet command="execute" args={['jsrepo', 'diff']} />
 <Code
-	showLines={false}
-	showCopy={false}
+	hideLines
+	hideCopy
 	code={`Usage: jsrepo diff [options]
 
 Compares local blocks to the blocks in the provided repository.
@@ -159,8 +160,8 @@ Options:
 </p>
 <Snippet command="execute" args={['jsrepo', 'auth']} />
 <Code
-	showLines={false}
-	showCopy={false}
+	hideLines
+	hideCopy
 	code={`Usage: jsrepo auth [options]
 
 Provide a token for access to private repositories.
