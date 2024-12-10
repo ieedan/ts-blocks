@@ -1,5 +1,5 @@
 /*
-	jsrepo 1.18.0
+	jsrepo 1.19.1
 	Installed from github/ieedan/shadcn-svelte-extras
 	12-10-2024
 */
