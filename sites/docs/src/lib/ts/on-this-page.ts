@@ -1,4 +1,4 @@
-import { context } from './context-provider';
+import { persistedContext } from './persisted-context-provider';
 
 type Heading = {
 	rank: 2 | 3 | 4 | 5 | 6;
@@ -15,4 +15,4 @@ type PageMap = {
 	headings: Map<string, Heading[]>;
 };
 
-export const onThisPage = context<PageMap>('on-this-page');
+export const onThisPage = persistedContext<PageMap>('on-this-page');

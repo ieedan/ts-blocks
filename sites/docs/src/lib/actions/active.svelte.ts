@@ -1,3 +1,12 @@
+/*
+	jsrepo 1.19.1
+	Installed from github/ieedan/shadcn-svelte-extras
+	12-12-2024
+*/
+
+import { get } from 'svelte/store';
+import { page } from '$app/stores';
+
 export type Options = {
 	/** Determines if the route should be active for subdirectories.
 	 *
@@ -9,21 +18,19 @@ export type Options = {
 	 *  @default false
 	 */
 	isHash?: boolean;
-	/** Pass the `$page.url` store here */
 	url: URL;
 };
 
 /** Sets the `data-active` attribute on an `<a/>` tag based on its 'active' state. */
-export const active = (node: HTMLAnchorElement, opts: Options) => {
-	node.setAttribute('data-active', checkIsActive(node.href, opts).toString());
+export const active = (node: HTMLAnchorElement, opts: Omit<Options, 'url'>) => {
+	checkIsActive(node.href, { ...opts, url: get(page).url }).toString();
 
-	return {
-		destroy: () => {},
-
-		update: (opts: Options) => {
-			node.setAttribute('data-active', checkIsActive(node.href, opts).toString());
-		}
-	};
+	page.subscribe((val) => {
+		node.setAttribute(
+			'data-active',
+			checkIsActive(node.href, { ...opts, url: val.url }).toString()
+		);
+	});
 };
 
 export const checkIsActive = (

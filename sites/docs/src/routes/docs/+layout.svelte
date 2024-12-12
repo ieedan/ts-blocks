@@ -3,7 +3,7 @@
 	import { page } from '$app/stores';
 	import { categories, type Route } from '$lib/components/site/map';
 	import * as Pagination from '$lib/components/ui/pagination';
-	import { active, checkIsActive } from '$lib/ts/actions/active';
+	import { active, checkIsActive } from '$lib/actions/active.svelte';
 	import * as Breadcrumb from '$lib/components/ui/breadcrumb';
 	import { onThisPage } from '$lib/ts/on-this-page';
 	import { onNavigate } from '$app/navigation';
@@ -49,7 +49,7 @@
 	const currentDoc = $derived(
 		getCurrentDoc(
 			$page.url,
-			categories.filter((a) => a.name !== 'routes').flatMap((cat) => cat.routes)
+			categories.filter((a) => a.name !== 'General').flatMap((cat) => cat.routes)
 		)
 	);
 
@@ -88,7 +88,7 @@
 		class="fixed top-14 z-30 -ml-2 hidden h-[calc(100vh-3.5rem)] w-full shrink-0 lg:sticky lg:block bg-background border-border border-r"
 	>
 		<ScrollArea class="h-full py-6 pr-6 lg:py-8">
-			{#each categories.filter((a) => a.name !== 'routes') as { name, routes }}
+			{#each categories.filter((a) => a.name !== 'General') as { name, routes }}
 				<div class="flex flex-col gap-1 w-full">
 					<span class="text-sm font-semibold">{name}</span>
 					<div class="flex flex-col gap-1 relative">
@@ -97,7 +97,6 @@
 								class="data-[active=true]:text-primary text-muted-foreground hover:text-primary transition-all"
 								{href}
 								use:active={{
-									url: $page.url,
 									activeForSubdirectories: activeForSubdirectories ?? false
 								}}
 							>
@@ -109,7 +108,6 @@
 										class="data-[active=true]:text-primary flex place-items-center gap-2 text-muted-foreground ml-3 hover:text-primary transition-all"
 										{href}
 										use:active={{
-											url: $page.url,
 											activeForSubdirectories: activeForSubdirectories ?? false
 										}}
 									>

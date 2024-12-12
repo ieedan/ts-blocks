@@ -8,6 +8,8 @@
 		"*": "./src/lib/ts",
 		"components": "$lib/components/ui",
 		"ui": "$lib/components/ui",
-		"utils": "$lib/utils"
+		"utils": "$lib/utils",
+		"actions": "$lib/actions",
+		"types": "$lib/ts/types"
 	}
 }
