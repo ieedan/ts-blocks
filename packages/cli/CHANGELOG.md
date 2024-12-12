@@ -1,5 +1,11 @@
 # jsrepo
 
+## 1.19.2
+
+### Patch Changes
+
+- 6c16a63: ensure `<script module>` dependencies are parsed in `*.svelte` files.
+
 ## 1.19.1
 
 ### Patch Changes
