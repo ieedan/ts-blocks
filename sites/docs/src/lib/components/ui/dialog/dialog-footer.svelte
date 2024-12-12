@@ -19,7 +19,7 @@
 
 <div
 	bind:this={ref}
-	class={cn('grid gap-1.5 p-4 text-center sm:text-left', className)}
+	class={cn('flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2', className)}
 	{...restProps}
 >
 	{@render children?.()}

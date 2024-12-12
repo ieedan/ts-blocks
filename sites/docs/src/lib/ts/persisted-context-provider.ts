@@ -6,15 +6,15 @@ type Options = {
 	persistValue: boolean;
 };
 
-export type Context<T> = {
+export type PersistedContext<T> = {
 	init: (value: T) => Writable<T>;
 	get: () => Writable<T>;
 };
 
-export const context = <T>(
+export const persistedContext = <T>(
 	key: string,
 	{ persistValue = false }: Partial<Options> = {}
-): Context<T> => {
+): PersistedContext<T> => {
 	const keySymbol = Symbol(key);
 	return {
 		init: (value) => {

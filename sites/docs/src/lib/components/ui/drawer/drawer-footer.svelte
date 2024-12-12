@@ -1,5 +1,11 @@
+<!--
+	jsrepo 1.19.1
+	Installed from github/ieedan/shadcn-svelte-extras
+	12-12-2024
+-->
+
 <script lang="ts">
-	import { cn } from '$lib/utils.js';
+	import { cn } from '$lib/utils/utils.js';
 	import type { WithElementRef } from 'bits-ui';
 	import type { HTMLAttributes } from 'svelte/elements';
 

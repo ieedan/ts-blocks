@@ -3,10 +3,12 @@
 	import LightSwitch from '$lib/components/ui/light-switch/light-switch.svelte';
 	import * as Drawer from '$lib/components/ui/drawer';
 	import { categories } from '$lib/components/site/map';
-	import { page } from '$app/stores';
-	import { Menu } from 'lucide-svelte';
-	import { active } from '$lib/ts/actions/active';
+	import { Command, Menu, Search } from 'lucide-svelte';
+	import { active } from '$lib/actions/active.svelte';
 	import { StarButton } from '$lib/components/ui/github';
+	import { Button } from '$lib/components/ui/button';
+	import { Kbd } from '$lib/components/ui/kbd';
+	import { commandContext } from '$lib/ts/context';
 
 	type Props = {
 		version: string;
@@ -16,10 +18,12 @@
 	let { version, stars }: Props = $props();
 
 	let open = $state(false);
+
+	const commandOpen = commandContext.get();
 </script>
 
 <header
-	class="py-2 px-6 flex place-items-center justify-center border-b border-border h-14 sticky top-0 bg-background z-40"
+	class="py-2 px-4 sm:px-6 flex place-items-center justify-center border-b border-border h-14 sticky top-0 bg-background z-40"
 >
 	<div class="flex place-items-center justify-between max-w-screen-2xl w-full">
 		<div class="flex place-items-center gap-6">
@@ -35,7 +39,7 @@
 					</div>
 					{#each categories as { name, routes }}
 						<div class="flex flex-col gap-1 w-full">
-							{#if name !== 'routes'}
+							{#if name !== 'General'}
 								<span class="text-sm font-semibold">{name}</span>
 							{/if}
 							<div class="flex flex-col">
@@ -45,8 +49,7 @@
 										onclick={() => (open = false)}
 										{href}
 										use:active={{
-											activeForSubdirectories: activeForSubdirectories ?? false,
-											url: $page.url
+											activeForSubdirectories: activeForSubdirectories ?? false
 										}}
 									>
 										{name}
@@ -68,8 +71,7 @@
 					href="/"
 					class="hover:text-primary text-muted-foreground transition-all data-[active=true]:text-primary"
 					use:active={{
-						activeForSubdirectories: false,
-						url: $page.url
+						activeForSubdirectories: false
 					}}
 				>
 					Home
@@ -78,8 +80,7 @@
 					href="/docs"
 					class="hover:text-primary text-muted-foreground transition-all data-[active=true]:text-primary"
 					use:active={{
-						activeForSubdirectories: true,
-						url: $page.url
+						activeForSubdirectories: true
 					}}
 				>
 					Docs
@@ -88,8 +89,7 @@
 					href="/demos"
 					class="hover:text-primary text-muted-foreground transition-all data-[active=true]:text-primary"
 					use:active={{
-						activeForSubdirectories: true,
-						url: $page.url
+						activeForSubdirectories: true
 					}}
 				>
 					Demos
@@ -97,6 +97,21 @@
 			</div>
 		</div>
 		<div class="flex place-items-center gap-1">
+			<Button
+				variant="outline"
+				class="flex place-items-center justify-between min-w-48 sm:min-w-56"
+				onclick={() => ($commandOpen = true)}
+			>
+				<span class="text-muted-foreground flex place-items-center gap-2">
+					<Search class="size-4" />
+					Search
+				</span>
+				<div class="flex place-items-center gap-1">
+					<Kbd class="px-2">
+						<Command class="size-4 pr-1" />K
+					</Kbd>
+				</div>
+			</Button>
 			<StarButton {stars} />
 			<LightSwitch />
 		</div>

@@ -16,7 +16,7 @@ export type Route = {
 
 const categories: Category[] = [
 	{
-		name: 'routes',
+		name: 'General',
 		routes: [
 			{
 				name: 'Home',
