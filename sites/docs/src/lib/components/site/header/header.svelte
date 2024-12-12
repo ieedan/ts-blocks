@@ -3,7 +3,6 @@
 	import LightSwitch from '$lib/components/ui/light-switch/light-switch.svelte';
 	import * as Drawer from '$lib/components/ui/drawer';
 	import { categories } from '$lib/components/site/map';
-	import { page } from '$app/stores';
 	import { Command, Menu, Search } from 'lucide-svelte';
 	import { active } from '$lib/actions/active.svelte';
 	import { StarButton } from '$lib/components/ui/github';

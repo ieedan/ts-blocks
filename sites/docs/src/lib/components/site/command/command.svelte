@@ -5,10 +5,6 @@
 	import { categories } from '../map';
 	import { goto } from '$app/navigation';
 
-	type Props = {};
-
-	let {}: Props = $props();
-
 	const open = commandContext.get();
 </script>
 

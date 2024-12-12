@@ -1,3 +1,3 @@
-import Command from "./command.svelte";
+import Command from './command.svelte';
 
-export { Command }
+export { Command };
