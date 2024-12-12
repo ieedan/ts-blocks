@@ -4,7 +4,7 @@ import { Biome, Distribution } from '@biomejs/js-api';
 import type { PartialConfiguration } from '@biomejs/wasm-nodejs';
 import * as v from '@vue/compiler-sfc';
 import color from 'chalk';
-import { walk } from 'estree-walker';
+import { type Node, walk } from 'estree-walker';
 import { createPathsMatcher, getTsconfig } from 'get-tsconfig';
 import path from 'pathe';
 import * as prettier from 'prettier';
@@ -115,21 +115,28 @@ const svelte: Lang = {
 		const root = sv.parse(sourceCode, { modern: true, filename: filePath });
 
 		// if no script tag then no dependencies
-		if (!root.instance)
+		if (!root.instance && !root.module)
 			return Ok({ dependencies: [], devDependencies: [], local: [], imports: {} });
 
 		const imports: string[] = [];
 
-		// biome-ignore lint/suspicious/noExplicitAny: The root instance is just missing the `id` prop
-		walk(root.instance as any, {
-			enter: (node) => {
-				if (node.type === 'ImportDeclaration') {
-					if (typeof node.source.value === 'string') {
-						imports.push(node.source.value);
-					}
+		const enter = (node: Node) => {
+			if (node.type === 'ImportDeclaration') {
+				if (typeof node.source.value === 'string') {
+					imports.push(node.source.value);
 				}
-			},
-		});
+			}
+		};
+
+		if (root.instance) {
+			// biome-ignore lint/suspicious/noExplicitAny: The root instance is just missing the `id` prop
+			walk(root.instance as any, { enter });
+		}
+
+		if (root.module) {
+			// biome-ignore lint/suspicious/noExplicitAny: The root instance is just missing the `id` prop
+			walk(root.module as any, { enter });
+		}
 
 		const resolveResult = resolveImports({
 			moduleSpecifiers: imports,
