@@ -1,5 +1,12 @@
 # jsrepo
 
+## 1.19.3
+
+### Patch Changes
+
+- 964732c: Fixes an issue where `-y, --yes` flag would not skip the _zero-config_ confirmation prompt.
+- 964732c: Fixes an issue where you would be prompted for the directory to place the same category multiple times dependending on which blocks you were installing with _zero-config_.
+
 ## 1.19.2
 
 ### Patch Changes
