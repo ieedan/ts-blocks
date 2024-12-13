@@ -15,6 +15,22 @@ importers:
         specifier: ^0.0.30
         version: 0.0.30
 
+  examples/project:
+    dependencies:
+      ansi-regex:
+        specifier: ^6.1.0
+        version: 6.1.0
+    devDependencies:
+      jsrepo:
+        specifier: ^1.2.4
+        version: 1.19.2(typescript@5.7.2)
+      tsup:
+        specifier: ^8.3.5
+        version: 8.3.5(jiti@1.21.6)(postcss@8.4.49)(typescript@5.7.2)(yaml@2.6.1)
+      typescript:
+        specifier: ^5.6.3
+        version: 5.7.2
+
   packages/cli:
     dependencies:
       '@biomejs/js-api':
@@ -1895,6 +1911,10 @@ packages:
   jsonfile@4.0.0:
     resolution: {integrity: sha512-m6F1R3z8jjlf2imQHS2Qez5sjKWQzbuuhuJ/FKYFRZvPE3PuHcSMVZzfsLhGVOkfd20obL5SWEBew5ShlquNxg==}
 
+  jsrepo@1.19.2:
+    resolution: {integrity: sha512-6SRHRiKdsfJulGUxBXKh9kxLFAKk4c3IljUqNNFbTeLPzYZ1sXlooZrEiaGM0klTkNas9dCpXAUsWJNBvTzLGQ==}
+    hasBin: true
+
   keyv@4.5.4:
     resolution: {integrity: sha512-oxVHkHR/EJf2CNXnWxRLW6mg7JyCCUcG0DtEGmL2ctUo1PNTin1PUil+r/+4r5MpVgC/fn1kjsx7mjSujKqIpw==}
 
@@ -1912,10 +1932,6 @@ packages:
   lilconfig@2.1.0:
     resolution: {integrity: sha512-utWOt/GHzuUxnLKxB6dk81RoOeoNeHgbrXiuGk4yyF5qlRz+iIVWu56E2fqGHFrXz0QNUhLB/8nKqvRH66JKGQ==}
     engines: {node: '>=10'}
-
-  lilconfig@3.1.2:
-    resolution: {integrity: sha512-eop+wDAvpItUys0FWkHIKeC9ybYrTGbU41U5K7+bttZZeohvnY7M9dZ5kB21GNWiFT2q1OoPTvncPCgSOVO5ow==}
-    engines: {node: '>=14'}
 
   lilconfig@3.1.3:
     resolution: {integrity: sha512-/vlFKAoH5Cgt3Ie+JLhRbwOsCQePABiU3tJ1egGvyQ+33R/vcwM2Zl2QR/LzjsBeItPt3oSVXapn+m4nQDvpzw==}
@@ -4051,7 +4067,7 @@ snapshots:
       '@vue/compiler-ssr': 3.5.13
       '@vue/shared': 3.5.13
       estree-walker: 2.0.2
-      magic-string: 0.30.13
+      magic-string: 0.30.15
       postcss: 8.4.49
       source-map-js: 1.2.1
 
@@ -4838,6 +4854,35 @@ snapshots:
     optionalDependencies:
       graceful-fs: 4.2.11
 
+  jsrepo@1.19.2(typescript@5.7.2):
+    dependencies:
+      '@biomejs/js-api': 0.7.1(@biomejs/wasm-nodejs@1.9.4)
+      '@biomejs/wasm-nodejs': 1.9.4
+      '@clack/prompts': 0.8.2
+      '@vue/compiler-sfc': 3.5.13
+      ansi-regex: 6.1.0
+      chalk: 5.3.0
+      commander: 12.1.0
+      conf: 13.0.1
+      diff: 7.0.0
+      escape-string-regexp: 5.0.0
+      estree-walker: 3.0.3
+      execa: 9.5.1
+      get-tsconfig: 4.8.1
+      node-fetch: 3.3.2
+      octokit: 4.0.2
+      package-manager-detector: 0.2.7
+      pathe: 1.1.2
+      prettier: 3.4.2
+      svelte: 5.11.2
+      ts-morph: 24.0.0
+      valibot: 0.42.1(typescript@5.7.2)
+      validate-npm-package-name: 6.0.0
+    transitivePeerDependencies:
+      - '@biomejs/wasm-bundler'
+      - '@biomejs/wasm-web'
+      - typescript
+
   keyv@4.5.4:
     dependencies:
       json-buffer: 3.0.1
@@ -4852,8 +4897,6 @@ snapshots:
       type-check: 0.4.0
 
   lilconfig@2.1.0: {}
-
-  lilconfig@3.1.2: {}
 
   lilconfig@3.1.3: {}
 
@@ -5166,7 +5209,7 @@ snapshots:
 
   postcss-load-config@6.0.1(jiti@1.21.6)(postcss@8.4.49)(yaml@2.6.1):
     dependencies:
-      lilconfig: 3.1.2
+      lilconfig: 3.1.3
     optionalDependencies:
       jiti: 1.21.6
       postcss: 8.4.49
@@ -5490,7 +5533,7 @@ snapshots:
       esrap: 1.2.3
       is-reference: 3.0.3
       locate-character: 3.0.0
-      magic-string: 0.30.13
+      magic-string: 0.30.15
       zimmerframe: 1.1.2
 
   svelte@5.2.11:
@@ -5627,7 +5670,7 @@ snapshots:
       cac: 6.7.14
       chokidar: 4.0.1
       consola: 3.2.3
-      debug: 4.3.7
+      debug: 4.4.0
       esbuild: 0.24.0
       joycon: 3.1.1
       picocolors: 1.1.1

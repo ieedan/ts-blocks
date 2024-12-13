@@ -93,12 +93,23 @@ const _add = async (blockNames: string[], options: Options) => {
 	let config: ProjectConfig;
 
 	if (configResult.isErr()) {
-		const response = await confirm({
-			message: `You don't have ${ascii.JSREPO} initialized in your project. Do you want to continue?`,
-			initialValue: false,
-		});
+		let shouldContinue = options.yes;
 
-		if (isCancel(response) || !response) {
+		if (!options.yes) {
+			const response = await confirm({
+				message: `You don't have ${ascii.JSREPO} initialized in your project. Do you want to continue?`,
+				initialValue: false,
+			});
+
+			if (isCancel(response)) {
+				cancel('Canceled!');
+				process.exit(0);
+			}
+
+			shouldContinue = response;
+		}
+
+		if (!shouldContinue) {
 			cancel('Canceled!');
 			process.exit(0);
 		}
@@ -292,7 +303,7 @@ const _add = async (blockNames: string[], options: Options) => {
 
 		const zeroConfig = zeroConfigParsed.success ? zeroConfigParsed.output : config;
 
-		const categories = installingBlocks.map((b) => b.block.category);
+		const categories = Array.from(new Set(installingBlocks.map((b) => b.block.category)));
 
 		for (const cat of categories) {
 			const blocksPath = await text({
