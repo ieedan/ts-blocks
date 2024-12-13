@@ -14,7 +14,7 @@
 	"devDependencies": {
 		"@fontsource-variable/jetbrains-mono": "^5.1.1",
 		"@fontsource/poppins": "^5.1.0",
-		"@sveltejs/kit": "^2.10.1",
+		"@sveltejs/kit": "^2.11.1",
 		"@sveltejs/vite-plugin-svelte": "^5.0.2",
 		"@tailwindcss/typography": "^0.5.15",
 		"@types/eslint": "^9.6.0",
@@ -33,7 +33,7 @@
 		"prettier-plugin-svelte": "^3.3.2",
 		"runed": "^0.18.0",
 		"shiki": "^1.24.2",
-		"svelte": "^5.11.2",
+		"svelte": "^5.12.0",
 		"svelte-check": "^4.1.1",
 		"svelte-persisted-store": "^0.12.0",
 		"tailwind-merge": "^2.5.5",
