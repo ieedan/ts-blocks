@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { ScrollArea } from '$lib/components/ui/scroll-area';
 	import { page } from '$app/stores';
-	import { categories, type Route } from '$lib/components/site/map';
+	import { categories, type Route } from '$lib/map';
 	import * as Pagination from '$lib/components/ui/pagination';
 	import { active, checkIsActive } from '$lib/actions/active.svelte';
 	import * as Breadcrumb from '$lib/components/ui/breadcrumb';
@@ -124,9 +124,7 @@
 			{/each}
 		</ScrollArea>
 	</aside>
-	<div
-		class="relative xl:grid-cols-[1fr_300px] py-8 xl:grid xl:gap-10 flex place-items-center justify-center"
-	>
+	<div class="relative xl:grid-cols-[1fr_300px] py-8 xl:grid xl:gap-10 flex justify-center">
 		<div
 			class="flex flex-col gap-5 w-full justify-between flex-grow max-w-2xl"
 			style="min-height: calc(100svh - 56px)"
@@ -141,9 +139,9 @@
 						{#if currentDoc}
 							{#if currentDoc.parent}
 								<Breadcrumb.Item>
-									<Breadcrumb.Link href={currentDoc.parent.href}
-										>{currentDoc.parent.name}</Breadcrumb.Link
-									>
+									<Breadcrumb.Link href={currentDoc.parent.href}>
+										{currentDoc.parent.name}
+									</Breadcrumb.Link>
 								</Breadcrumb.Item>
 								<Breadcrumb.Separator />
 							{/if}
