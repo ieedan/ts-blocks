@@ -125,7 +125,7 @@
 		</ScrollArea>
 	</aside>
 	<div
-		class="relative xl:grid-cols-[1fr_300px] py-8 xl:grid xl:gap-10 flex place-items-center justify-center"
+		class="relative xl:grid-cols-[1fr_300px] py-8 xl:grid xl:gap-10 flex justify-center"
 	>
 		<div
 			class="flex flex-col gap-5 w-full justify-between flex-grow max-w-2xl"
