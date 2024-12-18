@@ -6,7 +6,7 @@ import * as v from 'valibot';
 import * as ascii from '../ascii';
 import type { RegistryConfig } from '../config';
 import { languages } from '../language-support';
-import { isDependedOn, searchForDep } from './check';
+import { isDependedOn } from './check';
 
 export const blockSchema = v.object({
 	name: v.string(),
@@ -60,6 +60,8 @@ const buildBlocksDirectory = (
 			dirs,
 			doNotListBlocks,
 			doNotListCategories,
+			listBlocks,
+			listCategories,
 		},
 	}: Options
 ): Category[] => {
@@ -94,7 +96,15 @@ const buildBlocksDirectory = (
 		)
 			continue;
 
-		const shouldListCategory = doNotListCategories.findIndex((a) => a === categoryName) === -1;
+		let shouldListCategory = true;
+
+		if (doNotListCategories.includes(categoryName)) {
+			shouldListCategory = false;
+		}
+
+		if (listCategories.length > 0 && !listCategories.includes(categoryName)) {
+			shouldListCategory = false;
+		}
 
 		const category: Category = {
 			name: categoryName,
@@ -111,7 +121,15 @@ const buildBlocksDirectory = (
 
 				const name = path.parse(path.basename(file)).name;
 
-				const shouldListBlock = doNotListBlocks.findIndex((a) => a === name) === -1;
+				let shouldListBlock = true;
+
+				if (doNotListBlocks.includes(name)) {
+					shouldListBlock = false;
+				}
+
+				if (listBlocks.length > 0 && !listBlocks.includes(name)) {
+					shouldListBlock = false;
+				}
 
 				// if excludeBlocks enabled and block is part of excludeBlocks skip adding it
 				if (
@@ -183,7 +201,15 @@ const buildBlocksDirectory = (
 			} else {
 				const blockName = file;
 
-				const shouldListBlock = doNotListBlocks.findIndex((a) => a === blockName) === -1;
+				let shouldListBlock = true;
+
+				if (doNotListBlocks.includes(blockName)) {
+					shouldListBlock = false;
+				}
+
+				if (listBlocks.length > 0 && !listBlocks.includes(blockName)) {
+					shouldListBlock = false;
+				}
 
 				// if excludeBlocks enabled and block is part of excludeBlocks skip adding it
 				if (

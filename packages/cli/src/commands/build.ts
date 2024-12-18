@@ -19,6 +19,8 @@ const schema = v.object({
 	excludeBlocks: v.optional(v.array(v.string())),
 	excludeCategories: v.optional(v.array(v.string())),
 	excludeDeps: v.optional(v.array(v.string())),
+	listBlocks: v.optional(v.array(v.string())),
+	listCategories: v.optional(v.array(v.string())),
 	doNotListBlocks: v.optional(v.array(v.string())),
 	doNotListCategories: v.optional(v.array(v.string())),
 	preview: v.optional(v.boolean()),
@@ -42,13 +44,12 @@ const build = new Command('build')
 		'--exclude-categories [categoryNames...]',
 		'Do not include the categories with these names.'
 	)
-	.option(
-		'--do-not-list-blocks [blockNames...]',
-		"The names of blocks that shouldn't be listed when the user runs add."
-	)
+	.option('--list-blocks [blockNames...]', 'List only the blocks with these names.')
+	.option('--list-categories [categoryNames...]', 'List only the categories with these names.')
+	.option('--do-not-list-blocks [blockNames...]', 'Do not list the blocks with these names.')
 	.option(
 		'--do-not-list-categories [categoryNames...]',
-		"The names of categories that shouldn't be listed when the user runs add."
+		'Do not list the categories with these names.'
 	)
 	.option('--exclude-deps [deps...]', 'Dependencies that should not be added.')
 	.option('--preview', 'Display a preview of the blocks list.')
@@ -78,6 +79,8 @@ const _build = async (options: Options) => {
 					dirs: options.dirs ?? [],
 					doNotListBlocks: options.doNotListBlocks ?? [],
 					doNotListCategories: options.doNotListCategories ?? [],
+					listBlocks: options.listBlocks ?? [],
+					listCategories: options.listCategories ?? [],
 					excludeDeps: options.excludeDeps ?? [],
 					includeBlocks: options.includeBlocks ?? [],
 					includeCategories: options.includeCategories ?? [],
@@ -95,6 +98,8 @@ const _build = async (options: Options) => {
 			if (options.doNotListBlocks) mergedVal.doNotListBlocks = options.doNotListBlocks;
 			if (options.doNotListCategories)
 				mergedVal.doNotListCategories = options.doNotListCategories;
+			if (options.listBlocks) mergedVal.listBlocks = options.listBlocks;
+			if (options.listCategories) mergedVal.listCategories = options.listCategories;
 			if (options.includeBlocks) mergedVal.includeBlocks = options.includeBlocks;
 			if (options.includeCategories) mergedVal.includeCategories = options.includeCategories;
 			if (options.excludeBlocks) mergedVal.excludeBlocks = options.excludeBlocks;

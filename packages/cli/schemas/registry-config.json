@@ -37,15 +37,29 @@
 				"type": "string"
 			}
 		},
+		"listBlocks": {
+			"description": "List only the blocks with these names.",
+			"type": "array",
+			"items": {
+				"type": "string"
+			}
+		},
+		"listCategories": {
+			"description": "List only the categories with these names.",
+			"type": "array",
+			"items": {
+				"type": "string"
+			}
+		},
 		"doNotListBlocks": {
-			"description": "The names of blocks that shouldn't be listed when the user runs add.",
+			"description": "Do not list the blocks with these names.",
 			"type": "array",
 			"items": {
 				"type": "string"
 			}
 		},
 		"doNotListCategories": {
-			"description": "The names of categories that shouldn't be listed when the user runs add.",
+			"description": "Do not list the categories with these names.",
 			"type": "array",
 			"items": {
 				"type": "string"
