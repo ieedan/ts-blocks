@@ -1,5 +1,12 @@
 # jsrepo
 
+## 1.19.5
+
+### Patch Changes
+
+- 998b27b: ensure `build` returns the error when the extended tsconfig doesn't exist.
+- 998b27b: fix stack overflow when checking for circular dependencies.
+
 ## 1.19.4
 
 ### Patch Changes
