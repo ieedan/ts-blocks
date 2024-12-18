@@ -99,8 +99,10 @@ Options:
   --include-categories [categoryNames...]      Include only the categories with these names.
   --exclude-blocks [blockNames...]             Do not include the blocks with these names.
   --exclude-categories [categoryNames...]      Do not include the categories with these names.
-  --do-not-list-blocks [blockNames...]         The names of blocks that shouldn't be listed when the user runs add.
-  --do-not-list-categories [categoryNames...]  The names of categories that shouldn't be listed when the user runs add.
+  --list-blocks [blockNames...]                List only the blocks with these names.
+  --list-categories [categoryNames...]         List only the categories with these names.
+  --do-not-list-blocks [blockNames...]         Do not list the blocks with these names.
+  --do-not-list-categories [categoryNames...]  Do not list the categories with these names.
   --exclude-deps [deps...]                     Dependencies that should not be added.
   --preview                                    Display a preview of the blocks list.
   --no-output                                  Do not output a \`jsrepo-manifest.json\` file.

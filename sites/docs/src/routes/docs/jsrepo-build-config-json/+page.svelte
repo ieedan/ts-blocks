@@ -39,6 +39,32 @@
     ]
 }`}
 />
+<SubHeading>listBlocks</SubHeading>
+<p>
+	<CodeSpan>listBlocks</CodeSpan> is a list of block names that should be listed when the user runs the
+	<CodeSpan>add</CodeSpan> command.
+</p>
+<Code
+	lang="json"
+	code={`{
+    "listBlocks": [
+        "utils"
+    ]
+}`}
+/>
+<SubHeading>listCategories</SubHeading>
+<p>
+	<CodeSpan>listCategories</CodeSpan> is a list of category names that should be listed when the user
+	runs the <CodeSpan>add</CodeSpan> command.
+</p>
+<Code
+	lang="json"
+	code={`{
+    "listCategories": [
+        "utils"
+    ]
+}`}
+/>
 <SubHeading>doNotListBlocks</SubHeading>
 <p>
 	<CodeSpan>doNotListBlocks</CodeSpan> is a list of block names that shouldn't be listed when the user
