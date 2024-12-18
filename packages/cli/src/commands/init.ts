@@ -349,11 +349,14 @@ const _initRegistry = async (options: Options) => {
 			dirs: [],
 			doNotListBlocks: [],
 			doNotListCategories: [],
+			listBlocks: [],
+			listCategories: [],
 			excludeDeps: [],
 			includeBlocks: [],
 			includeCategories: [],
 			excludeBlocks: [],
 			excludeCategories: [],
+			preview: false,
 		};
 	}
 
