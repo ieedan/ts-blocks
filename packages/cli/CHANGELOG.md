@@ -1,5 +1,11 @@
 # jsrepo
 
+## 1.19.4
+
+### Patch Changes
+
+- e542460: Bump deps
+
 ## 1.19.3
 
 ### Patch Changes
