@@ -288,6 +288,9 @@ const searchForDep = (
 	for (const dep of block.localDependencies) {
 		if (dep === search) return newChain;
 
+		// it will be found in another pass but we don't want to get a stack overflow
+		if (chain.includes(dep)) return undefined;
+
 		const [categoryName, blockName] = dep.split('/');
 
 		const depBlock = categories

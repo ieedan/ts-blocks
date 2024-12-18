@@ -5,7 +5,7 @@ import type { PartialConfiguration } from '@biomejs/wasm-nodejs';
 import * as v from '@vue/compiler-sfc';
 import color from 'chalk';
 import { type Node, walk } from 'estree-walker';
-import { createPathsMatcher, getTsconfig } from 'get-tsconfig';
+import { type TsConfigResult, createPathsMatcher, getTsconfig } from 'get-tsconfig';
 import path from 'pathe';
 import * as prettier from 'prettier';
 import * as sv from 'svelte/compiler';
@@ -464,15 +464,21 @@ const tryResolveLocalAlias = (
 	isSubDir: boolean,
 	{ filePath, dirs, cwd }: { filePath: string; dirs: string[]; cwd: string }
 ): Result<ResolveLocalImportResult | undefined, string> => {
-	let config = getTsconfig(filePath, 'tsconfig.json');
+	let config: TsConfigResult | null;
 
-	if (!config) {
-		// if we don't find the config at first check for a jsconfig
-		config = getTsconfig(filePath, 'jsconfig.json');
+	try {
+		config = getTsconfig(filePath, 'tsconfig.json');
 
 		if (!config) {
-			return Ok(undefined);
+			// if we don't find the config at first check for a jsconfig
+			config = getTsconfig(filePath, 'jsconfig.json');
+
+			if (!config) {
+				return Ok(undefined);
+			}
 		}
+	} catch (err) {
+		return Err(`Error while trying to get ${color.bold('tsconfig.json')}: ${err}`);
 	}
 
 	const matcher = createPathsMatcher(config);
