@@ -1,5 +1,11 @@
 # jsrepo
 
+## 1.20.0
+
+### Minor Changes
+
+- 2180952: Add `listBlocks` and `listCategories` keys to build config.
+
 ## 1.19.5
 
 ### Patch Changes
