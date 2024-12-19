@@ -5,57 +5,93 @@
 	import * as Icons from '$lib/components/icons';
 	import { Braces } from 'lucide-svelte';
 
-	type Support = {
+	type Status = '✅' | '⌛️' | '🚫' | '⚠️';
+
+	type SupportedLanguage = {
 		logo?: (opts: { size: number }) => ReturnType<Snippet>;
 		name: string;
-		status: '✅' | '⌛️' | '🚫' | '⚠️';
+		dependencyResolutionStatus: Status;
+		formattingStatus: Status;
+		watermarkStatus: Status;
 	};
 
-	const support: Support[] = [
-		{
-			logo: typescript,
-			name: '*.ts',
-			status: '✅'
-		},
+	const supportedLanguages: SupportedLanguage[] = [
 		{
 			logo: javascript,
 			name: '*.js',
-			status: '✅'
+			dependencyResolutionStatus: '✅',
+			formattingStatus: '✅',
+			watermarkStatus: '✅'
 		},
 		{
-			logo: tsx,
-			name: '*.tsx',
-			status: '✅'
+			logo: typescript,
+			name: '*.ts',
+			dependencyResolutionStatus: '✅',
+			formattingStatus: '✅',
+			watermarkStatus: '✅'
 		},
 		{
 			logo: jsx,
 			name: '*.jsx',
-			status: '✅'
+			dependencyResolutionStatus: '✅',
+			formattingStatus: '✅',
+			watermarkStatus: '✅'
+		},
+		{
+			logo: tsx,
+			name: '*.tsx',
+			dependencyResolutionStatus: '✅',
+			formattingStatus: '✅',
+			watermarkStatus: '✅'
 		},
 		{
 			logo: svelte,
 			name: '*.svelte',
-			status: '✅'
+			dependencyResolutionStatus: '✅',
+			formattingStatus: '⚠️',
+			watermarkStatus: '✅'
 		},
 		{
 			logo: vue,
 			name: '*.vue',
-			status: '✅'
+			dependencyResolutionStatus: '✅',
+			formattingStatus: '⚠️',
+			watermarkStatus: '✅'
 		},
 		{
 			logo: yaml,
 			name: '*.(yaml|yml)',
-			status: '⚠️'
+			dependencyResolutionStatus: '🚫',
+			formattingStatus: '⚠️',
+			watermarkStatus: '✅'
 		},
 		{
 			logo: json,
 			name: '*.json',
-			status: '⚠️'
+			dependencyResolutionStatus: '🚫',
+			formattingStatus: '✅',
+			watermarkStatus: '🚫'
+		},
+		{
+			logo: json,
+			name: '*.jsonc',
+			dependencyResolutionStatus: '🚫',
+			formattingStatus: '✅',
+			watermarkStatus: '✅'
+		},
+		{
+			logo: css,
+			name: '*.css',
+			dependencyResolutionStatus: '🚫',
+			formattingStatus: '✅',
+			watermarkStatus: '✅'
 		},
 		{
 			logo: svg,
 			name: '*.svg',
-			status: '⚠️'
+			dependencyResolutionStatus: '🚫',
+			formattingStatus: '🚫',
+			watermarkStatus: '✅'
 		}
 	];
 </script>
@@ -98,13 +134,17 @@
 	<Icons.Svg height={size} class="size-auto" />
 {/snippet}
 
+{#snippet css({ size }: { size: number })}
+	<Icons.CSS height={size} />
+{/snippet}
+
 <DocHeader
 	title="Language Support"
 	description="Languages that jsrepo supports in your registry."
 />
 <p>
-	<Jsrepo /> has to analyze your code to resolve any inter-block and remote dependencies. Because of
-	this it needs to explicitly support languages for them to be used in your registry.
+	<Jsrepo /> has to analyze your code to resolve any local/remote dependencies. Because of this it needs
+	to explicitly support languages for them to be used in your registry.
 </p>
 <div class="flex flex-col gap-1">
 	<span>Legend:</span>
@@ -112,9 +152,7 @@
 		<li>✅: Supported</li>
 		<li>⌛️: In progress</li>
 		<li>🚫: Not in progress</li>
-		<li>
-			⚠️: Partial support <span class="text-muted-foreground">(No dependency resolution)</span>
-		</li>
+		<li>⚠️: Partial support</li>
 	</ul>
 </div>
 <Table.Root class="w-fit">
@@ -122,11 +160,13 @@
 	<Table.Header>
 		<Table.Row>
 			<Table.Head>Language</Table.Head>
-			<Table.Head>Status</Table.Head>
+			<Table.Head>Dependencies</Table.Head>
+			<Table.Head>Formatting</Table.Head>
+			<Table.Head>Watermarks</Table.Head>
 		</Table.Row>
 	</Table.Header>
 	<Table.Body>
-		{#each support as { name, logo, status }}
+		{#each supportedLanguages as { name, logo, dependencyResolutionStatus, formattingStatus, watermarkStatus }}
 			<Table.Row>
 				<Table.Cell>
 					<div class="flex place-items-center gap-2">
@@ -136,7 +176,9 @@
 						<CodeSpan>{name}</CodeSpan>
 					</div>
 				</Table.Cell>
-				<Table.Cell>{status}</Table.Cell>
+				<Table.Cell>{dependencyResolutionStatus}</Table.Cell>
+				<Table.Cell>{formattingStatus}</Table.Cell>
+				<Table.Cell>{watermarkStatus}</Table.Cell>
 			</Table.Row>
 		{/each}
 	</Table.Body>

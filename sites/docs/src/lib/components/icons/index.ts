@@ -1,5 +1,6 @@
 import type { HTMLAttributes } from 'svelte/elements';
 import GitHub from './github.svelte';
+import CSS from './css.svelte';
 import TypeScript from './typescript.svelte';
 import Svelte from './svelte.svelte';
 import React from './react.svelte';
@@ -17,4 +18,17 @@ export interface Props extends HTMLAttributes<SVGElement> {
 	height?: number;
 }
 
-export { GitHub, TypeScript, Svelte, React, JavaScript, Vue, Jsrepo, GitLab, BitBucket, Yaml, Svg };
+export {
+	CSS,
+	GitHub,
+	TypeScript,
+	Svelte,
+	React,
+	JavaScript,
+	Vue,
+	Jsrepo,
+	GitLab,
+	BitBucket,
+	Yaml,
+	Svg
+};
