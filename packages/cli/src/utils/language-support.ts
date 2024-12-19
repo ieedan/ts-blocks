@@ -63,12 +63,21 @@ const typescript: Lang = {
 
 		const blockFile = project.addSourceFileAtPath(filePath);
 
-		const imports = blockFile
+		// get import specifiers
+		const modules = blockFile
 			.getImportDeclarations()
 			.map((imp) => imp.getModuleSpecifierValue());
 
+		// get `export x from` specifiers
+		const exps = blockFile
+			.getExportDeclarations()
+			.map((imp) => imp.getModuleSpecifierValue())
+			.filter((imp) => imp !== undefined);
+
+		modules.push(...exps);
+
 		const resolveResult = resolveImports({
-			moduleSpecifiers: imports,
+			moduleSpecifiers: modules,
 			filePath,
 			isSubDir,
 			dirs,
@@ -118,12 +127,16 @@ const svelte: Lang = {
 		if (!root.instance && !root.module)
 			return Ok({ dependencies: [], devDependencies: [], local: [], imports: {} });
 
-		const imports: string[] = [];
+		const modules: string[] = [];
 
 		const enter = (node: Node) => {
-			if (node.type === 'ImportDeclaration') {
-				if (typeof node.source.value === 'string') {
-					imports.push(node.source.value);
+			if (
+				node.type === 'ImportDeclaration' ||
+				node.type === 'ExportAllDeclaration' ||
+				node.type === 'ExportNamedDeclaration'
+			) {
+				if (typeof node.source?.value === 'string') {
+					modules.push(node.source.value);
 				}
 			}
 		};
@@ -139,7 +152,7 @@ const svelte: Lang = {
 		}
 
 		const resolveResult = resolveImports({
-			moduleSpecifiers: imports,
+			moduleSpecifiers: modules,
 			filePath,
 			isSubDir,
 			dirs,

@@ -1,5 +1,29 @@
 [
 	{
+		"name": "components",
+		"blocks": [
+			{
+				"name": "button",
+				"directory": "src/components",
+				"category": "components",
+				"tests": false,
+				"subdirectory": false,
+				"list": true,
+				"files": [
+					"button.svelte"
+				],
+				"localDependencies": [
+					"types/point"
+				],
+				"_imports_": {
+					"../types/point": "{{types/point}}"
+				},
+				"dependencies": [],
+				"devDependencies": []
+			}
+		]
+	},
+	{
 		"name": "types",
 		"blocks": [
 			{
@@ -12,8 +36,12 @@
 				"files": [
 					"index.ts"
 				],
-				"localDependencies": [],
-				"_imports_": {},
+				"localDependencies": [
+					"types/point"
+				],
+				"_imports_": {
+					"./point": "{{types/point}}"
+				},
 				"dependencies": [],
 				"devDependencies": []
 			},
