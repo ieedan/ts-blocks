@@ -326,10 +326,11 @@ const buildBlocksDirectory = (
 
 /** Takes the given file and returns the block name */
 const transformBlockName = (file: string) => {
+	// DO NOT enable until resolution is fixed
 	// custom transform for `.svelte.(js|ts)` files to drop the `.svelte` as well
-	if (file.endsWith('.svelte.ts') || file.endsWith('.svelte.js')) {
-		return file.slice(0, file.length - 10);
-	}
+	// if (file.endsWith('.svelte.ts') || file.endsWith('.svelte.js')) {
+	// 	return file.slice(0, file.length - 10);
+	// }
 
 	return path.parse(path.basename(file)).name;
 };
