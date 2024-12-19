@@ -25,5 +25,18 @@
 			referrerpolicy="strict-origin-when-cross-origin"
 			allowfullscreen
 		></iframe>
+		<h2 class="text-2xl font-bold text-center">
+			Creating your own shadcn-style library with jsrepo
+		</h2>
+		<iframe
+			width="560"
+			height="315"
+			src="https://www.youtube.com/embed/zWfBt1vKb84?si=_pbJ75Ww-tOX_Lui"
+			title="YouTube video player"
+			frameborder="0"
+			allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+			referrerpolicy="strict-origin-when-cross-origin"
+			allowfullscreen
+		></iframe>
 	</div>
 </main>

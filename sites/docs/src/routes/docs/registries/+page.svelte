@@ -10,7 +10,12 @@
 	const groups: Record<string, Registry[]> = {
 		Svelte: [
 			{
-				name: 'shadcn-svelte-extras',
+				name: 'shyakadavis/geist',
+				description: 'Svelte implementation of the Geist Design System by Vercel. (WIP)',
+				link: 'https://github.com/shyakadavis/geist'
+			},
+			{
+				name: 'ieedan/shadcn-svelte-extras',
 				description: 'Turn key shadcn-svelte components to help finish you your app.',
 				link: 'https://github.com/ieedan/shadcn-svelte-extras'
 			}
