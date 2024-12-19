@@ -1,5 +1,16 @@
 # jsrepo
 
+## 1.21.0
+
+### Minor Changes
+
+- 75b15a6: Remove `.svelte` from block names when the block is a file that ends with `.svelte.(js|ts)`.
+
+### Patch Changes
+
+- 93831d3: `*.css` file support.
+- 93831d3: `*.jsonc` file support.
+
 ## 1.20.1
 
 ### Patch Changes
