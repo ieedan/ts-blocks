@@ -52,52 +52,13 @@ export type Lang = {
 	format: (code: string, opts: FormatOptions) => Promise<string>;
 };
 
-const typescript: Lang = {
-	matches: (fileName) =>
-		fileName.endsWith('.ts') ||
-		fileName.endsWith('.js') ||
-		fileName.endsWith('.tsx') ||
-		fileName.endsWith('.jsx'),
-	resolveDependencies: ({ filePath, isSubDir, excludeDeps, dirs, cwd }) => {
-		const project = new Project();
-
-		const blockFile = project.addSourceFileAtPath(filePath);
-
-		// get import specifiers
-		const modules = blockFile
-			.getImportDeclarations()
-			.map((imp) => imp.getModuleSpecifierValue());
-
-		// get `export x from` specifiers
-		const exps = blockFile
-			.getExportDeclarations()
-			.map((imp) => imp.getModuleSpecifierValue())
-			.filter((imp) => imp !== undefined);
-
-		modules.push(...exps);
-
-		const resolveResult = resolveImports({
-			moduleSpecifiers: modules,
-			filePath,
-			isSubDir,
-			dirs,
-			cwd,
-			doNotInstall: excludeDeps,
-		});
-
-		if (resolveResult.isErr()) {
-			return Err(
-				resolveResult
-					.unwrapErr()
-					.map((err) => formatError(err))
-					.join('\n')
-			);
-		}
-
-		return Ok(resolveResult.unwrap());
-	},
+/** Language support for `*.css` files. */
+const css: Lang = {
+	matches: (fileName) => fileName.endsWith('.css'),
+	resolveDependencies: () =>
+		Ok({ dependencies: [], local: [], devDependencies: [], imports: {} }),
 	comment: (content) => `/*\n${lines.join(lines.get(content), { prefix: () => '\t' })}\n*/`,
-	format: async (code, { formatter, filePath, prettierOptions, biomeOptions }) => {
+	format: async (code, { formatter, prettierOptions, biomeOptions, filePath }) => {
 		if (!formatter) return code;
 
 		if (formatter === 'prettier') {
@@ -116,6 +77,61 @@ const typescript: Lang = {
 	},
 };
 
+/** Language support for `*.(json)` files. */
+const json: Lang = {
+	matches: (fileName) => fileName.endsWith('.json'),
+	resolveDependencies: () =>
+		Ok({ dependencies: [], local: [], devDependencies: [], imports: {} }),
+	// json doesn't support comments
+	comment: (content: string) => content,
+	format: async (code, { formatter, prettierOptions, biomeOptions, filePath }) => {
+		if (!formatter) return code;
+
+		if (formatter === 'prettier') {
+			return await prettier.format(code, { filepath: filePath, ...prettierOptions });
+		}
+
+		const biome = await Biome.create({
+			distribution: Distribution.NODE,
+		});
+
+		if (biomeOptions) {
+			biome.applyConfiguration(biomeOptions);
+		}
+
+		return biome.formatContent(code, { filePath }).content;
+	},
+};
+
+/** Language support for `*.(jsonc)` files. */
+const jsonc: Lang = {
+	matches: (fileName) => fileName.endsWith('.jsonc'),
+	resolveDependencies: () =>
+		Ok({ dependencies: [], local: [], devDependencies: [], imports: {} }),
+	comment: (content) => `/*\n${lines.join(lines.get(content), { prefix: () => '\t' })}\n*/`,
+	format: async (code, { formatter, prettierOptions, biomeOptions, filePath }) => {
+		if (!formatter) return code;
+
+		if (formatter === 'prettier') {
+			return await prettier.format(code, { filepath: filePath, ...prettierOptions });
+		}
+
+		const biome = await Biome.create({
+			distribution: Distribution.NODE,
+		});
+
+		if (biomeOptions) {
+			biome.applyConfiguration({
+				...biomeOptions,
+				json: { parser: { allowComments: true } },
+			});
+		}
+
+		return biome.formatContent(code, { filePath }).content;
+	},
+};
+
+/** Language support for `*.svelte` files. */
 const svelte: Lang = {
 	matches: (fileName) => fileName.endsWith('.svelte'),
 	resolveDependencies: ({ filePath, isSubDir, excludeDeps, dirs, cwd }) => {
@@ -188,6 +204,81 @@ const svelte: Lang = {
 	},
 };
 
+/** Language support for `*.svg` files. */
+const svg: Lang = {
+	matches: (fileName) => fileName.endsWith('.svg'),
+	resolveDependencies: () =>
+		Ok({ dependencies: [], local: [], devDependencies: [], imports: {} }),
+	comment: (content) => `<!--\n${lines.join(lines.get(content), { prefix: () => '\t' })}\n-->`,
+	format: async (code) => code,
+};
+
+/** Language support for `*.(js|ts|jsx|tsx)` files. */
+const typescript: Lang = {
+	matches: (fileName) =>
+		fileName.endsWith('.ts') ||
+		fileName.endsWith('.js') ||
+		fileName.endsWith('.tsx') ||
+		fileName.endsWith('.jsx'),
+	resolveDependencies: ({ filePath, isSubDir, excludeDeps, dirs, cwd }) => {
+		const project = new Project();
+
+		const blockFile = project.addSourceFileAtPath(filePath);
+
+		// get import specifiers
+		const modules = blockFile
+			.getImportDeclarations()
+			.map((imp) => imp.getModuleSpecifierValue());
+
+		// get `export x from` specifiers
+		const exps = blockFile
+			.getExportDeclarations()
+			.map((imp) => imp.getModuleSpecifierValue())
+			.filter((imp) => imp !== undefined);
+
+		modules.push(...exps);
+
+		const resolveResult = resolveImports({
+			moduleSpecifiers: modules,
+			filePath,
+			isSubDir,
+			dirs,
+			cwd,
+			doNotInstall: excludeDeps,
+		});
+
+		if (resolveResult.isErr()) {
+			return Err(
+				resolveResult
+					.unwrapErr()
+					.map((err) => formatError(err))
+					.join('\n')
+			);
+		}
+
+		return Ok(resolveResult.unwrap());
+	},
+	comment: (content) => `/*\n${lines.join(lines.get(content), { prefix: () => '\t' })}\n*/`,
+	format: async (code, { formatter, filePath, prettierOptions, biomeOptions }) => {
+		if (!formatter) return code;
+
+		if (formatter === 'prettier') {
+			return await prettier.format(code, { filepath: filePath, ...prettierOptions });
+		}
+
+		const biome = await Biome.create({
+			distribution: Distribution.NODE,
+		});
+
+		if (biomeOptions) {
+			biome.applyConfiguration(biomeOptions);
+		}
+
+		return biome.formatContent(code, { filePath }).content;
+	},
+};
+
+/** Language support for `*.vue` files. */
 const vue: Lang = {
 	matches: (fileName) => fileName.endsWith('.vue'),
 	resolveDependencies: ({ filePath, isSubDir, excludeDeps, dirs, cwd }) => {
@@ -243,6 +334,7 @@ const vue: Lang = {
 	},
 };
 
+/** Language support for `*.(yaml|yml)` files. */
 const yaml: Lang = {
 	matches: (fileName) => fileName.endsWith('.yml') || fileName.endsWith('.yaml'),
 	resolveDependencies: () =>
@@ -256,39 +348,6 @@ const yaml: Lang = {
 		}
 
 		return code;
-	},
-};
-
-const svg: Lang = {
-	matches: (fileName) => fileName.endsWith('.svg'),
-	resolveDependencies: () =>
-		Ok({ dependencies: [], local: [], devDependencies: [], imports: {} }),
-	comment: (content) => `<!--\n${lines.join(lines.get(content), { prefix: () => '\t' })}\n-->`,
-	format: async (code) => code,
-};
-
-const json: Lang = {
-	matches: (fileName) => fileName.endsWith('.json'),
-	resolveDependencies: () =>
-		Ok({ dependencies: [], local: [], devDependencies: [], imports: {} }),
-	// json doesn't support comments
-	comment: (content: string) => content,
-	format: async (code, { formatter, prettierOptions, biomeOptions, filePath }) => {
-		if (!formatter) return code;
-
-		if (formatter === 'prettier') {
-			return await prettier.format(code, { filepath: filePath, ...prettierOptions });
-		}
-
-		const biome = await Biome.create({
-			distribution: Distribution.NODE,
-		});
-
-		if (biomeOptions) {
-			biome.applyConfiguration(biomeOptions);
-		}
-
-		return biome.formatContent(code, { filePath }).content;
 	},
 };
 
@@ -660,6 +719,6 @@ const resolveRemoteDeps = (
 	};
 };
 
-const languages: Lang[] = [typescript, svelte, vue, yaml, json, svg];
+const languages: Lang[] = [css, json, jsonc, svelte, svg, typescript, vue, yaml];
 
-export { typescript, svelte, vue, yaml, json, svg, languages };
+export { css, json, jsonc, svelte, svg, typescript, vue, yaml, languages };
