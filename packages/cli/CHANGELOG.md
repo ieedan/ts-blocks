@@ -1,5 +1,11 @@
 # jsrepo
 
+## 1.22.0
+
+### Minor Changes
+
+- 416dfdc: Revert 75b15a6: Remove `.svelte` from block names when the block is a file that ends with `.svelte.(js|ts)`.
+
 ## 1.21.0
 
 ### Minor Changes
