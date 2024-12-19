@@ -1,5 +1,11 @@
 # jsrepo
 
+## 1.20.1
+
+### Patch Changes
+
+- 87d1f63: Resolve modules from re-exports in `*.svelte` and `*.(js|ts|jsx|tsx)` files.
+
 ## 1.20.0
 
 ### Minor Changes
