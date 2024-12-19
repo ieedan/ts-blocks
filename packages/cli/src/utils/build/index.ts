@@ -119,7 +119,7 @@ const buildBlocksDirectory = (
 			if (fs.statSync(blockDir).isFile()) {
 				if (isTestFile(file)) continue;
 
-				const name = path.parse(path.basename(file)).name;
+				const name = transformBlockName(file);
 
 				let shouldListBlock = true;
 
@@ -322,6 +322,16 @@ const buildBlocksDirectory = (
 	}
 
 	return categories;
+};
+
+/** Takes the given file and returns the block name */
+const transformBlockName = (file: string) => {
+	// custom transform for `.svelte.(js|ts)` files to drop the `.svelte` as well
+	if (file.endsWith('.svelte.ts') || file.endsWith('.svelte.js')) {
+		return file.slice(0, file.length - 10);
+	}
+
+	return path.parse(path.basename(file)).name;
 };
 
 const pruneUnused = (categories: Category[]): [Category[], number] => {
