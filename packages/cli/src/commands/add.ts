@@ -242,7 +242,9 @@ const _add = async (blockNames: string[], options: Options) => {
 			options: Array.from(blocksMap.entries())
 				.filter(([_, value]) => value.list)
 				.map(([key, value]) => {
-					const shortName = `${value.category}/${value.name}`;
+					const blockName = value.displayName ? value.displayName : value.name;
+
+					const shortName = `${value.category}/${blockName}`;
 
 					const blockExists =
 						installedBlocks.findIndex((block) => block === shortName) !== -1;
@@ -253,9 +255,9 @@ const _add = async (blockNames: string[], options: Options) => {
 					if (repoPaths.length > 1) {
 						label = `${color.cyan(
 							`${value.sourceRepo.name}/${value.sourceRepo.owner}/${value.sourceRepo.repoName}/${value.category}`
-						)}/${value.name}`;
+						)}/${blockName}`;
 					} else {
-						label = `${color.cyan(value.category)}/${value.name}`;
+						label = `${color.cyan(value.category)}/${blockName}`;
 					}
 
 					return {

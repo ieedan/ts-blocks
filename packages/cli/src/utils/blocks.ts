@@ -64,7 +64,7 @@ const resolveTree = async (
 			return Err(`Invalid block! ${color.bold(blockSpecifier)} does not exist!`);
 		}
 
-		const specifier = `${block.category}/${block.name}`;
+		const specifier = `${block.category}/${block.displayName ? block.displayName : block.name}`;
 
 		blocks.set(specifier, { name: block.name, subDependency: false, block });
 
@@ -79,7 +79,7 @@ const resolveTree = async (
 			if (subDeps.isErr()) return Err(subDeps.unwrapErr());
 
 			for (const dep of subDeps.unwrap()) {
-				blocks.set(`${dep.block.category}/${dep.block.name}`, dep);
+				blocks.set(`${dep.block.category}/${dep.block.displayName ? dep.block.displayName : dep.block.name}`, dep);
 			}
 		}
 	}

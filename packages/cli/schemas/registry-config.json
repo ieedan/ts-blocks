@@ -9,6 +9,16 @@
 				"type": "string"
 			}
 		},
+		"blockDisplayNames": {
+			"description": "Remap the original name of a block to the name that will actually be displayed to the user.",
+			"type": "object",
+			"additionalProperties": {
+				"type": "string"
+			},
+			"propertyNames": {
+				"type": "string"
+			}
+		},
 		"includeBlocks": {
 			"description": "The names of the blocks that should be included in the manifest.",
 			"type": "array",

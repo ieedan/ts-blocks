@@ -10,6 +10,7 @@ import { isDependedOn } from './check';
 
 export const blockSchema = v.object({
 	name: v.string(),
+	displayName: v.optional(v.string()),
 	category: v.string(),
 	localDependencies: v.array(v.string()),
 	dependencies: v.array(v.string()),
@@ -62,6 +63,7 @@ const buildBlocksDirectory = (
 			doNotListCategories,
 			listBlocks,
 			listCategories,
+			blockDisplayNames
 		},
 	}: Options
 ): Category[] => {
@@ -181,6 +183,7 @@ const buildBlocksDirectory = (
 
 				const block: Block = {
 					name,
+					displayName: blockDisplayNames ? blockDisplayNames[name] : undefined,
 					directory: path.relative(cwd, categoryDir),
 					category: categoryName,
 					tests: testsPath !== undefined,
@@ -302,6 +305,7 @@ const buildBlocksDirectory = (
 
 				const block: Block = {
 					name: blockName,
+					displayName: blockDisplayNames ? blockDisplayNames[blockName] : undefined,
 					directory: path.relative(cwd, blockDir),
 					category: categoryName,
 					tests: hasTests,

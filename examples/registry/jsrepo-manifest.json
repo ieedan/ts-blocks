@@ -28,6 +28,7 @@
 		"blocks": [
 			{
 				"name": "index",
+				"displayName": "all",
 				"directory": "src/types",
 				"category": "types",
 				"tests": false,
@@ -138,6 +139,26 @@
 	{
 		"name": "logging",
 		"blocks": [
+			{
+				"name": "index",
+				"displayName": "all",
+				"directory": "blocks/logging",
+				"category": "logging",
+				"tests": false,
+				"subdirectory": false,
+				"list": true,
+				"files": [
+					"index.ts"
+				],
+				"localDependencies": [
+					"logging/logger"
+				],
+				"_imports_": {
+					"./logger": "{{logging/logger}}"
+				},
+				"dependencies": [],
+				"devDependencies": []
+			},
 			{
 				"name": "logger",
 				"directory": "blocks/logging",

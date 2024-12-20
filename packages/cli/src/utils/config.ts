@@ -52,6 +52,7 @@ export type Formatter = v.InferOutput<typeof formatterSchema>;
 const registryConfigSchema = v.object({
 	$schema: v.string(),
 	dirs: v.array(v.string()),
+	blockDisplayNames: v.optional(v.record(v.string(), v.string())),
 	includeBlocks: v.optional(v.array(v.string()), []),
 	includeCategories: v.optional(v.array(v.string()), []),
 	excludeBlocks: v.optional(v.array(v.string()), []),

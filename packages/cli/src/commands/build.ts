@@ -179,7 +179,7 @@ const _build = async (options: Options) => {
 
 	if (config.preview) {
 		const blocks = categories.flatMap((cat) =>
-			cat.blocks.filter((b) => b.list).map((b) => `${color.cyan(b.category)}/${b.name}`)
+			cat.blocks.filter((b) => b.list).map((b) => `${color.cyan(b.category)}/${b.displayName ? b.displayName : b.name}`)
 		);
 
 		log.message(`${color.yellow('Preview')}:`);
