@@ -459,8 +459,10 @@ const azure: Provider = {
 	resolveRaw: async (repoPath, resourcePath) => {
 		const info = await azure.info(repoPath);
 
+		const versionType = info.refs === 'tags' ? 'tag' : 'branch';
+
 		return new URL(
-			`https://dev.azure.com/${info.owner}/${info.owner}/_apis/git/repositories/${info.repoName}/items?path=${resourcePath}&api-version=7.2-preview.1`
+			`https://dev.azure.com/${info.owner}/${info.repoName}/_apis/git/repositories/${info.repoName}/items?path=${resourcePath}&api-version=7.2-preview.1&versionDescriptor.version=${info.ref}&versionDescriptor.versionType=${versionType}`
 		);
 	},
 	fetchRaw: async (repoPath, resourcePath, { verbose } = {}) => {
@@ -478,7 +480,7 @@ const azure: Provider = {
 			const headers = new Headers();
 
 			if (token !== undefined) {
-				headers.append("Authorization", `Basic ${token}`);
+				headers.append("Authorization", `Bearer ${token}`);
 			}
 
 			console.log(url)
