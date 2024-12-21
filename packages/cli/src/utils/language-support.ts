@@ -131,6 +131,23 @@ const jsonc: Lang = {
 	},
 };
 
+/** Language support for `*.(sass|scss)` files. */
+const sass: Lang = {
+	matches: (fileName) => fileName.endsWith('.sass') || fileName.endsWith('.scss'),
+	resolveDependencies: () =>
+		Ok({ dependencies: [], local: [], devDependencies: [], imports: {} }),
+	comment: (content) => `/*\n${lines.join(lines.get(content), { prefix: () => '\t' })}\n*/`,
+	format: async (code, { formatter, prettierOptions }) => {
+		if (!formatter) return code;
+
+		if (formatter === 'prettier') {
+			return await prettier.format(code, { parser: 'scss', ...prettierOptions });
+		}
+
+		return code;
+	},
+};
+
 /** Language support for `*.svelte` files. */
 const svelte: Lang = {
 	matches: (fileName) => fileName.endsWith('.svelte'),
@@ -719,6 +736,6 @@ const resolveRemoteDeps = (
 	};
 };
 
-const languages: Lang[] = [css, json, jsonc, svelte, svg, typescript, vue, yaml];
+const languages: Lang[] = [css, json, jsonc, sass, svelte, svg, typescript, vue, yaml];
 
-export { css, json, jsonc, svelte, svg, typescript, vue, yaml, languages };
+export { css, json, jsonc, sass, svelte, svg, typescript, vue, yaml, languages };
