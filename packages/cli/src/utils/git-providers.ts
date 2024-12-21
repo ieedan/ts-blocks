@@ -1,15 +1,15 @@
-import color from 'chalk';
-import fetch from 'node-fetch';
-import { Octokit } from 'octokit';
-import * as v from 'valibot';
-import type { RemoteBlock } from './blocks';
-import { Err, Ok, type Result } from './blocks/types/result';
-import { type Category, categorySchema } from './build';
-import { OUTPUT_FILE } from './context';
-import * as persisted from './persisted';
+import color from "chalk";
+import fetch from "node-fetch";
+import { Octokit } from "octokit";
+import * as v from "valibot";
+import type { RemoteBlock } from "./blocks";
+import { Err, Ok, type Result } from "./blocks/types/result";
+import { type Category, categorySchema } from "./build";
+import { OUTPUT_FILE } from "./context";
+import * as persisted from "./persisted";
 
 export type Info = {
-	refs: 'tags' | 'heads';
+	refs: "tags" | "heads";
 	url: string;
 	name: string;
 	repoName: string;
@@ -76,9 +76,9 @@ const rawErrorMessage = (info: Info, filePath: string, defaultBranch: string) =>
 	return Err(
 		`There was an error fetching the \`${color.bold(filePath)}\` from ${color.bold(info.url)}.
 
-${color.bold('This may be for one of the following reasons:')}
+${color.bold("This may be for one of the following reasons:")}
 1. The \`${color.bold(filePath)}\` or containing repository doesn't exist
-2. Your repository path is incorrect (wrong branch, wrong tag) default branches other than \`${color.bold(defaultBranch)}\` must be specified \`${color.bold('github/<owner>/<name>/tree/<branch>')}\`
+2. Your repository path is incorrect (wrong branch, wrong tag) default branches other than \`${color.bold(defaultBranch)}\` must be specified \`${color.bold("github/<owner>/<name>/tree/<branch>")}\`
 3. You are using an expired access token or a token that doesn't have access to this repository
 `
 	);
@@ -91,8 +91,8 @@ ${color.bold('This may be for one of the following reasons:')}
  *  `github/<owner>/<repo>/[tree]/[ref]`
  */
 const github: Provider = {
-	name: () => 'github',
-	defaultBranch: () => 'main',
+	name: () => "github",
+	defaultBranch: () => "main",
 	resolveRaw: async (repoPath, resourcePath) => {
 		const info = await github.info(repoPath);
 
@@ -114,7 +114,7 @@ const github: Provider = {
 			const headers = new Headers();
 
 			if (token !== undefined) {
-				headers.append('Authorization', `token ${token}`);
+				headers.append("Authorization", `token ${token}`);
 			}
 
 			const response = await fetch(url, { headers });
@@ -146,11 +146,11 @@ const github: Provider = {
 		return Ok(categories.output);
 	},
 	info: async (repoPath) => {
-		if (typeof repoPath !== 'string') return repoPath;
+		if (typeof repoPath !== "string") return repoPath;
 
-		const repo = repoPath.replaceAll(/(https:\/\/github.com\/)|(github\/)/g, '');
+		const repo = repoPath.replaceAll(/(https:\/\/github.com\/)|(github\/)/g, "");
 
-		const [owner, repoName, ...rest] = repo.split('/');
+		const [owner, repoName, ...rest] = repo.split("/");
 
 		let ref = github.defaultBranch();
 
@@ -158,7 +158,7 @@ const github: Provider = {
 
 		const octokit = new Octokit({ auth: token });
 
-		if (rest[0] === 'tree') {
+		if (rest[0] === "tree") {
 			ref = rest[1];
 		} else {
 			try {
@@ -171,21 +171,21 @@ const github: Provider = {
 		}
 
 		// checks if the type of the ref is tags or heads
-		let refs: 'heads' | 'tags' = 'heads';
+		let refs: "heads" | "tags" = "heads";
 		// no need to check if ref is main
 		if (ref !== github.defaultBranch()) {
 			try {
 				const { data: tags } = await octokit.rest.git.listMatchingRefs({
 					owner,
 					repo: repoName,
-					ref: 'tags',
+					ref: "tags",
 				});
 
 				if (tags.some((tag) => tag.ref === `refs/tags/${ref}`)) {
-					refs = 'tags';
+					refs = "tags";
 				}
 			} catch {
-				refs = 'heads';
+				refs = "heads";
 			}
 		}
 
@@ -200,8 +200,7 @@ const github: Provider = {
 		};
 	},
 	matches: (repoPath) =>
-		repoPath.toLowerCase().startsWith('https://github.com') ||
-		repoPath.toLowerCase().startsWith('github'),
+		repoPath.toLowerCase().startsWith("https://github.com") || repoPath.toLowerCase().startsWith("github"),
 };
 
 /** Valid paths
@@ -215,8 +214,8 @@ const github: Provider = {
  * `https://gitlab.com/ieedan/std/-/raw/v2.0.0/jsrepo-manifest.json?ref_type=tags`
  */
 const gitlab: Provider = {
-	name: () => 'gitlab',
-	defaultBranch: () => 'main',
+	name: () => "gitlab",
+	defaultBranch: () => "main",
 	resolveRaw: async (repoPath, resourcePath) => {
 		const info = await gitlab.info(repoPath);
 
@@ -238,7 +237,7 @@ const gitlab: Provider = {
 			const headers = new Headers();
 
 			if (token !== undefined) {
-				headers.append('PRIVATE-TOKEN', `${token}`);
+				headers.append("PRIVATE-TOKEN", `${token}`);
 			}
 
 			const response = await fetch(url, { headers });
@@ -268,24 +267,24 @@ const gitlab: Provider = {
 		return Ok(categories.output);
 	},
 	info: async (repoPath) => {
-		if (typeof repoPath !== 'string') return repoPath;
+		if (typeof repoPath !== "string") return repoPath;
 
-		const repo = repoPath.replaceAll(/(https:\/\/gitlab.com\/)|(gitlab\/)/g, '');
+		const repo = repoPath.replaceAll(/(https:\/\/gitlab.com\/)|(gitlab\/)/g, "");
 
-		const [owner, repoName, ...rest] = repo.split('/');
+		const [owner, repoName, ...rest] = repo.split("/");
 
 		let ref = gitlab.defaultBranch();
-		let refs: Info['refs'] = 'heads';
+		let refs: Info["refs"] = "heads";
 
-		if (rest[0] === '-' && rest[1] === 'tree') {
-			if (rest[2].includes('?')) {
-				const [tempRef, last] = rest[2].split('?');
+		if (rest[0] === "-" && rest[1] === "tree") {
+			if (rest[2].includes("?")) {
+				const [tempRef, last] = rest[2].split("?");
 
 				ref = tempRef;
 
-				if (last.startsWith('ref_type=')) {
-					if (last.slice(10) === 'tags') {
-						refs = 'tags';
+				if (last.startsWith("ref_type=")) {
+					if (last.slice(10) === "tags") {
+						refs = "tags";
 					}
 				}
 			} else {
@@ -298,7 +297,7 @@ const gitlab: Provider = {
 				const headers = new Headers();
 
 				if (token !== undefined) {
-					headers.append('Authorization', `Bearer ${token}`);
+					headers.append("Authorization", `Bearer ${token}`);
 				}
 
 				const response = await fetch(
@@ -330,8 +329,7 @@ const gitlab: Provider = {
 		};
 	},
 	matches: (repoPath) =>
-		repoPath.toLowerCase().startsWith('https://gitlab.com') ||
-		repoPath.toLowerCase().startsWith('gitlab'),
+		repoPath.toLowerCase().startsWith("https://gitlab.com") || repoPath.toLowerCase().startsWith("gitlab"),
 };
 
 /** Valid paths
@@ -344,8 +342,8 @@ const gitlab: Provider = {
  *
  */
 const bitbucket: Provider = {
-	name: () => 'bitbucket',
-	defaultBranch: () => 'master',
+	name: () => "bitbucket",
+	defaultBranch: () => "master",
 	resolveRaw: async (repoPath, resourcePath) => {
 		const info = await bitbucket.info(repoPath);
 
@@ -367,7 +365,7 @@ const bitbucket: Provider = {
 			const headers = new Headers();
 
 			if (token !== undefined) {
-				headers.append('Authorization', `Bearer ${token}`);
+				headers.append("Authorization", `Bearer ${token}`);
 			}
 
 			const response = await fetch(url, { headers });
@@ -397,18 +395,18 @@ const bitbucket: Provider = {
 		return Ok(categories.output);
 	},
 	info: async (repoPath) => {
-		if (typeof repoPath !== 'string') return repoPath;
+		if (typeof repoPath !== "string") return repoPath;
 
-		const repo = repoPath.replaceAll(/(https:\/\/bitbucket.org\/)|(bitbucket\/)/g, '');
+		const repo = repoPath.replaceAll(/(https:\/\/bitbucket.org\/)|(bitbucket\/)/g, "");
 
-		const [owner, repoName, ...rest] = repo.split('/');
+		const [owner, repoName, ...rest] = repo.split("/");
 
 		// pretty sure this just auto detects
-		const refs = 'heads';
+		const refs = "heads";
 
 		let ref = bitbucket.defaultBranch();
 
-		if (rest[0] === 'src') {
+		if (rest[0] === "src") {
 			ref = rest[1];
 		} else {
 			try {
@@ -417,15 +415,12 @@ const bitbucket: Provider = {
 				const headers = new Headers();
 
 				if (token !== undefined) {
-					headers.append('Authorization', `Bearer ${token}`);
+					headers.append("Authorization", `Bearer ${token}`);
 				}
 
-				const response = await fetch(
-					`https://api.bitbucket.org/2.0/repositories/${owner}/${repoName}`,
-					{
-						headers,
-					}
-				);
+				const response = await fetch(`https://api.bitbucket.org/2.0/repositories/${owner}/${repoName}`, {
+					headers,
+				});
 
 				if (response.ok) {
 					const data = await response.json();
@@ -449,11 +444,121 @@ const bitbucket: Provider = {
 		};
 	},
 	matches: (repoPath) =>
-		repoPath.toLowerCase().startsWith('https://bitbucket.org') ||
-		repoPath.toLowerCase().startsWith('bitbucket'),
+		repoPath.toLowerCase().startsWith("https://bitbucket.org") || repoPath.toLowerCase().startsWith("bitbucket"),
 };
 
-const providers = [github, gitlab, bitbucket];
+/** Valid paths
+ *
+ *  `https://dev.azure.com/<owner>/_git/<repo>`
+ *
+ *  `azure/<owner>/_git/<repo>`
+ */
+const azure: Provider = {
+	name: () => "azure",
+	defaultBranch: () => "main",
+	resolveRaw: async (repoPath, resourcePath) => {
+		const info = await azure.info(repoPath);
+
+		return new URL(
+			`https://dev.azure.com/${info.owner}/${info.owner}/_apis/git/repositories/${info.repoName}/items?path=${resourcePath}&api-version=7.2-preview.1`
+		);
+	},
+	fetchRaw: async (repoPath, resourcePath, { verbose } = {}) => {
+		const info = await azure.info(repoPath);
+
+		console.log(info)
+
+		const url = await azure.resolveRaw(info, resourcePath);
+
+		verbose?.(`Trying to fetch from ${url}`);
+
+		try {
+			const token = persisted.get().get(`${azure.name()}-token`);
+
+			const headers = new Headers();
+
+			if (token !== undefined) {
+				headers.append("Authorization", `Basic ${token}`);
+			}
+
+			console.log(url)
+			console.log(headers)
+
+			const response = await fetch(url, { headers });
+
+			verbose?.(`Got a response from ${url} ${response.status} ${response.statusText}`);
+
+			if (!response.ok) {
+				return rawErrorMessage(info, resourcePath, azure.defaultBranch());
+			}
+
+			return Ok(await response.text());
+		} catch (err) {
+			verbose?.(`erroring in response ${err} `);
+
+			return rawErrorMessage(info, resourcePath, azure.defaultBranch());
+		}
+	},
+	fetchManifest: async (repoPath) => {
+		const manifest = await azure.fetchRaw(repoPath, OUTPUT_FILE);
+
+		if (manifest.isErr()) return Err(manifest.unwrapErr());
+
+		const categories = v.safeParse(v.array(categorySchema), JSON.parse(manifest.unwrap()));
+
+		if (!categories.success) {
+			return Err(`Error parsing categories: ${categories.issues}`);
+		}
+
+		return Ok(categories.output);
+	},
+	info: async (repoPath) => {
+		if (typeof repoPath !== "string") return repoPath;
+
+		const repo = repoPath.replaceAll(/(https:\/\/dev.azure.com\/)|(azure\/)/g, "");
+
+		const [owner, _, repoNameTemp, ...rest] = repo.split("/");
+
+		// https://dev.azure.com/aidanbleser/std/_git/std?path=%2F&version=GBmain&_a=contents
+
+		const [repoName, s] = repoNameTemp.split('?');
+
+		const search = [s, ...rest].join('/');
+
+		let ref = azure.defaultBranch();
+
+		// checks if the type of the ref is tags or heads
+		let refs: "heads" | "tags" = "heads";
+
+		if (search && search.length > 0) {
+			const versionIndex = search.indexOf('version=');
+
+			const refIndex = search.indexOf('&',versionIndex + 8);
+
+			const param = search.slice(versionIndex + 8, refIndex);
+
+			const refType = param.slice(0, 2);
+
+			refs = refType === 'GT' ? 'tags' : 'heads';
+
+			ref = param.slice(2)
+		}
+
+		return {
+			refs,
+			url: repoPath,
+			name: azure.name(),
+			repoName,
+			owner,
+			ref: ref,
+			provider: azure,
+		};
+	},
+	matches: (repoPath) =>
+		repoPath.toLowerCase().startsWith("https://dev.azure.com") || repoPath.toLowerCase().startsWith("azure"),
+};
+
+const providers = [github, gitlab, bitbucket, azure];
 
 const getProviderInfo = async (repo: string): Promise<Result<Info, string>> => {
 	const provider = providers.find((provider) => provider.matches(repo));
@@ -462,7 +567,7 @@ const getProviderInfo = async (repo: string): Promise<Result<Info, string>> => {
 	}
 
 	return Err(
-		`Only ${providers.map((p, i) => `${i === providers.length - 1 ? 'and' : ''}${color.cyan(p.name())}`).join(', ')} repositories are supported at this time!`
+		`Only ${providers.map((p, i) => `${i === providers.length - 1 ? "and" : ""}${color.cyan(p.name())}`).join(", ")} repositories are supported at this time!`
 	);
 };
 
@@ -479,13 +584,10 @@ const fetchBlocks = async (
 
 		for (const category of categories) {
 			for (const block of category.blocks) {
-				blocksMap.set(
-					`${info.name}/${info.owner}/${info.repoName}/${category.name}/${block.name}`,
-					{
-						...block,
-						sourceRepo: info,
-					}
-				);
+				blocksMap.set(`${info.name}/${info.owner}/${info.repoName}/${category.name}/${block.name}`, {
+					...block,
+					sourceRepo: info,
+				});
 			}
 		}
 	}
@@ -498,9 +600,7 @@ export type ResolvedRepo = {
 	info: Info;
 };
 
-const resolvePaths = async (
-	...repos: string[]
-): Promise<Result<ResolvedRepo[], { message: string; repo: string }>> => {
+const resolvePaths = async (...repos: string[]): Promise<Result<ResolvedRepo[], { message: string; repo: string }>> => {
 	const resolvedPaths: ResolvedRepo[] = [];
 
 	for (const repo of repos) {
@@ -516,4 +616,4 @@ const resolvePaths = async (
 	return Ok(resolvedPaths);
 };
 
-export { github, gitlab, bitbucket, getProviderInfo, fetchBlocks, providers, resolvePaths };
+export { github, gitlab, bitbucket, azure, getProviderInfo, fetchBlocks, providers, resolvePaths };
